@@ -1,0 +1,277 @@
+CodeReview() - allow you to use constructor for your code review pipeline. All values of different parameters which are used during pipeline execution are stored in dictionary "context".
+
+CodeReview consists of several steps:
+	On master:
+		1) Initialization of all objects(PLatform, Job, Gerrit, Nexus, Sonar, Application, StageFactory) and load default implementations of EDP stages:
+	On particular slave which depends on Application.config.build_tool:
+		1) Creating work dir for application sources
+		2) Creating settings dir for build tools setting files and generate setting file according to the build tool
+		3) Run in a loop all stages(From) and run them either in parallel or one by one
+
+------------------------------------------------------------------------------------------------------------------------
+EDP-Pipelines-library description(Using in pipelines - "@Library(['edp-library-pipelines@version']) _")
+
+The following enums, classes, interfaces and their methods can be used separately from the EDP Pipelines library function:
+
+	Enums:
+		PlatformType:
+			OPENSHIFT
+			KUBERNETES
+		JobType:
+			CODEREVIEW
+			BUILD
+			DEPLOY
+
+	Interfaces:
+		Platform() - which contains methods for working with platform CLI. At the moment Openshift and Kubernetes are supported.
+			Properties:
+				Script script - Object with type script, in most cases if class created from Jenkins pipelines it is "this"
+			Methods:
+				getJsonPathValue(String k8s_kind, String k8s_kind_name, String jsonPath): return String value of specific parameter of particular object using jsonPath utility
+			Example:
+        		context.platform.getJsonPathValue("cm","project-settings",".data.username")
+
+	Classes:
+		PlatformFactory() - Class which contains methods getting implementation of CLI of platform. At the moment Openshift and Kubernetes are supported.
+			Methods:
+				getPlatformImpl(PlatformType platform, Script script): return Class Platform
+			Example:
+				context.platform = new PlatformFactory().getPlatformImpl(PlatformType.OPENSHIFT, this)
+
+		Application(String name, Platform platform, Script script) - Class which describe the application object
+			Properties:
+        		Script script 		- Object with type script, in most cases if class created from Jenkins pipelines it is "this"
+        		Platform platform 	- Object of a class Platform()
+        		String name  		- Name for the application for creating object
+        		Map config			- Map of configuration settings for particular application which is loaded from config map project-settings
+        	Methods:
+        		setConfig(String gerrit_autouser, String gerrit_host, String gerrit_sshPort, String gerrit_project): set the config property with values from config map
+        	Example:
+        		context.application = new Application(context.gerrit.project, context.platform, this)
+                context.application.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, context.gerrit.project)
+
+		Job(type: JobType.value, platform: Platform, script: Script) - Class which describe the Gerrit tool
+			Properties:
+				Script script 		- Object with type script, in most cases if class created from Jenkins pipelines it is "this"
+				Platform platform 	- Object of a class Platform()
+
+				JobType.value type
+    			String deployTemplatesDirectory
+    			String edpName
+    			Map stages = [:] - contains all stages i JSON format which is retrieved from Jenkins job env variable
+			Methods:
+				getParameterValue(String parameter, String defaultValue = null): return parameter of ENV variable of Jenkins job
+				init(): set all the properties of Job object
+				setDisplayName(String displayName): set display name of the Jenkins job
+				setDescription(String description, Boolean addDescription = false): set new or add to existing description of the Jenkins job
+				printDebugInfo(Map context): print context info to log of Jenkins job
+				runStage(String stage_name, Map context): run the particular stage according to its name
+			Example:
+				context.job = new Job(JobType.CODEREVIEW.value, context.platform, this)
+                context.job.init()
+                context.job.printDebugInfo(context)
+                context.job.setDisplayName("test")
+                context.job.setDescription("Name: ${context.application.config.name}")
+
+		Gerrit(Job job, Platform platform, Script script) - Class which describe the Gerrit tool
+			Properties:
+				Script script 		- Object with type script, in most cases if class created from Jenkins pipelines it is "this"
+				Platform platform 	- Object of a class Platform()
+				Job job				- Object of a class Job()
+
+				String credentialsId
+				String autouser
+				String host
+				String project
+				String branch
+				String changeNumber
+				String changeName
+				String refspecName
+				String sshPort
+				String patchsetNumber
+			Methods:
+				init(): set all the properties of Gerrit object
+			Example:
+				context.gerrit = new Gerrit(context.job, context.platform, this)
+                context.gerrit.init()
+
+		Nexus(Job job, Platform platform, Script script) - Class which describe the Gerrit tool
+			Properties:
+				Script script 		- Object with type script, in most cases if class created from Jenkins pipelines it is "this"
+				Platform platform 	- Object of a class Platform()
+				Job job				- Object of a class Job()
+
+			    String autouser
+                String credentialsId
+                String host
+                String port
+                String repositoriesUrl
+                String restUrl
+                String mavenRepositoryUrl
+                String npmGroupRegistry
+                String npmInternalRegistry
+                String nugetInternalRegistry
+                Map internalScripts = [:] - contains Groovy scripts file for performing different actions through Nexus API
+                	getNugetToken
+                Map maven = [:]
+                	setting - settings.xml
+                Map gradle = [:]
+                	settings - init.gradle
+                Map npm = [:]
+                	settings - empty
+                Map dotnet = [:]
+                	settings - empty
+                	sln_filename - sln project to build
+			Methods:
+				init(): set all the properties of Nexus object
+			Example:
+				context.nexus = new Nexus(context.job, context.platform, this)
+                context.nexus.init()
+
+		Sonar(Job job, Platform platform, Script script) - Class which describe the Gerrit tool
+			Properties:
+				Script script 		- Object with type script, in most cases if class created from Jenkins pipelines it is "this"
+				Platform platform 	- Object of a class Platform()
+				Job job				- Object of a class Job()
+
+				String route
+			Methods:
+				init(): set all the properties of Sonar object
+			Example:
+				context.sonar = new Sonar(context.job, context.platform, this)
+                context.sonar.init()
+
+------------------------------------------------------------------------------------------------------------------------
+
+EDP-Stages-library description(Using in pipelines - "@Library(['edp-library-stages@version']) _")
+
+The following enums, classes, interfaces and their methods can be used separately from the EDP Stages library function:
+
+	Enums:
+		ProjectType:
+			APPLICATION
+			AUTOTESTS
+
+	Classes:
+		StageFactory() - Class which contains methods getting implementation of particular stage either EDP from shared library or custom from application repository.
+			Properties:
+        		Script script - Object with type script, in most cases if class created from Jenkins pipelines it is "this"
+        		Map stages	  - Map of stages implementations
+			Methods:
+				loadEdpStages(): return list of Classes that describes EDP stages implementations
+				loadCustomStages(String directory): return list of Classes that describes EDP custom stages from application repository from "directory". "directory" should be absolute path to files with classes of custom stages implementations. Should be run from slave agent.
+				add(Class clazz): register class for some particular stage in stages map of StageFactory class
+				getStage(String name, String buildTool, String type): return object of the class for particular stage from stages property based on stage name and buildTool, type of application
+			Example:
+				context.factory = new StageFactory(script: this)
+                context.factory.loadEdpStages().each() { context.factory.add(it) }
+                context.factory.loadCustomStages("${context.workDir}/stages").each() { context.factory.add(it) }
+                context.factory.getStage(stageName.toLowerCase(),context.application.config.build_tool.toLowerCase(),context.application.config.type).run(context)
+
+Each edp stages implementation has run method which as input parameter require to pass context map with different keys. Some stage can implement logic for several build tools and application type, some of the are specific. You will find full description below.
+
+Stages:
+	Gerrit Checkout:
+		name = "gerrit-checkout",
+			buildTool = ["maven", "npm", "dotnet","gradle"]
+				type = [ProjectType.APPLICATION, ProjectType.AUTOTESTS]
+				context required:
+					String context.workDir
+					StageFactory context.factory
+					String context.gerrit.changeName
+					String context.gerrit.refspecName
+					String context.gerrit.credentialsId
+					String context.application.config.cloneUrl
+	Compile:
+		name = "compile"
+			buildTool = ["dotnet"]
+				type = [ProjectType.APPLICATION]
+				context required:
+					String context.workDir
+					Map(empty) context.nexus.dotnet
+				output:
+					String context.nexus.dotnet.sln_filename
+			buildTool = ["gradle"]
+				type = [ProjectType.APPLICATION]
+				context required:
+                	String context.workDir
+                	String context.nexus.credentialsId
+					String context.gradleCommand
+			buildTool = ["maven"]
+				type = [ProjectType.APPLICATION]
+				context required:
+                	String context.workDir
+                	String context.maven.settings
+			buildTool = ["npm"]
+				type = [ProjectType.APPLICATION]
+				context required:
+                	String context.workDir
+                	String context.nexus.credentialsId
+                	String context.nexus.npmGroupRegistry
+	Tests
+		name = "tests"
+			buildTool = ["dotnet"]
+				type = [ProjectType.APPLICATION]
+				context required:
+					String context.workDir
+			buildTool = ["gradle"]
+				type = [ProjectType.APPLICATION]
+				context required:
+                	String context.workDir
+                	String context.nexus.credentialsId
+					String context.gradleCommand
+			buildTool = ["maven"]
+				type = [ProjectType.APPLICATION]
+					context required:
+                		String context.workDir
+                		String context.maven.settings
+				type = [ProjectType.AUTOTESTS]
+					context required:
+                		String context.application.name
+                		String context.application.config.report_framework
+			buildTool = ["npm"]
+				type = [ProjectType.APPLICATION]
+				context required:
+                	String context.workDir
+	Sonar:
+		name = "sonar"
+			buildTool = ["dotnet"]
+				type = [ProjectType.APPLICATION]
+				context required:
+					String context.workDir
+					String context.job.type
+					String context.application.name
+					String context.nexus.dotnet.sln_filename
+					String context.sonar.route
+					String context.gerrit.changeName(Only for codereview pipeline)
+					String context.gerrit.branch(Only for build pipeline)
+			buildTool = ["gradle"]
+				type = [ProjectType.APPLICATION]
+				context required:
+                	String context.workDir
+                	String context.job.type
+                	String context.nexus.credentialsId
+					String context.gradleCommand
+					String context.application.name
+					String context.sonarRoute
+					String context.gerrit.changeName(Only for codereview pipeline)
+                    String context.gerrit.branch(Only for build pipeline)
+			buildTool = ["maven"]
+				type = [ProjectType.APPLICATION, ProjectType.AUTOTESTS]
+				context required:
+                	String context.workDir
+                	String context.job.type
+                	String context.application.name
+                	String context.maven.settings
+                	String context.sonar.route
+                	String context.gerrit.changeName(Only for codereview pipeline)
+                    String context.gerrit.branch(Only for build pipeline)
+			buildTool = ["npm"]
+				type = [ProjectType.APPLICATION]
+				context required:
+                	String context.workDir
+                	String context.job.type
+                	String context.sonar.route
+                	String context.application.name
+                	String context.gerrit.changeName(Only for codereview pipeline)
+                    String context.gerrit.branch(Only for build pipeline)
