@@ -16,12 +16,12 @@ allprojects {
     buildscript {
         repositories {
             maven {
-                name "maven-public"
+                name "maven-group"
                 credentials {
                     username nexusLogin
                     password nexusPassword
                 }
-                url "${nexusMavenRepositoryUrl}-public"
+                url "${nexusMavenRepositoryUrl}"
             }
         }
         dependencies {

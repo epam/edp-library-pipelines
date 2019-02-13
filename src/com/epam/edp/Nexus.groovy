@@ -28,15 +28,8 @@ class Nexus {
     def port
     def repositoriesUrl
     def restUrl
-    def mavenRepositoryUrl
-    def npmGroupRegistry
-    def npmInternalRegistry
-    def nugetInternalRegistry
     def internalScripts = [:]
-    def maven = [:]
     def gradle = [:]
-    def npm = [:]
-    def dotnet = [:]
 
     Nexus(job, platform, script) {
         this.script = script
@@ -51,20 +44,9 @@ class Nexus {
         this.port = job.getParameterValue("NEXUS_HTTP_PORT", "8081")
         this.repositoriesUrl = "http://${this.host}:${this.port}/repository"
         this.restUrl = "http://${this.host}:${this.port}/service/siesta/rest"
-        this.mavenRepositoryUrl = "${this.repositoriesUrl}/maven"
-        this.npmGroupRegistry = "${this.repositoriesUrl}/npm-all/"
-        this.npmInternalRegistry = "${this.repositoriesUrl}/npm-internal/"
-        this.nugetInternalRegistry = "${this.repositoriesUrl}/nuget-hosted/"
-        this.internalScripts.getNugetToken = this.script.libraryResource("nexus/get-nuget-token.groovy")
-        this.maven.settings = this.script.libraryResource("maven/settings.xml")
-        this.gradle.settings = this.script.libraryResource("gradle/init.gradle")
-        this.npm.settings = null
-        this.dotnet.settings = null
-        this.dotnet.sln_filename = null
-
-
-
     }
+
+
 
     def uploadGroovyScriptToNexus(scriptName, pathToScript) {
         def requestBody = [:]
@@ -82,7 +64,7 @@ class Nexus {
     }
 
     def deleteNexusGroovyScript(name) {
-        script.httpRequest  authentication: 'nexus',
+        script.httpRequest authentication: 'nexus',
                 httpMode: 'DELETE',
                 url: "${this.restUrl}/v1/script/${name}",
                 contentType: 'APPLICATION_JSON',
@@ -90,7 +72,7 @@ class Nexus {
     }
 
     def addNexusGroovyScript(requestBody) {
-        script.httpRequest  authentication: 'nexus',
+        script.httpRequest authentication: 'nexus',
                 httpMode: 'POST',
                 url: "${this.restUrl}/v1/script",
                 contentType: 'APPLICATION_JSON',
@@ -105,8 +87,8 @@ class Nexus {
                 requestBody: requestBody
     }
 
-    def getNexusGroovyScript(name){
-        script.httpRequest  authentication: 'nexus',
+    def getNexusGroovyScript(name) {
+        script.httpRequest authentication: 'nexus',
                 httpMode: 'GET',
                 url: "${this.restUrl}/v1/script/${name}",
                 validResponseCodes: '200,404'

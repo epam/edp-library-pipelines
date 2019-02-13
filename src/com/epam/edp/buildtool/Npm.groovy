@@ -12,18 +12,21 @@
  See the License for the specific language governing permissions and
  limitations under the License.*/
 
-package com.epam.edp
+package com.epam.edp.buildtool
 
-enum PlatformType {
-    OPENSHIFT("openshift"), KUBERNETES("kubernetes")
+import com.epam.edp.Nexus
 
-    private String value
+class Npm implements BuildTool {
+    Script script
+    Nexus nexus
 
-    PlatformType(String value) {
-        this.value = value
-    }
+    def settings
+    def hostedRepository
+    def groupRepository
 
-    String getValue() {
-        return value
+
+    def init() {
+        this.hostedRepository = "${nexus.repositoriesUrl}/edp-npm-hosted/"
+        this.groupRepository = "${nexus.repositoriesUrl}/edp-npm-group/"
     }
 }

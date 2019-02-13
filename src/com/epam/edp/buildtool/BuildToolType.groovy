@@ -12,15 +12,18 @@
  See the License for the specific language governing permissions and
  limitations under the License.*/
 
-package com.epam.edp.platform
+package com.epam.edp.buildtool
 
-def getPlatformImpl(PlatformType platform, script) {
-    switch (platform) {
-        case PlatformType.OPENSHIFT:
-            return new Openshift(script: script)
+enum BuildToolType {
+    MAVEN("maven"), NPM("npm"), GRADLE("gradle"), DOTNET("dotnet"),
+
+    private String value
+
+    BuildToolType(String value) {
+        this.value = value
     }
-}
 
-interface Platform {
-    def getJsonPathValue(object, name, jsonPath)
+    String getValue() {
+        return value
+    }
 }

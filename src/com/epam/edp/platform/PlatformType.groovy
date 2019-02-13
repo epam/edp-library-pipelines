@@ -14,13 +14,16 @@
 
 package com.epam.edp.platform
 
-def getPlatformImpl(PlatformType platform, script) {
-    switch (platform) {
-        case PlatformType.OPENSHIFT:
-            return new Openshift(script: script)
-    }
-}
+enum PlatformType {
+    OPENSHIFT("openshift"), KUBERNETES("kubernetes")
 
-interface Platform {
-    def getJsonPathValue(object, name, jsonPath)
+    private String value
+
+    PlatformType(String value) {
+        this.value = value
+    }
+
+    String getValue() {
+        return value
+    }
 }

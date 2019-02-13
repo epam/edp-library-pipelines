@@ -1,0 +1,45 @@
+/* Copyright 2018 EPAM Systems.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
+ See the License for the specific language governing permissions and
+ limitations under the License.*/
+
+package com.epam.edp.buildtool
+
+import com.epam.edp.Nexus
+import groovy.json.*
+
+class Dotnet implements BuildTool {
+    Script script
+    Nexus nexus
+
+    def sln_filename
+    def hostedRepository
+    def groupRepository
+    def scripts = [:]
+    def nugetApiKey
+
+    def init() {
+        this.hostedRepository = "${nexus.repositoriesUrl}/dotnet-hosted/"
+        this.groupRepository = "${nexus.repositoriesUrl}/dotnet-group/"
+        this.scripts = [ 'get-nuget-token': ['scriptPath': this.script.libraryResource("nexus/get-nuget-token.groovy")]]
+        this.sln_filename = null
+        this.nugetApiKey = getNugetToken("get-nuget-token")
+    }
+
+    private def getNugetToken(scriptName) {
+        script.writeFile file: "${scriptName}.groovy", text: this.scripts["${scriptName}"].scriptPath
+        nexus.uploadGroovyScriptToNexus(scriptName, "${scriptName}.groovy")
+        def result = nexus.runNexusGroovyScript(scriptName, "{\"name\": \"${nexus.autouser}\"}")
+        def response = new JsonSlurperClassic().parseText(result.content)
+        this.nugetApiKey = new JsonSlurperClassic().parseText(response.result).nuGetApiKey
+    }
+}

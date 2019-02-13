@@ -15,14 +15,15 @@
 @Grab(group = 'com.google.guava', module = 'guava', version = '27.0-jre')
 import com.epam.edp.Application
 import com.epam.edp.Job
+import com.epam.edp.JobType
 import com.epam.edp.Gerrit
 import com.epam.edp.Nexus
 import com.epam.edp.Sonar
+import com.epam.edp.platform.PlatformType
+import com.epam.edp.platform.PlatformFactory
+import com.epam.edp.buildtool.BuildToolFactory
 import com.epam.edp.stages.StageFactory
 import org.apache.commons.lang.RandomStringUtils
-import com.epam.edp.platform.*
-import com.epam.edp.JobType
-import com.epam.edp.PlatformType
 
 def call() {
     def context = [:]
@@ -60,17 +61,9 @@ def call() {
     node(context.application.config.build_tool.toLowerCase()) {
         context.workDir = new File("/tmp/${RandomStringUtils.random(10, true, true)}")
         context.workDir.deleteDir()
-        context.settingsDir = new File("/tmp/${RandomStringUtils.random(10, true, true)}")
-        context.settingsDir.deleteDir()
 
-        if (context.nexus["${context.application.config.build_tool.toLowerCase()}"].settings != null) {
-            dir("${context.settingsDir}") {
-                context["${context.application.config.build_tool.toLowerCase()}"] = [:]
-                writeFile file: "${context.settingsDir}/settings", text: context.nexus["${context.application.config.build_tool.toLowerCase()}"].settings
-                context["${context.application.config.build_tool.toLowerCase()}"].settings = "${context.settingsDir}/settings"
-                context.gradleCommand = "gradle -I ${context.settingsDir}/settings -PnexusMavenRepositoryUrl=${context.nexus.mavenRepositoryUrl}-public"
-            }
-        }
+        context.buildTool = new BuildToolFactory().getBuildToolImpl(context.application.config.build_tool, this, context.nexus)
+        context.buildTool.init()
 
         context.job.stages.each() { stage ->
             if (stage instanceof ArrayList) {
