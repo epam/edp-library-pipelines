@@ -28,8 +28,8 @@ class Dotnet implements BuildTool {
     def nugetApiKey
 
     def init() {
-        this.hostedRepository = "${nexus.repositoriesUrl}/dotnet-hosted/"
-        this.groupRepository = "${nexus.repositoriesUrl}/dotnet-group/"
+        this.hostedRepository = "${nexus.repositoriesUrl}/edp-dotnet-hosted/"
+        this.groupRepository = "${nexus.repositoriesUrl}/edp-dotnet-group/"
         this.scripts = [ 'get-nuget-token': ['scriptPath': this.script.libraryResource("nexus/get-nuget-token.groovy")]]
         this.sln_filename = null
         this.nugetApiKey = getNugetToken("get-nuget-token")
@@ -40,6 +40,6 @@ class Dotnet implements BuildTool {
         nexus.uploadGroovyScriptToNexus(scriptName, "${scriptName}.groovy")
         def result = nexus.runNexusGroovyScript(scriptName, "{\"name\": \"${nexus.autouser}\"}")
         def response = new JsonSlurperClassic().parseText(result.content)
-        this.nugetApiKey = new JsonSlurperClassic().parseText(response.result).nuGetApiKey
+        return new JsonSlurperClassic().parseText(response.result).nuGetApiKey
     }
 }

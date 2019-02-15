@@ -24,6 +24,11 @@ class Application {
 
     def name
     def config = [:]
+    def version = ""
+    def deployableModule = ""
+    def buildVersion = ""
+    def deployableModuleDir = ""
+    def imageBuildArgs = []
 
     Application(name, platform, script) {
         this.name = name

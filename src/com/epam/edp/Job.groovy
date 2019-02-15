@@ -22,8 +22,11 @@ class Job {
     Script script
     Platform platform
     def stages = [:]
+    def environmentsConfig = [:]
     def deployTemplatesDirectory
     def edpName
+    def envToPromote = null
+    boolean promoteImages = true
 
 
     Job(type, platform, script) {
@@ -49,6 +52,18 @@ class Job {
         catch (Exception ex) {
             script.error("[JENKINS][ERROR] Couldn't parse stages configuration from parameter STAGE - not valid JSON formate.\r\nException - ${ex}")
         }
+        if (type == JobType.BUILD.value) {
+            def environmentsData = platform.getJsonPathValue("cm", "project-settings", ".data.env\\.settings\\.json")
+            this.environmentsConfig = new JsonSlurperClassic().parseText(environmentsData)
+            if (environmentsConfig)
+                this.envToPromote = "${environmentsConfig[0].name}-meta"
+            else {
+                println("[JENKINS][WARNING] There are no environments were added to the project, we won't promote image after build config\r\n" +
+                        "[JENKINS][WARNING] If your like to promote your images please add environment via your cockpit panel")
+                this.promoteImages = false
+            }
+        }
+
     }
 
     def setDisplayName(displayName) {
