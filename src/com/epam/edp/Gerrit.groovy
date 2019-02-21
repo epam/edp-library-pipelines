@@ -26,11 +26,11 @@ class Gerrit {
     def host
     def project
     def branch
-    def changeNumber
+    def changeNumber = 0
     def changeName
     def refspecName
     def sshPort
-    def patchsetNumber
+    def patchsetNumber = 0
 
     Gerrit(job, platform, script) {
         this.script = script

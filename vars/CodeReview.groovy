@@ -12,7 +12,6 @@
  See the License for the specific language governing permissions and
  limitations under the License.*/
 
-@Grab(group = 'com.google.guava', module = 'guava', version = '27.0-jre')
 import com.epam.edp.Application
 import com.epam.edp.Job
 import com.epam.edp.JobType
