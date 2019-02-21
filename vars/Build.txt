@@ -1,4 +1,4 @@
-<p><strong>CodeReview()</strong> &ndash; function that allows you to use EDP Implementation for your CodeReview pipeline.</p>
+<p><strong>Build()</strong> &ndash; function that allows you to use EDP Implementation for your Build pipeline.</p>
 <p><em>All values of different parameters which are used during pipeline execution are stored in Map "context".</em></p>
 <p><strong>Build pipeline consists of several steps:</strong></p>
 <p><strong><em>On master:</em></strong></p>
@@ -607,7 +607,8 @@ class NewStageMavenApplication {<br />
 }<br />
 return NewStageMavenApplication<br />
 </code>
-</u1>
+</ul>
+
 <h1>Using EDP stages library in your own pipeline</h1>
 <p>You pipeline have to fit some requirements in order to use EDP Stages:</p>
 <ul>

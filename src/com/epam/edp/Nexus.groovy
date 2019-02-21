@@ -28,8 +28,6 @@ class Nexus {
     def port
     def repositoriesUrl
     def restUrl
-    def internalScripts = [:]
-    def gradle = [:]
 
     Nexus(job, platform, script) {
         this.script = script
