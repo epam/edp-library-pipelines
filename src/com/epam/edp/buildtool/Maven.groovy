@@ -24,11 +24,13 @@ class Maven implements BuildTool {
     def settings
     def hostedRepository
     def groupRepository
+    def command
 
     def init() {
         this.settings = writeSettingsFile(this.script.libraryResource("maven/settings.xml"))
         this.hostedRepository = "${nexus.repositoriesUrl}/edp-maven"
         this.groupRepository = "${nexus.repositoriesUrl}/edp-maven-group"
+        this.command = "mvn --settings ${this.settings} "
     }
 
     private writeSettingsFile(fileContent) {
