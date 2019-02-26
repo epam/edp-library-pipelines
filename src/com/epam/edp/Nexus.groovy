@@ -41,7 +41,7 @@ class Nexus {
         this.host = job.getParameterValue("NEXUS_HOST", "nexus")
         this.port = job.getParameterValue("NEXUS_HTTP_PORT", "8081")
         this.repositoriesUrl = "http://${this.host}:${this.port}/repository"
-        this.restUrl = "http://${this.host}:${this.port}/service/siesta/rest"
+        this.restUrl = "http://${this.host}:${this.port}/service/rest"
     }
 
 
