@@ -15,6 +15,7 @@
 package com.epam.edp
 
 import com.epam.edp.platform.Platform
+import groovy.json.JsonSlurperClassic
 
 class Gerrit {
     Script script
@@ -50,10 +51,13 @@ class Gerrit {
         this.changeNumber = job.getParameterValue("GERRIT_CHANGE_NUMBER")
         this.changeName = "change-${this.changeNumber}-${this.patchsetNumber}"
         this.refspecName = job.getParameterValue("GERRIT_REFSPEC")
-        if (this.project == null)
-            this.project = job.getParameterValue("GERRIT_PROJECT_NAME")
-        if (this.project == null)
-            script.error("[JENKINS][ERROR] Couldn't determine project, please make sure that GERRIT_PROJECT_NAME variable is defined")
-        this.sshPort = platform.getJsonPathValue("svc","gerrit",".spec.ports[?(@.name==\"ssh\")].targetPort")
+        switch (job.type) {
+            case [JobType.BUILD.value, JobType.CODEREVIEW.value]:
+                if (this.project == null)
+                    this.project = job.getParameterValue("GERRIT_PROJECT_NAME")
+                if (this.project == null)
+                    script.error("[JENKINS][ERROR] Couldn't determine project, please make sure that GERRIT_PROJECT_NAME variable is defined")
+        }
+        this.sshPort = platform.getJsonPathValue("svc", "gerrit", ".spec.ports[?(@.name==\"ssh\")].targetPort")
     }
 }

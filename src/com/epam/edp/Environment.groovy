@@ -14,48 +14,38 @@
 
 package com.epam.edp
 
-import groovy.json.JsonSlurperClassic
-import com.epam.edp.ProjectType
 import com.epam.edp.platform.Platform
+import groovy.json.JsonSlurperClassic
 
-class Application {
+class Environment {
     Script script
     Platform platform
 
     def name
     def config = [:]
     def version = ""
-    def deployableModule = ""
-    def buildVersion = ""
-    def deployableModuleDir = ""
-    def imageBuildArgs = []
+    def updatedApplicaions = []
 
-    Application(name, platform, script) {
+    Environment(name, platform, script) {
         this.name = name
         this.script = script
         this.platform = platform
     }
 
-    def setConfig(gerrit_autouser, gerrit_host, gerrit_sshPort, gerrit_project) {
-        def componentSettings = null
-        for(configMapKey in ["app.settings.json", "auto-test.settings.json"]) {
-            componentSettings = findComponent(this.name, configMapKey)
-            if (componentSettings != null) break
-        }
+    def setConfig() {
+        def componentSettings = findEnvironment(this.name, "env.settings.json")
         if (componentSettings == null)
-            script.error("[JENKINS][ERROR] Component ${this.name} has not been found in configuration")
-        componentSettings.cloneUrl = "ssh://${gerrit_autouser}@${gerrit_host}:${gerrit_sshPort}/${gerrit_project}"
+            script.error("[JENKINS][ERROR] Environment ${this.name} has not been found in configuration")
         this.config = componentSettings
     }
 
-    private def findComponent(nameToFind, configMapKey) {
+    private def findEnvironment(environmentToFind, configMapKey) {
         def configJson = platform.getJsonPathValue("cm","project-settings",".data.${configMapKey.replaceAll("\\.","\\\\.")}")
         def config = new JsonSlurperClassic().parseText(configJson)
         for (item in config) {
-            if (item.name == nameToFind) {
-                item.type = configMapKey == "app.settings.json" ? ProjectType.APPLICATION.getValue() : ProjectType.AUTOTESTS.getValue()
+            if (item.name == environmentToFind)
                 return item
-            }
         }
+        return null
     }
 }
