@@ -75,7 +75,7 @@ def call() {
                 context.job.inputProjectPrefix = (context.job.userInputImagesToDeploy instanceof String) ? context.job.userInputImagesToDeploy : context.job.userInputImagesToDeploy["PROJECT_PREFIX"]
 
                 if (context.job.inputProjectPrefix && context.job.inputProjectPrefix != context.job.edpName)
-                    context.job.deployProject = "${context.job.inputProjectPrefix}-${context.job.deployProject}"
+                    context.job.deployProject = "${context.job.edpName}-${context.job.inputProjectPrefix}-${context.job.stageWithoutPrefixName}"
             }
 
             context.job.applicationsList.each() { application ->
