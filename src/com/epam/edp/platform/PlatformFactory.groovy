@@ -23,4 +23,5 @@ def getPlatformImpl(PlatformType platform, script) {
 
 interface Platform {
     def getJsonPathValue(object, name, jsonPath)
+    def getJsonValue(object, name)
 }

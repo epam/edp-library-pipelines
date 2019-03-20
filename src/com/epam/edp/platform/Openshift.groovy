@@ -23,4 +23,11 @@ class Openshift implements Platform {
                 returnStdout: true
         ).trim()
     }
+
+    def getJsonValue(object, name) {
+        script.sh(
+                script: "oc get ${object} ${name} -o json",
+                returnStdout: true
+        ).trim()
+    }
 }
