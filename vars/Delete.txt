@@ -1,0 +1,6 @@
+<p><strong>Deletion pipeline</strong> is a system pipeline designed for Openshift project deletion.</p>
+<li><strong>Input</strong>:</li>
+<p>Comma separated projects list, for example: sit-1,qa-2</p>
+<li><strong>Result</strong>:</li>
+<p>Projects will be deleted from Openshift</p>
+<ul>

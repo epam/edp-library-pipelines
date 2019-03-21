@@ -1,0 +1,379 @@
+<p><strong>Deploy()</strong> &ndash; function that allows you to use EDP Implementation for your Deploy pipeline.</p>
+<p><em>All values of different parameters which are used during pipeline execution are stored in Map "context".</em></p>
+<p><strong>Deploy pipeline consists of several steps:</strong></p>
+<p><strong><em>On master:</em></strong></p>
+<ul>
+<li>Initialization of all objects(Platform, Job, Gerrit, Nexus, StageFactory) and loading default implementations of EDP stages.</li>
+<li>Creating environment if not exists</li>
+<li>Deploying last applications versions</li>
+<li>Run predefined manual gates</li>
+</ul>
+<p><strong><em>On particular autotest slave</em></strong> which depends on build tool:</p>
+<ul>
+<li>Creating work dir for autotest sources</li>
+<li>Run predefined autotests</li>
+</ul>
+<p><strong><h2>EDP Pipelines library description</h2></strong></p>
+<p><em>Using in pipelines - @Library(['edp-library-pipelines@version']) _</em></p>
+<p><u>The following enums, classes, interfaces and their methods can be used separately from the EDP Pipelines library function:</u></p>
+<p><strong>Enums:</strong></p>
+<p><em>PlatformType</em>:</p>
+<ul>
+<li>OPENSHIFT</li>
+<li>KUBERNETES</li>
+</ul>
+<p><em>JobType</em>:</p>
+<ul>
+<li>CODEREVIEW</li>
+<li>BUILD</li>
+<li>DEPLOY</li>
+</ul>
+<p><em>BuildToolType</em></p>
+<ul>
+<li>MAVEN</li>
+<li>GRADLE</li>
+<li>NPM</li>
+<li>DOTNET</li>
+</ul>
+<p>&nbsp;</p>
+<p><strong>Interfaces:</strong></p>
+<p><strong><em>Platform()</em></strong> - which contains methods for working with platform CLI. At the moment only Openshift is supported.</p>
+<ul>
+<li><strong>Properties:</strong></li>
+</ul>
+<p>Script script - Object with type script, in most cases if class created from Jenkins pipelines it is "this"</p>
+<ul>
+<li><strong>Methods:</strong></li>
+</ul>
+<p>getJsonPathValue(String k8s_kind, String k8s_kind_name, String jsonPath): return String value of specific parameter of particular object using jsonPath utility</p>
+<ul>
+<li><strong>Example:</strong></li>
+</ul>
+<code>&nbsp;&nbsp;context.platform.getJsonPathValue("cm","project-settings",".data.username")</code>
+<p><strong><em>BuildTool()</em></strong> - which contains methods for working with different buildTool from ENUM BuildToolType.(<strong><em>Should be invoked on slave build agents</em></strong>)</p>
+<ul>
+<li><strong>Properties:</strong></li>
+</ul>
+<p>Script script - Object with type script, in most cases if class created from Jenkins pipelines it is "this"</p>
+<p>Nexus object - Object of class Nexus. See description below</p>
+<ul>
+<li><strong>Methods:</strong></li>
+</ul>
+<p>init: return parameters of buildTool which are needed for running stages</p>
+<ul>
+<li><strong>Example:</strong></li>
+</ul>
+<code>
+&nbsp;&nbsp;context.buildTool = new BuildToolFactory().getBuildToolImpl(context.application.config.build_tool, this, context.nexus)<br/>
+&nbsp;&nbsp;context.buildTool.init()<br/>
+</code>
+<p><strong>Classes:</strong></p>
+<p><strong><em>PlatformFactory()</em></strong> - Class which contains methods getting implementation of CLI of platform. At the moment Openshift and Kubernetes are supported.</p>
+<ul>
+<li><strong>Methods:</strong></li>
+</ul>
+<p>getPlatformImpl(PlatformType platform, Script script): return Class Platform</p>
+<ul>
+<li><strong>Example:</strong></li>
+</ul>
+<code>&nbsp;&nbsp;context.platform = new PlatformFactory().getPlatformImpl(PlatformType.OPENSHIFT, this)</code>
+<p><strong><em>Application(String name, Platform platform, Script script)</em></strong> - Class which describe the application object</p>
+<ul>
+<li><strong>Properties</strong>:</li>
+</ul>
+<p>Script script - Object with type script, in most cases if class created from Jenkins pipelines it is "this"</p>
+<p>Platform platform - Object of a class Platform()</p>
+<p>String name - Name for the application for creating object</p>
+<p>Map config - Map of configuration settings for particular application which is loaded from config map project-settings</p>
+<p>String version - Application version, initially empty. Is set on get-version step.</p>
+<p>String deployableModule - The name of deployable module for multi module applications, initially empty.</p>
+<p>String buildVersion - Version of built artifact, contains build number of Job initially empty</p>
+<p>String deployableModuleDir - The name of deployable module directory for multi module applications, initially empty.</p>
+<p>Array imageBuildArgs - List of arguments for building application Docker image</p>
+<ul>
+<li><strong>Methods</strong>:</li>
+</ul>
+<p>setConfig(String gerrit_autouser, String gerrit_host, String gerrit_sshPort, String gerrit_project): set the config property with values from config map</p>
+<ul>
+<li><strong>Example</strong>:</li>
+</ul>
+<code>
+&nbsp;&nbsp;context.application = new Application(context.gerrit.project, context.platform, this)<br/>
+&nbsp;&nbsp;context.application.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, context.gerrit.project)<br/>
+</code>
+<p><strong><em>Job(type: JobType.value, platform: Platform, script: Script)</em></strong> - Class which describe the Gerrit tool</p>
+<ul>
+<li><strong>Properties</strong>:</li>
+</ul>
+<p>Script script - Object with type script, in most cases if class created from Jenkins pipelines it is "this"</p>
+<p>Platform platform - Object of a class Platform()</p>
+<p>JobType.value type</p>
+<p>String deployTemplatesDirectory - The name of the directory in application repository, where deploy templates are located. Can be set for particular Job through DEPLOY_TEMPLATES_DIRECTORY parameter</p>
+<p>String edpName - The name of the EDP Project</p>
+<p>Map stages - Contains all stages i JSON format which is retrieved from Jenkins job env variable</p>
+<p>String envToPromote - The name of the environment for promoting images.</p>
+<p>Boolean promoteImages - Defines whether images should be promoted or not.</p>
+<ul>
+<li><strong>Methods</strong>:</li>
+</ul>
+<p>getParameterValue(String parameter, String defaultValue = null): return parameter of ENV variable of Jenkins job</p>
+<p>init(): set all the properties of Job object</p>
+<p>setDisplayName(String displayName): set display name of the Jenkins job</p>
+<p>setDescription(String description, Boolean addDescription = false): set new or add to existing description of the Jenkins job</p>
+<p>printDebugInfo(Map context): print context info to log of Jenkins job</p>
+<p>runStage(String stage_name, Map context): run the particular stage according to its name</p>
+<ul>
+<li><strong>Example</strong>:</li>
+</ul>
+<code>
+&nbsp;&nbsp;context.job = new Job(JobType.DEPLOY.value, context.platform, this)<br/>
+&nbsp;&nbsp;context.job.init()<br/>
+&nbsp;&nbsp;context.job.printDebugInfo(context)<br/>
+&nbsp;&nbsp;context.job.setDisplayName("test")<br/>
+&nbsp;&nbsp;context.job.setDescription("Name: ${context.application.config.name}")<br/>
+</code>
+<p><strong><em>Gerrit(Job job, Platform platform, Script script)</em></strong> - Class which describe the Gerrit tool</p>
+<ul>
+<li><strong>Properties</strong>:</li>
+</ul>
+<p>Script script - Object with type script, in most cases if class created from Jenkins pipelines it is "this"</p>
+<p>Platform platform - Object of a class Platform()</p>
+<p>Job job - Object of a class Job()</p>
+<p>String credentialsId - Credential Id in Jenkins for Gerrit</p>
+<p>String autouser - Username of autouser in Gerrit for integration with Jenkins</p>
+<p>String host - Gerrit host</p>
+<p>String project - project name of built application</p>
+<p>String branch - branch to build application from</p>
+<p>String changeNumber - change number of Gerrit commit</p>
+<p>String changeName - change name of Gerrit commit</p>
+<p>String refspecName - refspecName of Gerrit commit</p>
+<p>String sshPort - gerrit ssh port number</p>
+<p>String patchsetNumber - patchsetNumber of Gerrit commit</p>
+<ul>
+<li><strong>Methods</strong>:</li>
+</ul>
+<p>init(): set all the properties of Gerrit object</p>
+<ul>
+<li><strong>Example</strong>:</li>
+</ul>
+<code>
+&nbsp;&nbsp;context.gerrit = new Gerrit(context.job, context.platform, this)<br/>
+&nbsp;&nbsp;context.gerrit.init()<br/>
+</code>
+<p><strong><em>Nexus(Job job, Platform platform, Script script)</em></strong> - Class which describe the Nexus tool</p>
+<ul>
+<li><strong>Properties</strong>:</li>
+</ul>
+<p>Script script - Object with type script, in most cases if class created from Jenkins pipelines it is "this"</p>
+<p>Platform platform - Object of a class Platform()</p>
+<p>Job job - Object of a class Job()</p>
+<p>String autouser - Username of autouser in Nexus for integration with Jenkins</p>
+<p>String credentialsId - Credential Id in Jenkins for Nexus</p>
+<p>String host - Nexus host</p>
+<p>String port - Nexus http(s) port</p>
+<p>String repositoriesUrl - Base URL of repositories in Nexus</p>
+<p>String restUrl - URL of Rest API</p>
+<ul>
+<li><strong>Methods</strong>:</li>
+</ul>
+<p>init(): set all the properties of Nexus object</p>
+<ul>
+<li><strong>Example</strong>:</li>
+</ul>
+<code>
+&nbsp;&nbsp;context.nexus = new Nexus(context.job, context.platform, this)<br/>
+&nbsp;&nbsp;context.nexus.init()<br/>
+</code>
+<p><strong><h2>EDP Stages library description</h2></strong></p>
+<p><em>Using in pipelines - @Library(['edp-library-stages@version']) _</em></p>
+<p><u>The following classes, interfaces and their methods can be used separately from the EDP Stages library function:</u></p>
+<p><strong>Classes</strong>:</p>
+<p><strong><em>StageFactory()</em></strong> - Class which contains methods getting implementation of particular stage either EDP from shared library or custom from application repository.</p>
+<ul>
+<li><strong>Properties</strong>:</li>
+</ul>
+<p>Script script - Object with type script, in most cases if class created from Jenkins pipelines it is "this"</p>
+<p>Map stages - Map of stages implementations</p>
+<ul>
+<li><strong>Methods</strong>:</li>
+</ul>
+<p>loadEdpStages(): return list of Classes that describes EDP stages implementations</p>
+<p>loadCustomStages(String directory): return list of Classes that describes EDP custom stages from application repository from "directory". "directory" should be absolute path to files with classes of custom stages implementations. Should be run from slave agent.</p>
+<p>add(Class clazz): register class for some particular stage in stages map of StageFactory class</p>
+<p>getStage(String name, String buildTool, String type): return object of the class for particular stage from stages property based on stage name and buildTool, type of application</p>
+<ul>
+<li><strong>Example</strong>:</li>
+</ul>
+<code>
+&nbsp;&nbsp;context.factory = new StageFactory(script: this)<br/>
+&nbsp;&nbsp;context.factory.loadEdpStages().each() { context.factory.add(it) }<br/>
+&nbsp;&nbsp;context.factory.loadCustomStages("${context.workDir}/stages").each() { context.factory.add(it) }<br/>
+&nbsp;&nbsp;context.factory.getStage(stageName.toLowerCase(),context.application.config.build_tool.toLowerCase(),context.application.config.type).run(context)<br/>
+</code>
+<p><strong><em>Each edp stages implementation has run method which as input parameter require to pass context map with different keys. Some stage can implement logic for several build tools and application type, some of them are specific. You will find full description below.</em></strong></p>
+<br>
+<p><strong><h3>Stages:</h3></strong></p>
+<p>Stages for deploy pipline are independent of build tool and application type.</p>
+<p><strong><em><h3>Automation-tests:</h3></em></strong></p>
+<p>name = "automation-tests", buildTool = null, type = null</p>
+<p>context required:</p>
+<ul>
+<li>String context.workDir</li>
+<li>StageFactory context.factory</li>
+<li>String context.gerrit.credentialsId</li>
+<li>String context.autotest.config.cloneUrl</li>
+<li>String context.autotest.name</li>
+<li>String context.job.stageWithoutPrefixName</li>
+<li>String context.buildTool.settings</li>
+<li>String context.autotest.config.report_framework</li>
+</ul>
+<p><strong><em><h3>Deploy:</h3></em></strong></p>
+<p>name = "deploy"</p>
+<p>buildTool = null</p>
+<p>type = null</p>
+<p>context required:</p>
+<ul>
+<li>String context.workDir</li>
+<li>StageFactory context.factory</li>
+<li>String context.gerrit.autouser</li>
+<li>String context.gerrit.host</li>
+<li>String context.application.config.cloneUrl</li>
+<li>String context.jenkins.token</li>
+<li>String context.job.edpName</li>
+<li>String context.job.buildUrl</li>
+<li>String context.job.jenkinsUrl</li>
+<li>String context.job.metaProject</li>
+<li>List context.job.applicationsList [['name':'application1_name','version':'application1_version],...]</li>
+<li>String context.job.deployTemplatesDirectory</li>
+</ul>
+<p>output:</p>
+<ul>
+<li>List context.job.updatedApplicaions [['name':'application1_name','version':'application1_version],...]</li>
+</ul>
+<p><strong><em><h3>Promote Images:</h3></em></strong></p>
+<p>name = "promote-images"</p>
+<p>buildTool = null</p>
+<p>type = null</p>
+<p>context required:</p>
+<ul>
+<li>String context.workDir</li>
+<li>String context.buildTool.sln_filename</li>
+<li>List context.job.updatedApplicaions [['name':'application1_name','version':'application1_version],...]</li>
+</ul>
+<p>&nbsp;</p>
+<h1>How to redefine or extend EDP Pipeline stages library</h1>
+<p style="color:red">At the moment redifinement of Deploy pipeline stages is prohibited</p>
+<h1>Using EDP stages library in your own pipeline</h1>
+<p>You pipeline have to fit some requirements in order to use EDP Stages:</p>
+<ul>
+<li>You need to import library - @Library(['edp-library-stages']) _</li>
+<li>You need to import StageFactory class - import com.epam.edp.stages.StageFactory</li>
+<li>You have to define context Map &ndash; context = [:]</li>
+<li>You have to define stagesFactory instance and load EDP stages:</li>
+<code>
+&nbsp;&nbsp;context.factory = new StageFactory(script: this)<br />
+&nbsp;&nbsp;context.factory.loadEdpStages().each() { context.factory.add(it) }<br />
+</code>
+<li>After that you are able to run any EDP stage beforehand defining requirement context</li>
+<code>
+&nbsp;&nbsp;context.factory.getStage("checkout","maven","application").run(context)
+</code>
+</ul>
+<p>&nbsp;</p>
+<p><strong>For instance pipeline can looks like:</strong></p>
+<p>&nbsp;</p>
+<code>
+@Library(['edp-library-stages']) _<br/><br/>
+import com.epam.edp.stages.StageFactory<br/>
+import org.apache.commons.lang.RandomStringUtils<br/><br/>
+context = [:]<br/><br/>
+node('master') {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.workDir = new File("/tmp/${RandomStringUtils.random(10, true, true)}")<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.workDir.deleteDir()<br/><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.factory = new StageFactory(script: this)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.factory.loadEdpStages().each() { context.factory.add(it) }<br/><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.gerrit = [:]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.gerrit.autouser = "jenkins"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.gerrit.host = "gerrit"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.gerrit.sshPort = sh(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;script: "oc get svc gerrit -o jsonpath='{.spec.ports[?(@.name==\"ssh\")].targetPort}'",<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;returnStdout: true<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;).trim()<br/><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.application = [:]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.application.config = [:]<br/><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.jenkins = [:]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.jenkins.token = new String(sh(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;script: "oc get secret jenkins-token -o jsonpath='{.data.token}'",<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;returnStdout: true<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;).trim().decodeBase64())<br/><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.job = [:]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.job.edpName = '&#60;edp installation name>'<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.job.buildUrl = env["BUILD_URL"]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.job.jenkinsUrl = env["JENKINS_URL"]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.job.metaProject = "&#60;meta project name>"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.job.deployProject = "&#60;deploy project name>"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.job.applicationsList =[]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.job.applicationsList.push(['name': '&#60;application name>', 'version' : 'latest'])<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.job.deployTemplatesDirectory = "deploy-templates"<br/><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.environment = [:]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;context.environment.updatedApplicaions = []<br/><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;stage("Deploy") {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.factory.getStage("deploy").run(context)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+}<br/>
+</code>
+<p>&nbsp;</p>
+<p><strong>Or in Declarative way:</strong></p>
+<code>
+@Library(['edp-library-stages']) _<br/><br/>
+import com.epam.edp.stages.StageFactory<br/>
+import org.apache.commons.lang.RandomStringUtils<br/><br/>
+context = [:]<br/><br/>
+pipeline {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;agent { label 'master'}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;stages {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stage('Init') {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;steps {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;script {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.workDir = new File("/tmp/${RandomStringUtils.random(10, true, true)}")<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.workDir.deleteDir()<br/><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.factory = new StageFactory(script: this)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.factory.loadEdpStages().each() { context.factory.add(it) }<br/><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.gerrit = [:]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.gerrit.autouser = "jenkins"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.gerrit.host = "gerrit"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.gerrit.sshPort = sh(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;script: "oc get svc gerrit -o jsonpath='{.spec.ports[?(@.name==\"ssh\")].targetPort}'",<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;returnStdout: true<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;).trim()<br/><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.application = [:]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.application.config = [:]<br/><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.jenkins = [:]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.jenkins.token = new String(sh(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;script: "oc get secret jenkins-token -o jsonpath='{.data.token}'",<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;returnStdout: true<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;).trim().decodeBase64())<br/><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.job = [:]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.job.edpName = '&#60;edp installation name>'<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.job.buildUrl = env["BUILD_URL"]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.job.jenkinsUrl = env["JENKINS_URL"]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.job.metaProject = "&#60;meta project name>"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.job.deployProject = "&#60;deploy project name>"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.job.applicationsList =[]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.job.applicationsList.push(['name': '&#60;application name>', 'version' : 'latest'])<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.job.deployTemplatesDirectory = "deploy-templates"<br/><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.environment = [:]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.environment.updatedApplicaions = []<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stage('Deploy') {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;steps {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;script {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.factory.getStage("deploy").run(context)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+}<br/>
+</code>

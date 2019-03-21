@@ -3,7 +3,7 @@
 <p><strong>Build pipeline consists of several steps:</strong></p>
 <p><strong><em>On master:</em></strong></p>
 <ul>
-<li>Initialization of all objects(PLatform, Job, Gerrit, Nexus, Sonar, Application, StageFactory) and loading default implementations of EDP stages.</li>
+<li>Initialization of all objects(Platform, Job, Gerrit, Nexus, Sonar, Application, StageFactory) and loading default implementations of EDP stages.</li>
 </ul>
 <p><strong><em>On particular slave</em></strong> which depends on build tool:</p>
 <ul>
@@ -47,7 +47,7 @@
 <ul>
 <li><strong>Example:</strong></li>
 </ul>
-<p>context.platform.getJsonPathValue("cm","project-settings",".data.username")</p>
+<code>&nbsp;&nbsp;context.platform.getJsonPathValue("cm","project-settings",".data.username")</code>
 <p><strong><em>BuildTool()</em></strong> - which contains methods for working with different buildTool from ENUM BuildToolType.(<strong><em>Should be invoked on slave build agents</em></strong>)</p>
 <ul>
 <li><strong>Properties:</strong></li>
@@ -61,9 +61,10 @@
 <ul>
 <li><strong>Example:</strong></li>
 </ul>
-<p>context.buildTool = new</p>
-<p>BuildToolFactory().getBuildToolImpl(context.application.config.build_tool, this, context.nexus)</p>
-<p>context.buildTool.init()</p>
+<code>
+&nbsp;&nbsp;context.buildTool = new BuildToolFactory().getBuildToolImpl(context.application.config.build_tool, this, context.nexus)<br/>
+&nbsp;&nbsp;context.buildTool.init()<br/>
+</code>
 <p><strong>Classes:</strong></p>
 <p><strong><em>PlatformFactory()</em></strong> - Class which contains methods getting implementation of CLI of platform. At the moment Openshift and Kubernetes are supported.</p>
 <ul>
@@ -73,7 +74,7 @@
 <ul>
 <li><strong>Example:</strong></li>
 </ul>
-<p>context.platform = new PlatformFactory().getPlatformImpl(PlatformType.OPENSHIFT, this)</p>
+<code>&nbsp;&nbsp;context.platform = new PlatformFactory().getPlatformImpl(PlatformType.OPENSHIFT, this)</code>
 <p><strong><em>Application(String name, Platform platform, Script script)</em></strong> - Class which describe the application object</p>
 <ul>
 <li><strong>Properties</strong>:</li>
@@ -94,8 +95,10 @@
 <ul>
 <li><strong>Example</strong>:</li>
 </ul>
-<p>context.application = new Application(context.gerrit.project, context.platform, this)</p>
-<p>context.application.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, context.gerrit.project)</p>
+</code>
+&nbsp;&nbsp;context.application = new Application(context.gerrit.project, context.platform, this)<br/>
+&nbsp;&nbsp;context.application.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, context.gerrit.project)<br/>
+</code>
 <p><strong><em>Job(type: JobType.value, platform: Platform, script: Script)</em></strong> - Class which describe the Gerrit tool</p>
 <ul>
 <li><strong>Properties</strong>:</li>
@@ -120,11 +123,13 @@
 <ul>
 <li><strong>Example</strong>:</li>
 </ul>
-<p>context.job = new Job(JobType.CODEREVIEW.value, context.platform, this)</p>
-<p>context.job.init()</p>
-<p>context.job.printDebugInfo(context)</p>
-<p>context.job.setDisplayName("test")</p>
-<p>context.job.setDescription("Name: ${context.application.config.name}")</p>
+<code>
+&nbsp;&nbsp;context.job = new Job(JobType.CODEREVIEW.value, context.platform, this)<br/>
+&nbsp;&nbsp;context.job.init()<br/>
+&nbsp;&nbsp;context.job.printDebugInfo(context)<br/>
+&nbsp;&nbsp;context.job.setDisplayName("test")<br/>
+&nbsp;&nbsp;context.job.setDescription("Name: ${context.application.config.name}")<br/>
+</code>
 <p><strong><em>Gerrit(Job job, Platform platform, Script script)</em></strong> - Class which describe the Gerrit tool</p>
 <ul>
 <li><strong>Properties</strong>:</li>
@@ -149,9 +154,11 @@
 <ul>
 <li><strong>Example</strong>:</li>
 </ul>
-<p>context.gerrit = new Gerrit(context.job, context.platform, this)</p>
-<p>context.gerrit.init()</p>
-<p><strong><em>Nexus(Job job, Platform platform, Script script)</em></strong> - Class which describe the Gerrit tool</p>
+<code>
+&nbsp;&nbsp;context.gerrit = new Gerrit(context.job, context.platform, this)<br/>
+&nbsp;&nbsp;context.gerrit.init()<br/>
+</code>
+<p><strong><em>Nexus(Job job, Platform platform, Script script)</em></strong> - Class which describe the Nexus tool</p>
 <ul>
 <li><strong>Properties</strong>:</li>
 </ul>
@@ -171,9 +178,11 @@
 <ul>
 <li><strong>Example</strong>:</li>
 </ul>
-<p>context.nexus = new Nexus(context.job, context.platform, this)</p>
-<p>context.nexus.init()</p>
-<p><strong><em>Sonar(Job job, Platform platform, Script script)</em></strong> - Class which describe the Gerrit tool</p>
+<code>
+&nbsp;&nbsp;context.nexus = new Nexus(context.job, context.platform, this)<br/>
+&nbsp;&nbsp;context.nexus.init()<br/>
+</code>
+<p><strong><em>Sonar(Job job, Platform platform, Script script)</em></strong> - Class which describe the Sonar tool</p>
 <ul>
 <li><strong>Properties</strong>:</li>
 </ul>
@@ -188,8 +197,10 @@
 <ul>
 <li><strong>Example</strong>:</li>
 </ul>
-<p>context.sonar = new Sonar(context.job, context.platform, this)</p>
-<p>context.sonar.init()</p>
+<code>
+&nbsp;&nbsp;context.sonar = new Sonar(context.job, context.platform, this)<br/>
+&nbsp;&nbsp;context.sonar.init()<br/>
+</code>
 <p>&nbsp;</p>
 <p><strong><h2>EDP Stages library description</h2></strong></p>
 <p><em>Using in pipelines - @Library(['edp-library-stages@version']) _</em></p>
@@ -217,16 +228,18 @@
 <ul>
 <li><strong>Example</strong>:</li>
 </ul>
-<p>context.factory = new StageFactory(script: this)</p>
-<p>context.factory.loadEdpStages().each() { context.factory.add(it) }</p>
-<p>context.factory.loadCustomStages("${context.workDir}/stages").each() { context.factory.add(it) }</p>
-<p>context.factory.getStage(stageName.toLowerCase(),context.application.config.build_tool.toLowerCase(),context.application.config.type).run(context)</p>
+<code>
+&nbsp;&nbsp;context.factory = new StageFactory(script: this)<br/>
+&nbsp;&nbsp;context.factory.loadEdpStages().each() { context.factory.add(it) }<br/>
+&nbsp;&nbsp;context.factory.loadCustomStages("${context.workDir}/stages").each() { context.factory.add(it) }<br/>
+&nbsp;&nbsp;context.factory.getStage(stageName.toLowerCase(),context.application.config.build_tool.toLowerCase(),context.application.config.type).run(context)<br/>
+</code>
 <p><strong><em>Each edp stages implementation has run method which as input parameter require to pass context map with different keys. Some stage can implement logic for several build tools and application type, some of them are specific. You will find full description below.</em></strong></p>
 <br>
 <p><strong><h3>Stages:</h3></strong></p>
 <p><strong><em><h3>Checkout:</h3></em></strong></p>
 <p>name = "checkout",</p>
-<p><strong>buildTool = ["maven", "npm", "dotnet","gradle"]</strong></p>
+<p>buildTool = ["maven", "npm", "dotnet","gradle"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -238,7 +251,7 @@
 </ul>
 <p><strong><em><h3>Gerrit Checkout:</h3></em></strong></p>
 <p>name = "gerrit-checkout",</p>
-<p><strong>buildTool = ["maven", "npm", "dotnet","gradle"]</strong></p>
+<p>buildTool = ["maven", "npm", "dotnet","gradle"]</p>
 <p>type = [ProjectType.APPLICATION, ProjectType.AUTOTESTS]</p>
 <p>context required:</p>
 <ul>
@@ -251,7 +264,7 @@
 </ul>
 <p><strong><em><h3>Compile:</h3></em></strong></p>
 <p>name = "compile"</p>
-<p><strong>buildTool = ["dotnet"]</strong></p>
+<p>buildTool = ["dotnet"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -263,7 +276,7 @@
 <li>String context.buildTool.sln_filename</li>
 </ul>
 <p>&nbsp;</p>
-<p><strong>buildTool = ["gradle"]</strong></p>
+<p>buildTool = ["gradle"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -271,7 +284,7 @@
 <li>String context.buildTool.command</li>
 <li>String context.nexus.credentialsId</li>
 </ul>
-<p><strong>buildTool = ["maven"]</strong></p>
+<p>buildTool = ["maven"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -279,7 +292,7 @@
 <li>String context.buildTool.command</li>
 <li>String context.nexus.credentialsId</li>
 </ul>
-<p><strong>buildTool = ["npm"]</strong></p>
+<p>buildTool = ["npm"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -289,7 +302,7 @@
 </ul>
 <p><strong><em><h3>Get version:</h3></em></strong></p>
 <p>name = "get-version"</p>
-<p><strong>buildTool = ["dotnet"]</strong></p>
+<p>buildTool = ["dotnet"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -305,7 +318,7 @@
 <li>String context.application.version</li>
 <li>String context.application.buildVersion</li>
 </ul>
-<p><strong>buildTool = ["gradle"]</strong></p>
+<p>buildTool = ["gradle"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -322,7 +335,7 @@
 <li>String context.application.buildVersion</li>
 </ul>
 <p>&nbsp;</p>
-<p><strong>buildTool = ["maven"]</strong></p>
+<p>buildTool = ["maven"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -339,7 +352,7 @@
 <li>String context.application.version</li>
 <li>String context.application.buildVersion</li>
 </ul>
-<p><strong>buildTool = ["npm"]</strong></p>
+<p>buildTool = ["npm"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -355,13 +368,13 @@
 </ul>
 <p><strong><em><h3>Tests:</h3></em></strong></p>
 <p>name = "tests"</p>
-<p><strong>buildTool = ["dotnet"]</strong></p>
+<p>buildTool = ["dotnet"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
 <li>String context.workDir</li>
 </ul>
-<p><strong>buildTool = ["gradle"]</strong></p>
+<p>buildTool = ["gradle"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -369,7 +382,7 @@
 <li>String context.nexus.credentialsId</li>
 <li>String context.buildTool.command</li>
 </ul>
-<p><strong>buildTool = ["maven"]</strong></p>
+<p>buildTool = ["maven"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -383,7 +396,7 @@
 <li>String context.buildTool.command</li>
 <li>String context.application.config.report_framework</li>
 </ul>
-<p><strong>buildTool = ["npm"]</strong></p>
+<p>buildTool = ["npm"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -391,7 +404,7 @@
 </ul>
 <p><strong><em><h3>Sonar:</h3></em></strong></p>
 <p>name = "sonar"</p>
-<p><strong>buildTool = ["dotnet"]</strong></p>
+<p>buildTool = ["dotnet"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -403,7 +416,7 @@
 <li>String context.gerrit.changeName(Only for codereview pipeline)</li>
 <li>String context.gerrit.branch(Only for build pipeline)</li>
 </ul>
-<p><strong>buildTool = ["gradle"]</strong></p>
+<p>buildTool = ["gradle"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -416,7 +429,7 @@
 <li>String context.gerrit.changeName(Only for codereview pipeline)</li>
 <li>String context.gerrit.branch(Only for build pipeline)</li>
 </ul>
-<p><strong>buildTool = ["maven"]</strong></p>
+<p>buildTool = ["maven"]</p>
 <p>type = [ProjectType.APPLICATION, ProjectType.AUTOTESTS]</p>
 <p>context required:</p>
 <ul>
@@ -429,7 +442,7 @@
 <li>String context.gerrit.changeName(Only for codereview pipeline)</li>
 <li>String context.gerrit.branch(Only for build pipeline)</li>
 </ul>
-<p><strong>buildTool = ["npm"]</strong></p>
+<p>buildTool = ["npm"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -442,7 +455,7 @@
 </ul>
 <p><strong><em><h3>Build:</h3></em></strong></p>
 <p>name = "build"</p>
-<p><strong>buildTool = ["gradle"]</strong></p>
+<p>buildTool = ["gradle"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -450,7 +463,7 @@
 <li>String context.buildTool.command</li>
 <li>String context.nexus.credentialsId</li>
 </ul>
-<p><strong>buildTool = ["maven"]</strong></p>
+<p>buildTool = ["maven"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -458,7 +471,7 @@
 <li>String context.buildTool.command</li>
 <li>String context.nexus.credentialsId</li>
 </ul>
-<p><strong>buildTool = ["npm"]</strong></p>
+<p>buildTool = ["npm"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -468,7 +481,7 @@
 </ul>
 <p><strong><em><h3>Build Docker Image:</h3></em></strong></p>
 <p>name = "build-image"</p>
-<p><strong>buildTool = ["dotnet"]</strong></p>
+<p>buildTool = ["dotnet"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -481,7 +494,7 @@
 <li>Boolean context.job.promoteImages</li>
 <li>String context.job.envToPromote</li>
 </ul>
-<p><strong>buildTool = ["gradle"]</strong></p>
+<p>buildTool = ["gradle"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -494,7 +507,7 @@
 <li>Boolean context.job.promoteImages</li>
 <li>String context.job.envToPromote</li>
 </ul>
-<p><strong>buildTool = ["maven"]</strong></p>
+<p>buildTool = ["maven"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -507,7 +520,7 @@
 <li>Boolean context.job.promoteImages</li>
 <li>String context.job.envToPromote</li>
 </ul>
-<p><strong>buildTool = ["npm"]</strong></p>
+<p>buildTool = ["npm"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -522,7 +535,7 @@
 </ul>
 <p><strong><em><h3>Push:</h3></em></strong></p>
 <p>name = "push"</p>
-<p><strong>buildTool = ["dotnet"]</strong></p>
+<p>buildTool = ["dotnet"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -532,7 +545,7 @@
 <li>String context.buildTool.snugetApiKey</li>
 <li>String context.buildTool.hostedRepository</li>
 </ul>
-<p><strong>buildTool = ["gradle"]</strong></p>
+<p>buildTool = ["gradle"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -542,7 +555,7 @@
 <li>String context.buildTool.hostedRepository</li>
 <li>String context. buildTool.settings</li>
 </ul>
-<p><strong>buildTool = ["maven"]</strong></p>
+<p>buildTool = ["maven"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -552,7 +565,7 @@
 <li>String context.buildTool.hostedRepository</li>
 <li>String context.buildTool.command</li>
 </ul>
-<p><strong>buildTool = ["npm"]</strong></p>
+<p>buildTool = ["npm"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -563,7 +576,7 @@
 </ul>
 <p><strong><em><h3>Git tag:</h3></em></strong></p>
 <p>name = "git-tag"</p>
-<p><strong>buildTool = ["maven", "npm", "dotnet","gradle"]</strong></p>
+<p>buildTool = ["maven", "npm", "dotnet","gradle"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
 <p>context required:</p>
 <ul>
@@ -615,11 +628,13 @@ return NewStageMavenApplication<br />
 <li>You need to import StageFactory class - import com.epam.edp.stages.StageFactory</li>
 <li>You have to define context Map &ndash; context = [:]</li>
 <li>You have to define stagesFactory instance and load EDP stages:</li>
-<p>context.factory = new StageFactory(script: this)</p>
-<p>context.factory.loadEdpStages().each() { context.factory.add(it) }</p>
+<code>
+&nbsp;&nbsp;context.factory = new StageFactory(script: this)<br/>
+&nbsp;&nbsp;context.factory.loadEdpStages().each() { context.factory.add(it) }<br/>
+</code>
 <li>After that you are able to run any EDP stage beforehand defining requirement context</li>
+<code>&nbsp;&nbsp;context.factory.getStage("checkout","maven","application").run(context)</code>
 </ul>
-<p>context.factory.getStage("checkout","maven","application").run(context)</p>
 <p>&nbsp;</p>
 <p><strong>For instance pipeline can looks like:</strong></p>
 <p>&nbsp;</p>
@@ -648,16 +663,16 @@ node('maven') {<br />
 &nbsp;&nbsp;&nbsp;<br />
 &nbsp;&nbsp;&nbsp; stage("checkout") {<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.gerrit.branch = "master"<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; context.gerrit.credentialsId = "jenkins"<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; context.application.config.cloneUrl = "ssh://jenkins@gerrit:32092/sit-718-cloned-java-maven-project"<br />
-&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;context.factory.getStage("checkout","maven","application").run(context)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.gerrit.credentialsId = "jenkins"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.application.config.cloneUrl = "ssh://jenkins@gerrit:32092/sit-718-cloned-java-maven-project"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.factory.getStage("checkout","maven","application").run(context)<br />
 &nbsp;&nbsp;&nbsp; }<br />
 &nbsp;<br />
 &nbsp;<br />
 &nbsp;&nbsp;&nbsp; stage("compile") {<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.buildTool.command = "mvn"<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; context.nexus.credentialsId = "nexus"<br />
-&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;context.factory.getStage("compile","maven","application").run(context)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.nexus.credentialsId = "nexus"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.factory.getStage("compile","maven","application").run(context)<br />
 &nbsp;&nbsp;&nbsp; }<br />
 }<br />
 </code>
