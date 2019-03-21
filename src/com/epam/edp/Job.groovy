@@ -1,4 +1,4 @@
-/* Copyright 2018 EPAM Systems.
+/* Copyright 2019 EPAM Systems.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ class Job {
     def userInputImagesToDeploy
     def inputProjectPrefix
     def promotion = [:]
+    def newBranch
 
     Job(type, platform, script) {
         this.type = type
@@ -64,6 +65,11 @@ class Job {
         this.servicesList = getProjectConfiguration("service.settings.json")
         this.buildUser = getBuildUser()
         switch (type) {
+            case JobType.CREATEBRANCH.value:
+                this.newBranch = getParameterValue("BRANCH_NAME")
+                if (!this.newBranch) {
+                    script.error("[JENKINS][ERROR] Parameter BRANCH_NAME is mandatory to be specified, please check configuration of job")
+                }
             case JobType.BUILD.value:
                 if (environmentsList)
                     this.envToPromote = "${environmentsList[0].name}-meta"
@@ -75,7 +81,7 @@ class Job {
             case [JobType.BUILD.value, JobType.CODEREVIEW.value]:
                 def stagesConfig = getParameterValue("STAGES")
                 if (!stagesConfig?.trim())
-                    script.error("[JENKINS][ERROR] Parameter STAGES is mandatory to be specified? please check configuration of job")
+                    script.error("[JENKINS][ERROR] Parameter STAGES is mandatory to be specified, please check configuration of job")
                 try {
                     this.stages = new JsonSlurperClassic().parseText(stagesConfig)
                 }
