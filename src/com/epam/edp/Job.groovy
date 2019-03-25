@@ -60,7 +60,7 @@ class Job {
         this.jenkinsUrl = getParameterValue("JENKINS_URL")
         this.edpName = platform.getJsonPathValue("cm", "user-settings", ".data.edp_name")
         this.environmentsList = getProjectConfiguration("env.settings.json")
-        this.applicationsList = getProjectConfiguration("app.settings.json")
+        this.applicationsList = getAppFromAdminConsole()
         this.autotestsList = getProjectConfiguration("auto-test.settings.json")
         this.servicesList = getProjectConfiguration("service.settings.json")
         this.buildUser = getBuildUser()
@@ -90,6 +90,7 @@ class Job {
                 }
         }
     }
+
 
     @NonCPS
     def initDeployJob() {
@@ -149,5 +150,43 @@ class Job {
     private def getProjectConfiguration(configMapKey) {
         def json = platform.getJsonPathValue("cm", "project-settings", ".data.${configMapKey.replaceAll("\\.", "\\\\.")}")
         return new JsonSlurperClassic().parseText(json)
+    }
+
+    private def getAppFromAdminConsole() {
+        def userCredentials = getCredentialsFromSecret("admin-console-reader")
+        def clientCredentials = getCredentialsFromSecret("admin-console-client")
+
+        def dnsWildcard = platform.getJsonPathValue("cm", "user-settings", ".data.dns_wildcard")
+
+        def response = script.httpRequest url: "https://keycloak-security.${dnsWildcard}/auth/realms/openshift/protocol/openid-connect/token",
+                httpMode: 'POST',
+                contentType: 'APPLICATION_FORM',
+                requestBody: "grant_type=password&username=${userCredentials.username}&password=${userCredentials.password}" +
+                        "&client_id=${clientCredentials.username}&client_secret=${clientCredentials.password}",
+                consoleLogResponseBody: true
+
+        def accessToken = new JsonSlurperClassic()
+                .parseText(response.content)
+                .access_token
+
+        def adminConsoleUrl = platform.getJsonPathValue("cm", "user-settings", ".data.admin_console_url")
+
+        def appsResponse = script.httpRequest url: "${adminConsoleUrl}/api/v1/edp/${edpName}/application",
+                httpMode: 'GET',
+                customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
+                consoleLogResponseBody: true
+
+        return new JsonSlurperClassic().parseText(appsResponse.content.toLowerCase())
+    }
+
+    private def getCredentialsFromSecret(name) {
+        def credentials = [:]
+        credentials['username'] = getSecretField(name, 'username')
+        credentials['password'] = getSecretField(name, 'password')
+        return credentials
+    }
+
+    private def getSecretField(name, field) {
+        return new String(platform.getJsonPathValue("secret", name, ".data.\\\\${field}").decodeBase64())
     }
 }
