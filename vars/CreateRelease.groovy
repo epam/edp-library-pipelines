@@ -30,7 +30,7 @@ def call() {
         stage("Init") {
             context.platform = new PlatformFactory().getPlatformImpl(PlatformType.OPENSHIFT, this)
 
-            context.job = new Job(JobType.CREATEBRANCH.value, context.platform, this)
+            context.job = new Job(JobType.CREATERELEASE.value, context.platform, this)
             context.job.init()
             println("[JENKINS][DEBUG] Created object job with type - ${context.job.type}")
 
@@ -45,7 +45,7 @@ def call() {
 
             context.job.printDebugInfo(context)
             println("[JENKINS][DEBUG] Application config - ${context.application.config}")
-            context.job.setDisplayName("${currentBuild.number}-creating ${context.job.newBranch}")
+            context.job.setDisplayName("${currentBuild.number}-${context.job.releaseName}")
             context.job.setDescription("Name: ${context.application.config.name}\r\nLanguage: ${context.application.config.language}" +
                     "\r\nBuild tool: ${context.application.config.build_tool}\r\nFramework: ${context.application.config.framework}")
         }

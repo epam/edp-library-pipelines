@@ -15,7 +15,7 @@
 package com.epam.edp
 
 enum JobType {
-    CODEREVIEW("codereview"), BUILD("build"), DEPLOY("deploy"), CREATEBRANCH("createbranch")
+    CODEREVIEW("codereview"), BUILD("build"), DEPLOY("deploy"), CREATERELEASE("createrelease")
 
     private String value
 

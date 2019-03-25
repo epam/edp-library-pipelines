@@ -41,7 +41,7 @@ class Job {
     def userInputImagesToDeploy
     def inputProjectPrefix
     def promotion = [:]
-    def newBranch
+    def releaseName
 
     Job(type, platform, script) {
         this.type = type
@@ -65,10 +65,10 @@ class Job {
         this.servicesList = getProjectConfiguration("service.settings.json")
         this.buildUser = getBuildUser()
         switch (type) {
-            case JobType.CREATEBRANCH.value:
-                this.newBranch = getParameterValue("BRANCH_NAME")
-                if (!this.newBranch) {
-                    script.error("[JENKINS][ERROR] Parameter BRANCH_NAME is mandatory to be specified, please check configuration of job")
+            case JobType.CREATERELEASE.value:
+                this.releaseName = getParameterValue("RELEASE_NAME")
+                if (!this.releaseName) {
+                    script.error("[JENKINS][ERROR] Parameter RELEASE_NAME is mandatory to be specified, please check configuration of job")
                 }
             case JobType.BUILD.value:
                 if (environmentsList)
@@ -78,7 +78,7 @@ class Job {
                             "[JENKINS][WARNING] If your like to promote your images please add environment via your cockpit panel")
                     this.promoteImages = false
                 }
-            case [JobType.BUILD.value, JobType.CODEREVIEW.value]:
+            case [JobType.BUILD.value, JobType.CODEREVIEW.value, JobType.CREATERELEASE.value]:
                 def stagesConfig = getParameterValue("STAGES")
                 if (!stagesConfig?.trim())
                     script.error("[JENKINS][ERROR] Parameter STAGES is mandatory to be specified, please check configuration of job")
