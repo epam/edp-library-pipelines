@@ -45,7 +45,7 @@ def call() {
 
             context.job.printDebugInfo(context)
             println("[JENKINS][DEBUG] Application config - ${context.application.config}")
-            context.job.setDisplayName("${currentBuild.number}-${context.job.releaseName}")
+            context.job.setDisplayName("${currentBuild.number}-create-branch-${context.job.releaseName}")
             context.job.setDescription("Name: ${context.application.config.name}\r\nLanguage: ${context.application.config.language}" +
                     "\r\nBuild tool: ${context.application.config.build_tool}\r\nFramework: ${context.application.config.framework}")
         }
