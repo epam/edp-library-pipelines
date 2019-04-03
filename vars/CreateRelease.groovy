@@ -53,6 +53,16 @@ def call() {
         context.workDir = new File("/tmp/${RandomStringUtils.random(10, true, true)}")
         context.workDir.deleteDir()
 
+        context.triggerJobName = "Job-provisioning"
+        context.triggerJobWait = true
+        context.triggerJobParameters = [
+                string(name: 'PARAM', value: "true"),
+                string(name: 'NAME', value: "${context.application.config.name}"),
+                string(name: 'TYPE', value: "${context.application.config.type}"),
+                string(name: 'BUILD_TOOL', value: "${context.application.config.build_tool}"),
+                string(name: 'BRANCH', value: "${context.job.releaseName}"),
+        ]
+
         context.job.stages.each() { stage ->
             if (stage instanceof ArrayList) {
                 def parallelStages = [:]
