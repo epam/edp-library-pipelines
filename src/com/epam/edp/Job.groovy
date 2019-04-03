@@ -42,6 +42,7 @@ class Job {
     def inputProjectPrefix
     def promotion = [:]
     def releaseName
+    def releaseFromCommitId
 
     Job(type, platform, script) {
         this.type = type
@@ -60,7 +61,9 @@ class Job {
         this.jenkinsUrl = getParameterValue("JENKINS_URL")
         this.edpName = platform.getJsonPathValue("cm", "user-settings", ".data.edp_name")
         this.environmentsList = getProjectConfiguration("env.settings.json")
-        this.applicationsList = getAppFromAdminConsole()
+        this.applicationsList = getProjectConfiguration("app.settings.json")
+        if (!this.applicationsList)
+            this.applicationsList = getAppFromAdminConsole()
         this.autotestsList = getProjectConfiguration("auto-test.settings.json")
         this.servicesList = getProjectConfiguration("service.settings.json")
         this.buildUser = getBuildUser()
@@ -70,6 +73,7 @@ class Job {
                 if (!this.releaseName) {
                     script.error("[JENKINS][ERROR] Parameter RELEASE_NAME is mandatory to be specified, please check configuration of job")
                 }
+                this.releaseFromCommitId = getParameterValue("COMMIT_ID", "")
             case JobType.BUILD.value:
                 if (environmentsList)
                     this.envToPromote = "${environmentsList[0].name}-meta"
