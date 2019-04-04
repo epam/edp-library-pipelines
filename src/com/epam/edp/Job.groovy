@@ -175,7 +175,7 @@ class Job {
 
         def adminConsoleUrl = platform.getJsonPathValue("cm", "user-settings", ".data.admin_console_url")
 
-        def appsResponse = script.httpRequest url: "${adminConsoleUrl}/api/v1/edp/${edpName}/application",
+        def appsResponse = script.httpRequest url: "${adminConsoleUrl}/api/v1/edp/application",
                 httpMode: 'GET',
                 customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
                 consoleLogResponseBody: true
