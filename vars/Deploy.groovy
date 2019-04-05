@@ -60,12 +60,12 @@ def call() {
                 context.job.applicationsList.each() { application ->
                     application.tags = ['noImageExists']
                     def imageStreamExists = sh(
-                            script: "oc -n ${context.job.metaProject} get is ${application.name} --no-headers | awk '{print \$1}'",
+                            script: "oc -n ${context.job.metaProject} get is ${application.name}-master --no-headers | awk '{print \$1}'",
                             returnStdout: true
                     ).trim()
                     if (imageStreamExists != "")
                         application.tags = sh(
-                                script: "oc -n ${context.job.metaProject} get is ${application.name} -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
+                                script: "oc -n ${context.job.metaProject} get is ${application.name}-master -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
                                 returnStdout: true
                         ).trim().tokenize()
 
