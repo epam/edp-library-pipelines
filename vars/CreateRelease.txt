@@ -1,12 +1,18 @@
 <p><strong>CreateRelease()</strong> &ndash; function that allows you to use EDP Implementation for your CreateRelease pipeline. This pipeline intended to create release branches in application Gerrit repository.</p>
 <p><em>All values of different parameters which are used during pipeline execution are stored in Map "context".</em></p>
-<p><strong>CreateRelease pipeline consists of several steps:</strong></p>
+<p><strong>Create-release pipeline is parameterized:</strong></p>
+<ul>
+<li>RELEASE_NAME - The name of release, to be precise the name of the branch to be created in Gerrit</li>
+<li>COMMIT_ID - Commit ID from Gerrit application repository that new branch will be created from</li>
+</ul>
+<p><strong>Create-release pipeline consists of several steps:</strong></p>
 <p><strong><em>On master:</em></strong></p>
 <ul>
 <li>Initialization of all objects(Platform, Job, Gerrit, Application, StageFactory) and loading default implementations of EDP stages.</li>
 <li>Creating work dir for application sources</li>
-<li>Checkout application project form Gerrit</li>
-<li>Create branch with given name</li>
+<li>Checking out application project form Gerrit</li>
+<li>Creating branch with given name</li>
+<li>Triggering Jeknins job for creating Code-review and Build pipelines for created branch</li>
 </ul>
 <p><strong><h2>EDP Pipelines library description</h2></strong></p>
 <p><em>Using in pipelines - @Library(['edp-library-pipelines@version']) _</em></p>
@@ -108,6 +114,8 @@
 <p>Map stages - Contains all stages i JSON format which is retrieved from Jenkins job env variable</p>
 <p>String envToPromote - The name of the environment for promoting images.</p>
 <p>Boolean promoteImages - Defines whether images should be promoted or not.</p>
+<p>String releaseName - Name of release and branch to be created.</p>
+<p>String releaseFromCommitId - Commit ID from Gerrit application repository that new branch will be created from.</p>
 <ul>
 <li><strong>Methods</strong>:</li>
 </ul>
@@ -259,7 +267,29 @@
 <li>String context.gerrit.sshPort</li>
 <li>String context.gerrit.credentialsId</li>
 <li>String context.job.releaseName</li>
+<li>String context.job.releaseFromCommitId(Can be empty. By default is empty.)</li>
 </ul>
+<p><strong><em><h3>Trigger Job:</h3></em></strong></p>
+<p>name = "trigger-job"</p>
+<p>buildTool = ["maven", "npm", "dotnet","gradle"]</p>
+<p>type = [ProjectType.APPLICATION, ProjectType.AUTOTESTS]</p>
+<p>context required:</p>
+<ul>
+<li>String context.triggerJobName</li>
+<li>Boolean context.triggerJobWait</li>
+<li>List context.triggerJobParameters</li>
+</ul>
+<p>example:</p>
+&nbsp;&nbsp;context.triggerJobName = "Job-provisioning"<br>
+&nbsp;&nbsp;context.triggerJobWait = true<br>
+&nbsp;&nbsp;context.triggerJobParameters = [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string(name: 'PARAM', value: "true"),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string(name: 'NAME', value: "${context.application.config.name}"),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string(name: 'TYPE', value: "${context.application.config.type}"),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string(name: 'BUILD_TOOL', value: "${context.application.config.build_tool}"),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string(name: 'BRANCH', value: "${context.job.releaseName}"),<br>
+&nbsp;&nbsp;]<br>
+
 <h1>How to redefine or extend EDP Pipeline stages library</h1>
 <ul>
 <li>Create &ldquo;stage&rdquo; folder in you App repository.</li>
