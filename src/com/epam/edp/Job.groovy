@@ -162,7 +162,7 @@ class Job {
 
         def dnsWildcard = platform.getJsonPathValue("cm", "user-settings", ".data.dns_wildcard")
 
-        def response = script.httpRequest url: "https://keycloak-security.${dnsWildcard}/auth/realms/openshift/protocol/openid-connect/token",
+        def response = script.httpRequest url: "https://keycloak-security.${dnsWildcard}/auth/realms/${this.edpName}-edp/protocol/openid-connect/token",
                 httpMode: 'POST',
                 contentType: 'APPLICATION_FORM',
                 requestBody: "grant_type=password&username=${userCredentials.username}&password=${userCredentials.password}" +
