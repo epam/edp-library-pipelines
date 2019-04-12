@@ -69,7 +69,7 @@ class Job {
         this.buildUser = getBuildUser()
         switch (type) {
             case JobType.CREATERELEASE.value:
-                this.releaseName = getParameterValue("RELEASE_NAME")
+                this.releaseName = getParameterValue("RELEASE_NAME").toLowerCase()
                 if (!this.releaseName) {
                     script.error("[JENKINS][ERROR] Parameter RELEASE_NAME is mandatory to be specified, please check configuration of job")
                 }
