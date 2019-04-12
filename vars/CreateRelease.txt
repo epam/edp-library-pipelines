@@ -99,7 +99,7 @@
 <li><strong>Example</strong>:</li>
 </ul>
 </code>
-&nbsp;&nbsp;context.application = new Application(context.gerrit.project, context.platform, this)<br/>
+&nbsp;&nbsp;context.application = new Application(context.job, context.gerrit.project, context.platform, this)<br/>
 &nbsp;&nbsp;context.application.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, context.gerrit.project)<br/>
 </code>
 <p><strong><em>Job(type: JobType.value, platform: Platform, script: Script)</em></strong> - Class which describe the Gerrit tool</p>

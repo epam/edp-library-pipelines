@@ -156,7 +156,7 @@ class Job {
         return new JsonSlurperClassic().parseText(json)
     }
 
-    private def getAppFromAdminConsole() {
+    def getAppFromAdminConsole(applicationName = null) {
         def userCredentials = getCredentialsFromSecret("admin-console-reader")
         def clientCredentials = getCredentialsFromSecret("admin-console-client")
 
@@ -175,12 +175,13 @@ class Job {
 
         def adminConsoleUrl = platform.getJsonPathValue("cm", "user-settings", ".data.admin_console_url")
 
-        def appsResponse = script.httpRequest url: "${adminConsoleUrl}/api/v1/edp/application",
+        def url = "${adminConsoleUrl}/api/v1/edp/application${applicationName ? "/${applicationName}" : ""}"
+        response = script.httpRequest url: "${url}",
                 httpMode: 'GET',
                 customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
                 consoleLogResponseBody: true
 
-        return new JsonSlurperClassic().parseText(appsResponse.content.toLowerCase())
+        return new JsonSlurperClassic().parseText(response.content.toLowerCase())
     }
 
     private def getCredentialsFromSecret(name) {

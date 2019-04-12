@@ -20,6 +20,7 @@ import com.epam.edp.platform.Platform
 class Application {
     Script script
     Platform platform
+    Job job
 
     def name
     def config = [:]
@@ -29,11 +30,13 @@ class Application {
     def deployableModuleDir = ""
     def imageBuildArgs = []
 
-    Application(name, platform, script) {
+    Application(job, name, platform, script) {
+        this.job = job
         this.name = name
         this.script = script
         this.platform = platform
     }
+
 
     def setConfig(gerrit_autouser, gerrit_host, gerrit_sshPort, gerrit_project) {
         def componentSettings = null
@@ -42,28 +45,12 @@ class Application {
             if (componentSettings != null) break
         }
         if (componentSettings == null) {
-            componentSettings = findComponentInK8sObject(this.name)
+            componentSettings = job.getAppFromAdminConsole(this.name)
         }
         if (componentSettings == null)
             script.error("[JENKINS][ERROR] Component ${this.name} has not been found in configuration")
         componentSettings.cloneUrl = "ssh://${gerrit_autouser}@${gerrit_host}:${gerrit_sshPort}/${gerrit_project}"
         this.config = componentSettings
-    }
-
-
-    private def findComponentInK8sObject(name) {
-        def k8sJson = platform.getJsonValue("app", name)
-        if (k8sJson == null) {
-            return null
-        }
-        def k8sObject = new JsonSlurperClassic().parseText(k8sJson)
-        def app = [:]
-        app['type'] = ProjectType.APPLICATION.getValue()
-        app['name'] = k8sObject['metadata']['name']
-        app['build_tool'] = k8sObject['spec']['buildTool']
-        app['language'] = k8sObject['spec']['lang']
-        app['framework'] = k8sObject['spec']['framework']
-        return app
     }
 
     private def findComponent(nameToFind, configMapKey) {

@@ -102,7 +102,7 @@ def call() {
                     try {
                         switch (qualityGate.type) {
                             case "autotests":
-                                context.autotest = new Application(qualityGate.project, context.platform, this)
+                                context.autotest = new Application(context.job, qualityGate.project, context.platform, this)
                                 context.autotest.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, qualityGate.project)
                                 println("[JENKINS][DEBUG] - ${context.autotest.config}")
                                 node("${context.autotest.config.build_tool.toLowerCase()}") {

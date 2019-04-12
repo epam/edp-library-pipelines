@@ -43,7 +43,7 @@ def call() {
             context.sonar = new Sonar(context.job, context.platform, this)
             context.sonar.init()
 
-            context.application = new Application(context.gerrit.project, context.platform, this)
+            context.application = new Application(context.job, context.gerrit.project, context.platform, this)
             context.application.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, context.gerrit.project)
 
             context.factory = new StageFactory(script: this)
