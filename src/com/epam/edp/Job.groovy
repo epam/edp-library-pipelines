@@ -43,6 +43,7 @@ class Job {
     def promotion = [:]
     def releaseName
     def releaseFromCommitId
+    def adminConsoleUrl
 
     Job(type, platform, script) {
         this.type = type
@@ -60,6 +61,7 @@ class Job {
         this.buildUrl = getParameterValue("BUILD_URL")
         this.jenkinsUrl = getParameterValue("JENKINS_URL")
         this.edpName = platform.getJsonPathValue("cm", "user-settings", ".data.edp_name")
+        this.adminConsoleUrl = platform.getJsonPathValue("cm", "user-settings", ".data.admin_console_url")
         this.environmentsList = getProjectConfiguration("env.settings.json")
         this.applicationsList = getProjectConfiguration("app.settings.json")
         if (!this.applicationsList)
@@ -104,6 +106,27 @@ class Job {
         this.deployProject = "${this.stageName}"
         this.stageWithoutPrefixName = matcher[0][1]
         this.buildCause = getBuildCause()
+    }
+
+    def initDeployV2Job() {
+        this.deployProject = "${script.JOB_NAME.split('/')[0]}"
+        this.metaProject = "${this.edpName}-edp-cicd"
+        def appList = []
+        def appBranchList = [:]
+        getPipelineFromAdminConsole(deployProject,"cd-pipeline").codebasebranches.each() { item ->
+            appList.add(item.appname)
+            appBranchList["${item.appname}"] = item.branchname
+        }
+        def iterator = applicationsList.listIterator()
+        while (iterator.hasNext()) {
+            if (!appList.contains(iterator.next().name)) {
+                iterator.remove()
+            }
+        }
+        applicationsList.each() { item ->
+            item.branch = appBranchList["${item.name}"]
+            item.normalizedName = "${item.name}-${item.branch.replaceAll("[^\\p{L}\\p{Nd}]+", "-")}"
+        }
     }
 
     def getBuildUser() {
@@ -156,7 +179,7 @@ class Job {
         return new JsonSlurperClassic().parseText(json)
     }
 
-    def getAppFromAdminConsole(applicationName = null) {
+    def getTokenFromAdminConsole() {
         def userCredentials = getCredentialsFromSecret("admin-console-reader")
         def clientCredentials = getCredentialsFromSecret("admin-console-client")
 
@@ -169,14 +192,28 @@ class Job {
                         "&client_id=${clientCredentials.username}&client_secret=${clientCredentials.password}",
                 consoleLogResponseBody: true
 
-        def accessToken = new JsonSlurperClassic()
+        return new JsonSlurperClassic()
                 .parseText(response.content)
                 .access_token
+    }
 
-        def adminConsoleUrl = platform.getJsonPathValue("cm", "user-settings", ".data.admin_console_url")
+    def getAppFromAdminConsole(applicationName = null) {
+        def accessToken = getTokenFromAdminConsole()
 
         def url = "${adminConsoleUrl}/api/v1/edp/application${applicationName ? "/${applicationName}" : ""}"
-        response = script.httpRequest url: "${url}",
+        def response = script.httpRequest url: "${url}",
+                httpMode: 'GET',
+                customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
+                consoleLogResponseBody: true
+
+        return new JsonSlurperClassic().parseText(response.content.toLowerCase())
+    }
+
+    def getPipelineFromAdminConsole(pipelineName, pipelineType) {
+        def accessToken = getTokenFromAdminConsole()
+
+        def url = "${adminConsoleUrl}" + "/api/v1/edp/${pipelineType}/${pipelineName}"
+        def response = script.httpRequest url: "${url}",
                 httpMode: 'GET',
                 customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
                 consoleLogResponseBody: true

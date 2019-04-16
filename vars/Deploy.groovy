@@ -34,6 +34,11 @@ def call() {
             context.job = new Job(JobType.DEPLOY.value, context.platform, this)
             context.job.init()
             context.job.initDeployJob()
+            context.job.applicationsList.each() { item ->
+                item.branch = "master"
+                item.normalizedName = "${item.name}-master"
+            }
+
             println("[JENKINS][DEBUG] Created object job with type - ${context.job.type}")
 
             context.nexus = new Nexus(context.job, context.platform, this)
