@@ -109,11 +109,11 @@ class Job {
     }
 
     def initDeployV2Job() {
-        this.deployProject = "${script.JOB_NAME.split('/')[0]}"
+        def cdPipelineName = script.JOB_NAME.split('/')[1]
         this.metaProject = "${this.edpName}-edp-cicd"
         def appList = []
         def appBranchList = [:]
-        getPipelineFromAdminConsole(deployProject,"cd-pipeline").codebasebranches.each() { item ->
+        getPipelineFromAdminConsole(cdPipelineName,"cd-pipeline").codebasebranches.each() { item ->
             appList.add(item.appname)
             appBranchList["${item.appname}"] = item.branchname
         }
@@ -127,6 +127,7 @@ class Job {
             item.branch = appBranchList["${item.name}"]
             item.normalizedName = "${item.name}-${item.branch.replaceAll("[^\\p{L}\\p{Nd}]+", "-")}"
         }
+        this.deployProject = "${this.edpName}-${cdPipelineName}"
     }
 
     def getBuildUser() {
