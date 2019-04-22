@@ -69,7 +69,9 @@ def call() {
             context.job.userInputImagesToDeploy = input id: 'userInput', message: 'Provide the following information', parameters: parameters
 
             context.job.applicationsList.each() { application ->
-                if (context.job.userInputImagesToDeploy)
+                if (context.job.userInputImagesToDeploy instanceof java.lang.String)
+                    application.version = context.job.userInputImagesToDeploy
+                else
                     application.version = context.job.userInputImagesToDeploy["${application.name.toUpperCase().replaceAll("-", "_")}_VERSION"]
                 application.version = application.version ? application.version : "latest"
             }
