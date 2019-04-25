@@ -44,6 +44,7 @@ class Job {
     def releaseName
     def releaseFromCommitId
     def adminConsoleUrl
+    def sharedSecretsMask = "edp-shared-"
 
     Job(type, platform, script) {
         this.type = type
