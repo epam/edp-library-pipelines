@@ -64,8 +64,10 @@ def call() {
                             returnStdout: true
                     ).trim().tokenize()
                 def latestTag = application.tags.find { it == 'latest' }
-                application.tags = application.tags.minus(latestTag)
-                application.tags.add(0, latestTag)
+                if (latestTag) {
+                    application.tags = application.tags.minus(latestTag)
+                    application.tags.add(0, latestTag)
+                }
 
                 parameters.add(choice(choices: "${application.tags.join('\n')}", description: '', name: "${application.name.toUpperCase().replaceAll("-", "_")}_VERSION"))
             }
