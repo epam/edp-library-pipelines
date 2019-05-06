@@ -55,12 +55,12 @@ def call() {
             context.job.applicationsList.each() { application ->
                 application.tags = ['noImageExists']
                 def imageStreamExists = sh(
-                        script: "oc -n ${context.job.metaProject} get is ${application.normalizedName} --no-headers | awk '{print \$1}'",
+                        script: "oc -n ${context.job.metaProject} get is ${application.inputIs} --no-headers | awk '{print \$1}'",
                         returnStdout: true
                 ).trim()
                 if (imageStreamExists != "")
                     application.tags = sh(
-                            script: "oc -n ${context.job.metaProject} get is ${application.normalizedName} -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
+                            script: "oc -n ${context.job.metaProject} get is ${application.inputIs} -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
                             returnStdout: true
                     ).trim().tokenize()
                 def latestTag = application.tags.find { it == 'latest' }
@@ -88,6 +88,23 @@ def call() {
             context.job.setDisplayName("${currentBuild.displayName}-${context.job.deployProject}")
 
             context.job.runStage("Deploy", context)
+            stage("Quality gate for ${context.job.deployProject}") {
+                try {
+                    switch (context.job.qualityGate) {
+                        case "manual":
+                            input "Is everything OK on project ${context.job.deployProject}?"
+                            break
+                    }
+                }
+                catch (Exception ex) {
+                    context.job.setDescription("Stage Quality gate for ${context.job.deployProject} has been failed", true)
+                    error("[JENKINS][ERROR] Stage Quality gate for ${context.job.deployProject} has been failed. Reason - ${ex}")
+                }
+            }
+            context.job.promotion.targetProject = context.job.metaProject
+            context.job.promotion.sourceProject = context.job.metaProject
+            context.job.runStage("Promote-images", context)
+            println("[UPDATED APPLICATIONS] - ${context.environment.updatedApplicaions}")
 
             if (context.environment.updatedApplicaions.isEmpty()) {
                 println("[JENKINS][DEBUG] There are no application that have been updated, pipeline has stopped")

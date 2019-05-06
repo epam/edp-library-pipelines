@@ -45,6 +45,8 @@ class Job {
     def releaseFromCommitId
     def adminConsoleUrl
     def sharedSecretsMask = "edp-shared-"
+    def pipelineName
+    def qualityGate
 
     Job(type, platform, script) {
         this.type = type
@@ -103,6 +105,7 @@ class Job {
     def initDeployJob() {
         def matcher = ("${script.JOB_NAME}" =~ /${this.edpName}-edp-cicd-${this.edpName}-(.*)-deploy-pipeline/)
         this.stageName = "${this.edpName}-${matcher[0][1]}"
+        this.pipelineName = "${this.edpName}-${matcher[0][1]}"
         this.metaProject = "${this.stageName}-meta"
         this.deployProject = "${this.stageName}"
         this.stageWithoutPrefixName = matcher[0][1]
@@ -110,14 +113,21 @@ class Job {
     }
 
     def initDeployV2Job() {
-        def cdPipelineName = script.JOB_NAME.split('/')[1]
+        def cdPipelineName = script.JOB_NAME.split('/')[0]
+        def stageName = script.JOB_NAME.split('/')[1]
+        this.pipelineName = script.JOB_NAME.split('/')[0]
         this.metaProject = "${this.edpName}-edp-cicd"
         def appList = []
         def appBranchList = [:]
-        getPipelineFromAdminConsole(cdPipelineName,"cd-pipeline").codebasebranches.each() { item ->
-            appList.add(item.appname)
-            appBranchList["${item.appname}"] = item.branchname
+        def pipelineContent = getPipelineFromAdminConsole(cdPipelineName, stageName, "cd-pipeline")
+        this.qualityGate = pipelineContent.qualityGate
+        pipelineContent.applications.each() { item ->
+            appList.add(item.name)
+            appBranchList["${item.name}"] = ["branch"   : item.branch,
+                                             "inputIs" : item.inputIs,
+                                             "outputIs": item.outputIs]
         }
+
         def iterator = applicationsList.listIterator()
         while (iterator.hasNext()) {
             if (!appList.contains(iterator.next().name)) {
@@ -125,10 +135,13 @@ class Job {
             }
         }
         applicationsList.each() { item ->
-            item.branch = appBranchList["${item.name}"]
+            item.branch = appBranchList["${item.name}"].branch
             item.normalizedName = "${item.name}-${item.branch.replaceAll("[^\\p{L}\\p{Nd}]+", "-")}"
+            item.inputIs = appBranchList["${item.name}"].inputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
+            item.outputIs = appBranchList["${item.name}"].outputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
+
         }
-        this.deployProject = "${this.edpName}-${cdPipelineName}"
+        this.deployProject = "${this.edpName}-${cdPipelineName}-${stageName}"
     }
 
     def getBuildUser() {
@@ -211,10 +224,10 @@ class Job {
         return new JsonSlurperClassic().parseText(response.content.toLowerCase())
     }
 
-    def getPipelineFromAdminConsole(pipelineName, pipelineType) {
+    def getPipelineFromAdminConsole(pipelineName, stageName, pipelineType) {
         def accessToken = getTokenFromAdminConsole()
 
-        def url = "${adminConsoleUrl}" + "/api/v1/edp/${pipelineType}/${pipelineName}"
+        def url = "${adminConsoleUrl}" + "/api/v1/edp/${pipelineType}/${pipelineName}/stage/${stageName}"
         def response = script.httpRequest url: "${url}",
                 httpMode: 'GET',
                 customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
