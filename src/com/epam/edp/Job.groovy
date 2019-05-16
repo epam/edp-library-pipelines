@@ -47,6 +47,7 @@ class Job {
     def sharedSecretsMask = "edp-shared-"
     def pipelineName
     def qualityGate
+    def qualityGateName
 
     Job(type, platform, script) {
         this.type = type
@@ -113,17 +114,17 @@ class Job {
     }
 
     def initDeployV2Job() {
-        def cdPipelineName = script.JOB_NAME.split('/')[0]
+        this.pipelineName = script.JOB_NAME.split("-cd-pipeline")[0]
         def stageName = script.JOB_NAME.split('/')[1]
-        this.pipelineName = script.JOB_NAME.split('/')[0]
         this.metaProject = "${this.edpName}-edp-cicd"
         def appList = []
         def appBranchList = [:]
-        def pipelineContent = getPipelineFromAdminConsole(cdPipelineName, stageName, "cd-pipeline")
+        def pipelineContent = getPipelineFromAdminConsole(this.pipelineName, stageName, "cd-pipeline")
         this.qualityGate = pipelineContent.qualityGate
+        this.qualityGateName = pipelineContent.jenkinsStepName
         pipelineContent.applications.each() { item ->
             appList.add(item.name)
-            appBranchList["${item.name}"] = ["branch"   : item.branch,
+            appBranchList["${item.name}"] = ["branch"   : item.branchName,
                                              "inputIs" : item.inputIs,
                                              "outputIs": item.outputIs]
         }
@@ -134,6 +135,7 @@ class Job {
                 iterator.remove()
             }
         }
+
         applicationsList.each() { item ->
             item.branch = appBranchList["${item.name}"].branch
             item.normalizedName = "${item.name}-${item.branch.replaceAll("[^\\p{L}\\p{Nd}]+", "-")}"
@@ -141,7 +143,7 @@ class Job {
             item.outputIs = appBranchList["${item.name}"].outputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
 
         }
-        this.deployProject = "${this.edpName}-${cdPipelineName}-${stageName}"
+        this.deployProject = "${this.edpName}-${this.pipelineName}-${stageName}"
     }
 
     def getBuildUser() {
@@ -233,7 +235,7 @@ class Job {
                 customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
                 consoleLogResponseBody: true
 
-        return new JsonSlurperClassic().parseText(response.content.toLowerCase())
+        return new JsonSlurperClassic().parseText(response.content)
     }
 
     private def getCredentialsFromSecret(name) {

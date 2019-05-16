@@ -88,7 +88,7 @@ def call() {
             context.job.setDisplayName("${currentBuild.displayName}-${context.job.deployProject}")
 
             context.job.runStage("Deploy", context)
-            stage("Quality gate for ${context.job.deployProject}") {
+            stage("${context.job.qualityGateName}") {
                 try {
                     switch (context.job.qualityGate) {
                         case "manual":
