@@ -122,6 +122,8 @@ class Job {
         def pipelineContent = getPipelineFromAdminConsole(this.pipelineName, stageName, "cd-pipeline")
         this.qualityGate = pipelineContent.qualityGate
         this.qualityGateName = pipelineContent.jenkinsStepName
+        this.stageWithoutPrefixName = "${this.pipelineName}-${stageName}"
+        this.deployProject = "${this.edpName}-${this.pipelineName}-${stageName}"
         pipelineContent.applications.each() { item ->
             appList.add(item.name)
             appBranchList["${item.name}"] = ["branch"   : item.branchName,
@@ -143,7 +145,6 @@ class Job {
             item.outputIs = appBranchList["${item.name}"].outputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
 
         }
-        this.deployProject = "${this.edpName}-${this.pipelineName}-${stageName}"
     }
 
     def getBuildUser() {
