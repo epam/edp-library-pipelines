@@ -218,7 +218,7 @@ class Job {
     def getAppFromAdminConsole(applicationName = null) {
         def accessToken = getTokenFromAdminConsole()
 
-        def url = "${adminConsoleUrl}/api/v1/edp/application${applicationName ? "/${applicationName}" : ""}"
+        def url = "${adminConsoleUrl}/api/v1/edp/codebase${applicationName ? "/${applicationName}" : ""}?type=application"
         def response = script.httpRequest url: "${url}",
                 httpMode: 'GET',
                 customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
