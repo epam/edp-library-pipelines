@@ -37,7 +37,6 @@ class Job {
     def applicationsList = []
     def environmentsList = []
     def servicesList = []
-    def autotestsList = []
     def userInputImagesToDeploy
     def inputProjectPrefix
     def promotion = [:]
@@ -70,7 +69,6 @@ class Job {
         this.applicationsList = getProjectConfiguration("app.settings.json")
         if (!this.applicationsList)
             this.applicationsList = getAppFromAdminConsole()
-        this.autotestsList = getProjectConfiguration("auto-test.settings.json")
         this.servicesList = getProjectConfiguration("service.settings.json")
         this.buildUser = getBuildUser()
         switch (type) {
@@ -218,7 +216,7 @@ class Job {
     def getAppFromAdminConsole(applicationName = null) {
         def accessToken = getTokenFromAdminConsole()
 
-        def url = "${adminConsoleUrl}/api/v1/edp/codebase${applicationName ? "/${applicationName}" : ""}?type=application"
+        def url = "${adminConsoleUrl}/api/v1/edp/codebase${applicationName ? "/${applicationName}" : ""}"
         def response = script.httpRequest url: "${url}",
                 httpMode: 'GET',
                 customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
