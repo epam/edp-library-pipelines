@@ -24,8 +24,6 @@ class Job {
     def stages = [:]
     def deployTemplatesDirectory
     def edpName
-    def envToPromote = null
-    boolean promoteImages = true
     def stageName
     def metaProject
     def deployProject
@@ -34,8 +32,7 @@ class Job {
     def buildUser
     def buildUrl
     def jenkinsUrl
-    def applicationsList = []
-    def environmentsList = []
+    def codebasesList = []
     def servicesList = []
     def userInputImagesToDeploy
     def inputProjectPrefix
@@ -65,10 +62,7 @@ class Job {
         this.jenkinsUrl = getParameterValue("JENKINS_URL")
         this.edpName = platform.getJsonPathValue("cm", "user-settings", ".data.edp_name")
         this.adminConsoleUrl = platform.getJsonPathValue("cm", "user-settings", ".data.admin_console_url")
-        this.environmentsList = getProjectConfiguration("env.settings.json")
-        this.applicationsList = getProjectConfiguration("app.settings.json")
-        if (!this.applicationsList)
-            this.applicationsList = getAppFromAdminConsole()
+        this.codebasesList = getCodebaseFromAdminConsole()
         this.servicesList = getProjectConfiguration("service.settings.json")
         this.buildUser = getBuildUser()
         switch (type) {
@@ -78,14 +72,6 @@ class Job {
                     script.error("[JENKINS][ERROR] Parameter RELEASE_NAME is mandatory to be specified, please check configuration of job")
                 }
                 this.releaseFromCommitId = getParameterValue("COMMIT_ID", "")
-            case JobType.BUILD.value:
-                if (environmentsList)
-                    this.envToPromote = "${environmentsList[0].name}-meta"
-                else {
-                    println("[JENKINS][WARNING] There are no environments were added to the project, we won't promote image after build config\r\n" +
-                            "[JENKINS][WARNING] If your like to promote your images please add environment via your cockpit panel")
-                    this.promoteImages = false
-                }
             case [JobType.BUILD.value, JobType.CODEREVIEW.value, JobType.CREATERELEASE.value]:
                 def stagesConfig = getParameterValue("STAGES")
                 if (!stagesConfig?.trim())
@@ -115,32 +101,32 @@ class Job {
         this.pipelineName = script.JOB_NAME.split("-cd-pipeline")[0]
         def stageName = script.JOB_NAME.split('/')[1]
         this.metaProject = "${this.edpName}-edp-cicd"
-        def appList = []
-        def appBranchList = [:]
+        def pipelineCodebasesList = []
+        def codebaseBranchList = [:]
         def pipelineContent = getPipelineFromAdminConsole(this.pipelineName, stageName, "cd-pipeline")
         this.qualityGate = pipelineContent.qualityGate
         this.qualityGateName = pipelineContent.jenkinsStepName
         this.stageWithoutPrefixName = "${this.pipelineName}-${stageName}"
         this.deployProject = "${this.edpName}-${this.pipelineName}-${stageName}"
         pipelineContent.applications.each() { item ->
-            appList.add(item.name)
-            appBranchList["${item.name}"] = ["branch"   : item.branchName,
-                                             "inputIs" : item.inputIs,
-                                             "outputIs": item.outputIs]
+            pipelineCodebasesList.add(item.name)
+            codebaseBranchList["${item.name}"] = ["branch"   : item.branchName,
+                                                  "inputIs" : item.inputIs,
+                                                  "outputIs": item.outputIs]
         }
 
-        def iterator = applicationsList.listIterator()
+        def iterator = codebasesList.listIterator()
         while (iterator.hasNext()) {
-            if (!appList.contains(iterator.next().name)) {
+            if (!pipelineCodebasesList.contains(iterator.next().name)) {
                 iterator.remove()
             }
         }
 
-        applicationsList.each() { item ->
-            item.branch = appBranchList["${item.name}"].branch
+        codebasesList.each() { item ->
+            item.branch = codebaseBranchList["${item.name}"].branch
             item.normalizedName = "${item.name}-${item.branch.replaceAll("[^\\p{L}\\p{Nd}]+", "-")}"
-            item.inputIs = appBranchList["${item.name}"].inputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
-            item.outputIs = appBranchList["${item.name}"].outputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
+            item.inputIs = codebaseBranchList["${item.name}"].inputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
+            item.outputIs = codebaseBranchList["${item.name}"].outputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
 
         }
     }
@@ -177,10 +163,10 @@ class Job {
 
     def runStage(stageName, context) {
         script.stage(stageName) {
-            if (context.application)
+            if (context.codebase)
                 context.factory.getStage(stageName.toLowerCase(),
-                        context.application.config.build_tool.toLowerCase(),
-                        context.application.config.type).run(context)
+                        context.codebase.config.build_tool.toLowerCase(),
+                        context.codebase.config.type).run(context)
             else
                 context.factory.getStage(stageName.toLowerCase()).run(context)
         }
@@ -213,10 +199,10 @@ class Job {
                 .access_token
     }
 
-    def getAppFromAdminConsole(applicationName = null) {
+    def getCodebaseFromAdminConsole(codebaseName = null) {
         def accessToken = getTokenFromAdminConsole()
 
-        def url = "${adminConsoleUrl}/api/v1/edp/codebase${applicationName ? "/${applicationName}" : ""}"
+        def url = "${adminConsoleUrl}/api/v1/edp/codebase${codebaseName ? "/${codebaseName}" : ""}"
         def response = script.httpRequest url: "${url}",
                 httpMode: 'GET',
                 customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],

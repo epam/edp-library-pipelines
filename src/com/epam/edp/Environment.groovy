@@ -24,7 +24,7 @@ class Environment {
     def name
     def config = [:]
     def version = ""
-    def updatedApplicaions = []
+    def updatedCodebases = []
 
     Environment(name, platform, script) {
         this.name = name

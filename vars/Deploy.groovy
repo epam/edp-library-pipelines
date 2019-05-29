@@ -12,7 +12,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.*/
 
-import com.epam.edp.Application
+import com.epam.edp.Codebase
 import com.epam.edp.Environment
 import com.epam.edp.Gerrit
 import com.epam.edp.Job
@@ -34,7 +34,7 @@ def call() {
             context.job = new Job(JobType.DEPLOY.value, context.platform, this)
             context.job.init()
             context.job.initDeployJob()
-            context.job.applicationsList.each() { item ->
+            context.job.codebasesList.each() { item ->
                 item.branch = "master"
                 item.normalizedName = "${item.name}-master"
             }
@@ -62,19 +62,19 @@ def call() {
                         description: "Project prefix for stage ${context.job.deployProject} where services will be deployed.",
                         name: "PROJECT_PREFIX",
                         trim: true)]
-                context.job.applicationsList.each() { application ->
-                    application.tags = ['noImageExists']
+                context.job.codebasesList.each() { codebase ->
+                    codebase.tags = ['noImageExists']
                     def imageStreamExists = sh(
-                            script: "oc -n ${context.job.metaProject} get is ${application.name}-master --no-headers | awk '{print \$1}'",
+                            script: "oc -n ${context.job.metaProject} get is ${codebase.name}-master --no-headers | awk '{print \$1}'",
                             returnStdout: true
                     ).trim()
                     if (imageStreamExists != "")
-                        application.tags = sh(
-                                script: "oc -n ${context.job.metaProject} get is ${application.name}-master -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
+                        codebase.tags = sh(
+                                script: "oc -n ${context.job.metaProject} get is ${codebase.name}-master -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
                                 returnStdout: true
                         ).trim().tokenize()
 
-                    parameters.add(choice(choices: "${application.tags.join('\n')}", description: '', name: "${application.name.toUpperCase().replaceAll("-", "_")}_VERSION"))
+                    parameters.add(choice(choices: "${codebase.tags.join('\n')}", description: '', name: "${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"))
                 }
                 context.job.userInputImagesToDeploy = input id: 'userInput', message: 'Provide the following information', parameters: parameters
                 context.job.inputProjectPrefix = (context.job.userInputImagesToDeploy instanceof String) ? context.job.userInputImagesToDeploy : context.job.userInputImagesToDeploy["PROJECT_PREFIX"]
@@ -83,13 +83,13 @@ def call() {
                     context.job.deployProject = "${context.job.edpName}-${context.job.inputProjectPrefix}-${context.job.stageWithoutPrefixName}"
             }
 
-            context.job.applicationsList.each() { application ->
+            context.job.codebasesList.each() { codebase ->
                 if (context.job.userInputImagesToDeploy)
-                    application.version = context.job.userInputImagesToDeploy["${application.name.toUpperCase().replaceAll("-", "_")}_VERSION"]
-                application.version = application.version ? application.version : "latest"
+                    codebase.version = context.job.userInputImagesToDeploy["${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"]
+                codebase.version = codebase.version ? codebase.version : "latest"
             }
 
-            if (!context.job.applicationsList)
+            if (!context.job.codebasesList)
                 error("[JENKINS][ERROR] Environment ${context.job.stageName} is not found in project configs")
 
             context.job.printDebugInfo(context)
@@ -97,8 +97,8 @@ def call() {
 
             context.job.runStage("Deploy", context)
 
-            if (context.environment.updatedApplicaions.isEmpty()) {
-                println("[JENKINS][DEBUG] There are no application that have been updated, pipeline has stopped")
+            if (context.environment.updatedCodebases.isEmpty()) {
+                println("[JENKINS][DEBUG] There are no codebase that have been updated, pipeline has stopped")
                 return
             }
 
@@ -107,7 +107,7 @@ def call() {
                     try {
                         switch (qualityGate.type) {
                             case "autotests":
-                                context.autotest = new Application(context.job, qualityGate.project, context.platform, this)
+                                context.autotest = new Codebase(context.job, qualityGate.project, context.platform, this)
                                 context.autotest.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, qualityGate.project)
                                 println("[JENKINS][DEBUG] - ${context.autotest.config}")
                                 node("${context.autotest.config.build_tool.toLowerCase()}") {
@@ -137,15 +137,6 @@ def call() {
             if (context.job.userInputImagesToDeploy && context.job.inputProjectPrefix && context.job.inputProjectPrefix != context.job.edpName) {
                 println("[JENKINS][WARNING] Promote images from custom projects is prohibited and will be skipped")
                 return
-            }
-
-            if (!context.environment.config.promotion.get('env-to-promote')) {
-                println("[JENKINS][WARNING] There are no environments specified to promote images, promotion was skipped")
-                this.result = "success"
-            } else {
-                context.job.promotion.targetProject = "${context.environment.config.promotion.get('env-to-promote')}-meta"
-                context.job.promotion.sourceProject = context.job.metaProject
-                context.job.runStage("Promote-images", context)
             }
         }
     }

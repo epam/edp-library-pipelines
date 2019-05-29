@@ -12,7 +12,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.*/
 
-import com.epam.edp.Application
+import com.epam.edp.Codebase
 import com.epam.edp.Environment
 import com.epam.edp.Gerrit
 import com.epam.edp.Job
@@ -52,36 +52,36 @@ def call() {
 
             def parameters = []
 
-            context.job.applicationsList.each() { application ->
-                application.tags = ['noImageExists']
+            context.job.codebasesList.each() { codebase ->
+                codebase.tags = ['noImageExists']
                 def imageStreamExists = sh(
-                        script: "oc -n ${context.job.metaProject} get is ${application.inputIs} --no-headers | awk '{print \$1}'",
+                        script: "oc -n ${context.job.metaProject} get is ${codebase.inputIs} --no-headers | awk '{print \$1}'",
                         returnStdout: true
                 ).trim()
                 if (imageStreamExists != "")
-                    application.tags = sh(
-                            script: "oc -n ${context.job.metaProject} get is ${application.inputIs} -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
+                    codebase.tags = sh(
+                            script: "oc -n ${context.job.metaProject} get is ${codebase.inputIs} -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
                             returnStdout: true
                     ).trim().tokenize()
-                def latestTag = application.tags.find { it == 'latest' }
+                def latestTag = codebase.tags.find { it == 'latest' }
                 if (latestTag) {
-                    application.tags = application.tags.minus(latestTag)
-                    application.tags.add(0, latestTag)
+                    codebase.tags = codebase.tags.minus(latestTag)
+                    codebase.tags.add(0, latestTag)
                 }
 
-                parameters.add(choice(choices: "${application.tags.join('\n')}", description: '', name: "${application.name.toUpperCase().replaceAll("-", "_")}_VERSION"))
+                parameters.add(choice(choices: "${codebase.tags.join('\n')}", description: '', name: "${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"))
             }
             context.job.userInputImagesToDeploy = input id: 'userInput', message: 'Provide the following information', parameters: parameters
 
-            context.job.applicationsList.each() { application ->
+            context.job.codebasesList.each() { codebase ->
                 if (context.job.userInputImagesToDeploy instanceof java.lang.String)
-                    application.version = context.job.userInputImagesToDeploy
+                    codebase.version = context.job.userInputImagesToDeploy
                 else
-                    application.version = context.job.userInputImagesToDeploy["${application.name.toUpperCase().replaceAll("-", "_")}_VERSION"]
-                application.version = application.version ? application.version : "latest"
+                    codebase.version = context.job.userInputImagesToDeploy["${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"]
+                codebase.version = codebase.version ? codebase.version : "latest"
             }
 
-            if (!context.job.applicationsList)
+            if (!context.job.codebasesList)
                 error("[JENKINS][ERROR] Environment ${context.job.stageName} is not found in project configs")
 
             context.job.printDebugInfo(context)
@@ -104,10 +104,10 @@ def call() {
             context.job.promotion.targetProject = context.job.metaProject
             context.job.promotion.sourceProject = context.job.metaProject
             context.job.runStage("Promote-images", context)
-            println("[UPDATED APPLICATIONS] - ${context.environment.updatedApplicaions}")
+            println("[UPDATED CODEBASES] - ${context.environment.updatedCodebases}")
 
-            if (context.environment.updatedApplicaions.isEmpty()) {
-                println("[JENKINS][DEBUG] There are no application that have been updated, pipeline has stopped")
+            if (context.environment.updatedCodebases.isEmpty()) {
+                println("[JENKINS][DEBUG] There are no codebase that have been updated, pipeline has stopped")
                 return
             }
         }

@@ -17,7 +17,7 @@ package com.epam.edp
 import groovy.json.JsonSlurperClassic
 import com.epam.edp.platform.Platform
 
-class Application {
+class Codebase {
     Script script
     Platform platform
     Job job
@@ -30,7 +30,7 @@ class Application {
     def deployableModuleDir = ""
     def imageBuildArgs = []
 
-    Application(job, name, platform, script) {
+    Codebase(job, name, platform, script) {
         this.job = job
         this.name = name
         this.script = script
@@ -40,27 +40,10 @@ class Application {
 
     def setConfig(gerrit_autouser, gerrit_host, gerrit_sshPort, gerrit_project) {
         def componentSettings = null
-        for (configMapKey in ["app.settings.json", "auto-test.settings.json"]) {
-            componentSettings = findComponent(this.name, configMapKey)
-            if (componentSettings != null) break
-        }
-        if (componentSettings == null) {
-            componentSettings = job.getAppFromAdminConsole(this.name)
-        }
+        componentSettings = job.getCodebaseFromAdminConsole(this.name)
         if (componentSettings == null)
             script.error("[JENKINS][ERROR] Component ${this.name} has not been found in configuration")
         componentSettings.cloneUrl = "ssh://${gerrit_autouser}@${gerrit_host}:${gerrit_sshPort}/${gerrit_project}"
         this.config = componentSettings
-    }
-
-    private def findComponent(nameToFind, configMapKey) {
-        def configJson = platform.getJsonPathValue("cm", "project-settings", ".data.${configMapKey.replaceAll("\\.", "\\\\.")}")
-        def config = new JsonSlurperClassic().parseText(configJson)
-        for (item in config) {
-            if (item.name == nameToFind) {
-                item.type = configMapKey == "app.settings.json" ? ProjectType.APPLICATION.getValue() : ProjectType.AUTOTESTS.getValue()
-                return item
-            }
-        }
     }
 }

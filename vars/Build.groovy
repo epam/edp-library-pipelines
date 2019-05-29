@@ -12,7 +12,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.*/
 
-import com.epam.edp.Application
+import com.epam.edp.Codebase
 import com.epam.edp.Job
 import com.epam.edp.JobType
 import com.epam.edp.Gerrit
@@ -43,25 +43,25 @@ def call() {
             context.sonar = new Sonar(context.job, context.platform, this)
             context.sonar.init()
 
-            context.application = new Application(context.job, context.gerrit.project, context.platform, this)
-            context.application.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, context.gerrit.project)
+            context.codebase = new Codebase(context.job, context.gerrit.project, context.platform, this)
+            context.codebase.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, context.gerrit.project)
 
             context.factory = new StageFactory(script: this)
             context.factory.loadEdpStages().each() { context.factory.add(it) }
 
             context.job.printDebugInfo(context)
-            println("[JENKINS][DEBUG] Application config - ${context.application.config}")
+            println("[JENKINS][DEBUG] Codebase config - ${context.codebase.config}")
             context.job.setDisplayName("${currentBuild.number}-${context.gerrit.branch}")
-            context.job.setDescription("Name: ${context.application.config.name}\r\nLanguage: ${context.application.config.language}" +
-                    "\r\nBuild tool: ${context.application.config.build_tool}\r\nFramework: ${context.application.config.framework}")
+            context.job.setDescription("Name: ${context.codebase.config.name}\r\nLanguage: ${context.codebase.config.language}" +
+                    "\r\nBuild tool: ${context.codebase.config.build_tool}\r\nFramework: ${context.codebase.config.framework}")
         }
     }
 
-    node(context.application.config.build_tool.toLowerCase()) {
+    node(context.codebase.config.build_tool.toLowerCase()) {
         context.workDir = new File("/tmp/${RandomStringUtils.random(10, true, true)}")
         context.workDir.deleteDir()
 
-        context.buildTool = new BuildToolFactory().getBuildToolImpl(context.application.config.build_tool, this, context.nexus)
+        context.buildTool = new BuildToolFactory().getBuildToolImpl(context.codebase.config.build_tool, this, context.nexus)
         context.buildTool.init()
 
         context.job.stages.each() { stage ->
