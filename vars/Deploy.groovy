@@ -34,11 +34,6 @@ def call() {
             context.job = new Job(JobType.DEPLOY.value, context.platform, this)
             context.job.init()
             context.job.initDeployJob()
-            context.job.codebasesList.each() { item ->
-                item.branch = "master"
-                item.normalizedName = "${item.name}-master"
-            }
-
             println("[JENKINS][DEBUG] Created object job with type - ${context.job.type}")
 
             context.nexus = new Nexus(context.job, context.platform, this)
@@ -54,37 +49,34 @@ def call() {
             context.factory.loadEdpStages().each() { context.factory.add(it) }
 
             context.environment = new Environment(context.job.deployProject, context.platform, this)
-            context.environment.setConfig()
 
-            if (context.job.buildCause != "Image change") {
-                def parameters = [string(
-                        defaultValue: "${context.job.edpName}",
-                        description: "Project prefix for stage ${context.job.deployProject} where services will be deployed.",
-                        name: "PROJECT_PREFIX",
-                        trim: true)]
-                context.job.codebasesList.each() { codebase ->
-                    codebase.tags = ['noImageExists']
-                    def imageStreamExists = sh(
-                            script: "oc -n ${context.job.metaProject} get is ${codebase.name}-master --no-headers | awk '{print \$1}'",
-                            returnStdout: true
-                    ).trim()
-                    if (imageStreamExists != "")
-                        codebase.tags = sh(
-                                script: "oc -n ${context.job.metaProject} get is ${codebase.name}-master -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
-                                returnStdout: true
-                        ).trim().tokenize()
-
-                    parameters.add(choice(choices: "${codebase.tags.join('\n')}", description: '', name: "${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"))
-                }
-                context.job.userInputImagesToDeploy = input id: 'userInput', message: 'Provide the following information', parameters: parameters
-                context.job.inputProjectPrefix = (context.job.userInputImagesToDeploy instanceof String) ? context.job.userInputImagesToDeploy : context.job.userInputImagesToDeploy["PROJECT_PREFIX"]
-
-                if (context.job.inputProjectPrefix && context.job.inputProjectPrefix != context.job.edpName)
-                    context.job.deployProject = "${context.job.edpName}-${context.job.inputProjectPrefix}-${context.job.stageWithoutPrefixName}"
-            }
+            def parameters = []
 
             context.job.codebasesList.each() { codebase ->
-                if (context.job.userInputImagesToDeploy)
+                codebase.tags = ['noImageExists']
+                def imageStreamExists = sh(
+                        script: "oc -n ${context.job.metaProject} get is ${codebase.inputIs} --no-headers | awk '{print \$1}'",
+                        returnStdout: true
+                ).trim()
+                if (imageStreamExists != "")
+                    codebase.tags = sh(
+                            script: "oc -n ${context.job.metaProject} get is ${codebase.inputIs} -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
+                            returnStdout: true
+                    ).trim().tokenize()
+                def latestTag = codebase.tags.find { it == 'latest' }
+                if (latestTag) {
+                    codebase.tags = codebase.tags.minus(latestTag)
+                    codebase.tags.add(0, latestTag)
+                }
+
+                parameters.add(choice(choices: "${codebase.tags.join('\n')}", description: '', name: "${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"))
+            }
+            context.job.userInputImagesToDeploy = input id: 'userInput', message: 'Provide the following information', parameters: parameters
+
+            context.job.codebasesList.each() { codebase ->
+                if (context.job.userInputImagesToDeploy instanceof java.lang.String)
+                    codebase.version = context.job.userInputImagesToDeploy
+                else
                     codebase.version = context.job.userInputImagesToDeploy["${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"]
                 codebase.version = codebase.version ? codebase.version : "latest"
             }
@@ -96,46 +88,26 @@ def call() {
             context.job.setDisplayName("${currentBuild.displayName}-${context.job.deployProject}")
 
             context.job.runStage("Deploy", context)
+            stage("${context.job.qualityGateName}") {
+                try {
+                    switch (context.job.qualityGate) {
+                        case "manual":
+                            input "Is everything OK on project ${context.job.deployProject}?"
+                            break
+                    }
+                }
+                catch (Exception ex) {
+                    context.job.setDescription("Stage Quality gate for ${context.job.deployProject} has been failed", true)
+                    error("[JENKINS][ERROR] Stage Quality gate for ${context.job.deployProject} has been failed. Reason - ${ex}")
+                }
+            }
+            context.job.promotion.targetProject = context.job.metaProject
+            context.job.promotion.sourceProject = context.job.metaProject
+            context.job.runStage("Promote-images", context)
+            println("[UPDATED CODEBASES] - ${context.environment.updatedCodebases}")
 
             if (context.environment.updatedCodebases.isEmpty()) {
                 println("[JENKINS][DEBUG] There are no codebase that have been updated, pipeline has stopped")
-                return
-            }
-
-            context.environment.config.get('quality-gates').each() { qualityGate ->
-                stage(qualityGate['step-name']) {
-                    try {
-                        switch (qualityGate.type) {
-                            case "autotests":
-                                context.autotest = new Codebase(context.job, qualityGate.project, context.platform, this)
-                                context.autotest.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, qualityGate.project)
-                                println("[JENKINS][DEBUG] - ${context.autotest.config}")
-                                node("${context.autotest.config.build_tool.toLowerCase()}") {
-                                    context.workDir = new File("/tmp/${RandomStringUtils.random(10, true, true)}")
-                                    context.workDir.deleteDir()
-
-                                    context.buildTool = new BuildToolFactory().getBuildToolImpl(context.autotest.config.build_tool, this, context.nexus)
-                                    context.buildTool.init()
-
-                                    println("[JENKINS][DEBUG] - Config - ${context.autotest.config}")
-                                    context.factory.getStage("automation-tests").run(context)
-                                }
-                                break
-                            case "manual":
-                                input "Is everything OK on project ${context.job.deployProject}?"
-                                break
-                        }
-                    }
-                    catch (Exception ex) {
-                        context.job.setDescription("Stage ${qualityGate['step-name']} has been failed", true)
-                        error("[JENKINS][ERROR] Stage ${qualityGate['step-name']} has been failed. Reason - ${ex}")
-                    }
-                }
-                context.job.setDescription("Stage ${qualityGate['step-name']} has been passed")
-            }
-
-            if (context.job.userInputImagesToDeploy && context.job.inputProjectPrefix && context.job.inputProjectPrefix != context.job.edpName) {
-                println("[JENKINS][WARNING] Promote images from custom projects is prohibited and will be skipped")
                 return
             }
         }

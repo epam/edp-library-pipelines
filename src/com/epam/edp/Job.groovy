@@ -85,19 +85,7 @@ class Job {
         }
     }
 
-
-    @NonCPS
     def initDeployJob() {
-        def matcher = ("${script.JOB_NAME}" =~ /${this.edpName}-edp-cicd-${this.edpName}-(.*)-deploy-pipeline/)
-        this.stageName = "${this.edpName}-${matcher[0][1]}"
-        this.pipelineName = "${this.edpName}-${matcher[0][1]}"
-        this.metaProject = "${this.stageName}-meta"
-        this.deployProject = "${this.stageName}"
-        this.stageWithoutPrefixName = matcher[0][1]
-        this.buildCause = getBuildCause()
-    }
-
-    def initDeployV2Job() {
         this.pipelineName = script.JOB_NAME.split("-cd-pipeline")[0]
         def stageName = script.JOB_NAME.split('/')[1]
         this.metaProject = "${this.edpName}-edp-cicd"
