@@ -15,7 +15,7 @@ limitations under the License.*/
 package com.epam.edp
 
 enum ProjectType {
-    APPLICATION("application"), AUTOTESTS("autotest")
+    APPLICATION("application"), AUTOTESTS("autotests"), LIBRARY("library")
 
     private String value
 

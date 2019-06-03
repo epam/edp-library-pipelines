@@ -210,6 +210,7 @@
 <ul>
 <li>APPLICATION</li>
 <li>AUTOTESTS</li>
+<li>LIBRARY</li>
 </ul>
 <p><strong>Classes</strong>:</p>
 <p><strong><em>StageFactory()</em></strong> - Class which contains methods getting implementation of particular stage either EDP from shared library or custom from application repository.</p>
@@ -252,7 +253,7 @@
 <p><strong><em><h3>Gerrit Checkout:</h3></em></strong></p>
 <p>name = "gerrit-checkout",</p>
 <p>buildTool = ["maven", "npm", "dotnet","gradle"]</p>
-<p>type = [ProjectType.APPLICATION, ProjectType.AUTOTESTS]</p>
+<p>type = [ProjectType.APPLICATION, ProjectType.AUTOTESTS, ProjectType.LIBRARY]</p>
 <p>context required:</p>
 <ul>
 <li>String context.workDir</li>
@@ -430,7 +431,7 @@
 <li>String context.gerrit.branch(Only for build pipeline)</li>
 </ul>
 <p>buildTool = ["maven"]</p>
-<p>type = [ProjectType.APPLICATION, ProjectType.AUTOTESTS]</p>
+<p>type = [ProjectType.APPLICATION, ProjectType.AUTOTESTS, ProjectType.LIBRARY]</p>
 <p>context required:</p>
 <ul>
 <li>String context.workDir</li>

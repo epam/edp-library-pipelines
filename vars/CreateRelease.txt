@@ -215,6 +215,7 @@
 <ul>
 <li>APPLICATION</li>
 <li>AUTOTESTS</li>
+<li>LIBRARY</li>
 </ul>
 <p><strong>Classes</strong>:</p>
 <p><strong><em>StageFactory()</em></strong> - Class which contains methods getting implementation of particular stage either EDP from shared library or custom from application repository.</p>
@@ -257,7 +258,7 @@
 <p><strong><em><h3>Create Branch:</h3></em></strong></p>
 <p>name = "create-branch"</p>
 <p>buildTool = ["maven", "npm", "dotnet","gradle"]</p>
-<p>type = [ProjectType.APPLICATION, ProjectType.AUTOTESTS]</p>
+<p>type = [ProjectType.APPLICATION, ProjectType.AUTOTESTS, ProjectType.LIBRARY]</p>
 <p>context required:</p>
 <ul>
 <li>String context.workDir</li>
@@ -272,7 +273,7 @@
 <p><strong><em><h3>Trigger Job:</h3></em></strong></p>
 <p>name = "trigger-job"</p>
 <p>buildTool = ["maven", "npm", "dotnet","gradle"]</p>
-<p>type = [ProjectType.APPLICATION, ProjectType.AUTOTESTS]</p>
+<p>type = [ProjectType.APPLICATION, ProjectType.AUTOTESTS, ProjectType.LIBRARY]</p>
 <p>context required:</p>
 <ul>
 <li>String context.triggerJobName</li>
