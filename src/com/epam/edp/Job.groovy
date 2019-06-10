@@ -89,15 +89,17 @@ class Job {
         this.pipelineName = script.JOB_NAME.split("-cd-pipeline")[0]
         def stageName = script.JOB_NAME.split('/')[1]
         this.metaProject = "${this.edpName}-edp-cicd"
-        def pipelineCodebasesList = []
+        def stageCodebasesList = []
         def codebaseBranchList = [:]
-        def pipelineContent = getPipelineFromAdminConsole(this.pipelineName, stageName, "cd-pipeline")
-        this.qualityGate = pipelineContent.qualityGate
-        this.qualityGateName = pipelineContent.jenkinsStepName
+        def stageContent = getStageFromAdminConsole(this.pipelineName, stageName, "cd-pipeline")
+        def pipelineContent = getPipelineFromAdminConsole(this.pipelineName, "cd-pipeline")
+        this.servicesList = pipelineContent.services
+        this.qualityGate = stageContent.qualityGate
+        this.qualityGateName = stageContent.jenkinsStepName
         this.stageWithoutPrefixName = "${this.pipelineName}-${stageName}"
         this.deployProject = "${this.edpName}-${this.pipelineName}-${stageName}"
-        pipelineContent.applications.each() { item ->
-            pipelineCodebasesList.add(item.name)
+        stageContent.applications.each() { item ->
+            stageCodebasesList.add(item.name)
             codebaseBranchList["${item.name}"] = ["branch"   : item.branchName,
                                                   "inputIs" : item.inputIs,
                                                   "outputIs": item.outputIs]
@@ -105,7 +107,7 @@ class Job {
 
         def iterator = codebasesList.listIterator()
         while (iterator.hasNext()) {
-            if (!pipelineCodebasesList.contains(iterator.next().name)) {
+            if (!stageCodebasesList.contains(iterator.next().name)) {
                 iterator.remove()
             }
         }
@@ -199,10 +201,22 @@ class Job {
         return new JsonSlurperClassic().parseText(response.content.toLowerCase())
     }
 
-    def getPipelineFromAdminConsole(pipelineName, stageName, pipelineType) {
+    def getStageFromAdminConsole(pipelineName, stageName, pipelineType) {
         def accessToken = getTokenFromAdminConsole()
 
         def url = "${adminConsoleUrl}" + "/api/v1/edp/${pipelineType}/${pipelineName}/stage/${stageName}"
+        def response = script.httpRequest url: "${url}",
+                httpMode: 'GET',
+                customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
+                consoleLogResponseBody: true
+
+        return new JsonSlurperClassic().parseText(response.content)
+    }
+
+    def getPipelineFromAdminConsole(pipelineName, pipelineType) {
+        def accessToken = getTokenFromAdminConsole()
+
+        def url = "${adminConsoleUrl}" + "/api/v1/edp/${pipelineType}/${pipelineName}"
         def response = script.httpRequest url: "${url}",
                 httpMode: 'GET',
                 customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
@@ -221,4 +235,6 @@ class Job {
     private def getSecretField(name, field) {
         return new String(platform.getJsonPathValue("secret", name, ".data.\\\\${field}").decodeBase64())
     }
+
+
 }
