@@ -34,6 +34,7 @@ class Job {
     def jenkinsUrl
     def codebasesList = []
     def servicesList = []
+    def stageAutotestsList = []
     def userInputImagesToDeploy
     def inputProjectPrefix
     def promotion = [:]
@@ -87,7 +88,7 @@ class Job {
 
     def initDeployJob() {
         this.pipelineName = script.JOB_NAME.split("-cd-pipeline")[0]
-        def stageName = script.JOB_NAME.split('/')[1]
+        this.stageName = script.JOB_NAME.split('/')[1]
         this.metaProject = "${this.edpName}-edp-cicd"
         def stageCodebasesList = []
         def codebaseBranchList = [:]
@@ -103,6 +104,10 @@ class Job {
             codebaseBranchList["${item.name}"] = ["branch"   : item.branchName,
                                                   "inputIs" : item.inputIs,
                                                   "outputIs": item.outputIs]
+        }
+
+        stageContent.autotests.each() { item ->
+            stageAutotestsList.add(item)
         }
 
         def iterator = codebasesList.listIterator()

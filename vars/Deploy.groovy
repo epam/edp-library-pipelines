@@ -101,6 +101,15 @@ def call() {
                         case "manual":
                             input "Is everything OK on project ${context.job.deployProject}?"
                             break
+                        case "autotests":
+                            node("maven") {
+                                if (!context.job.stageAutotestsList.isEmpty()) {
+                                    context.buildTool = new BuildToolFactory().getBuildToolImpl("maven", this, context.nexus)
+                                    context.buildTool.init()
+                                    context.job.runStage("automation-tests", context)
+                                }
+                            }
+                            break
                     }
                 }
                 catch (Exception ex) {
