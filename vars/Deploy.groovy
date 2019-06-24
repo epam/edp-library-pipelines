@@ -68,6 +68,9 @@ def call() {
                     codebase.tags = codebase.tags.minus(latestTag)
                     codebase.tags.add(0, latestTag)
                 }
+                if(codebase.tags != ['noImageExists']) {
+                    codebase.tags.add(0, "No deploy")
+                }
 
                 parameters.add(choice(choices: "${codebase.tags.join('\n')}", description: '', name: "${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"))
             }
