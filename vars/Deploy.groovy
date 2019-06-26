@@ -20,6 +20,7 @@ import com.epam.edp.JobType
 import com.epam.edp.Nexus
 import com.epam.edp.Jenkins
 import com.epam.edp.platform.PlatformType
+import org.apache.maven.artifact.versioning.*
 import com.epam.edp.platform.PlatformFactory
 import com.epam.edp.buildtool.BuildToolFactory
 import com.epam.edp.stages.StageFactory
@@ -51,6 +52,7 @@ def call() {
             context.environment = new Environment(context.job.deployProject, context.platform, this)
 
             def parameters = []
+            def sortedVersions = []
 
             context.job.codebasesList.each() { codebase ->
                 codebase.tags = ['noImageExists']
@@ -68,11 +70,13 @@ def call() {
                     codebase.tags = codebase.tags.minus(latestTag)
                     codebase.tags.add(0, latestTag)
                 }
-                if(codebase.tags != ['noImageExists']) {
+                if (codebase.tags != ['noImageExists']) {
                     codebase.tags.add(0, "No deploy")
                 }
 
-                parameters.add(choice(choices: "${codebase.tags.join('\n')}", description: '', name: "${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"))
+                sortedVersions = sortTags(codebase.tags)
+
+                parameters.add(choice(choices: "${sortedVersions.join('\n')}", description: '', name: "${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"))
             }
             context.job.userInputImagesToDeploy = input id: 'userInput', message: 'Provide the following information', parameters: parameters
 
@@ -115,4 +119,19 @@ def call() {
             }
         }
     }
+}
+
+@NonCPS
+def sortTags(tags) {
+    def map = ["latest": 2, "stable": 1, "No deploy": 3]
+
+    return tags
+            .collect { new ComparableVersion(it) }
+            .sort { e1, e2 ->
+        def res = map.getOrDefault(e1.toString(), 0) - map.getOrDefault(e2.toString(), 0)
+        if (res == 0){ e1.compareTo(e2) }
+        res
+    }
+    .collect { item -> item.toString() }
+            .reverse()
 }
