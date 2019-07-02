@@ -95,27 +95,33 @@ def call() {
             context.job.setDisplayName("${currentBuild.displayName}-${context.job.deployProject}")
 
             context.job.runStage("Deploy", context)
-            stage("${context.job.qualityGateName}") {
-                try {
-                    switch (context.job.qualityGate) {
-                        case "manual":
+
+            try {
+                switch (context.job.qualityGate) {
+                    case "manual":
+                        stage("${context.job.qualityGateName}") {
                             input "Is everything OK on project ${context.job.deployProject}?"
-                            break
-                        case "autotests":
-                            node("maven") {
-                                if (!context.job.stageAutotestsList.isEmpty()) {
-                                    context.buildTool = new BuildToolFactory().getBuildToolImpl("maven", this, context.nexus)
+                        }
+                        break
+                    case "autotests":
+                        node("maven") {
+                            if (!context.job.stageAutotestsList.isEmpty()) {
+                                context.job.stageAutotestsList.each() { item ->
+                                    context.buildTool = new BuildToolFactory().getBuildToolImpl(item.buildTool, this, context.nexus)
                                     context.buildTool.init()
+                                    context.job.autotestName = item.name
+                                    context.job.testReportFramework = item.testReportFramework
+                                    context.job.autotestBranch = item.branchName
                                     context.job.runStage("automation-tests", context)
                                 }
                             }
-                            break
-                    }
+                        }
+                        break
                 }
-                catch (Exception ex) {
-                    context.job.setDescription("Stage Quality gate for ${context.job.deployProject} has been failed", true)
-                    error("[JENKINS][ERROR] Stage Quality gate for ${context.job.deployProject} has been failed. Reason - ${ex}")
-                }
+            }
+            catch (Exception ex) {
+                context.job.setDescription("Stage Quality gate for ${context.job.deployProject} has been failed", true)
+                error("[JENKINS][ERROR] Stage Quality gate for ${context.job.deployProject} has been failed. Reason - ${ex}")
             }
             context.job.promotion.targetProject = context.job.metaProject
             context.job.promotion.sourceProject = context.job.metaProject

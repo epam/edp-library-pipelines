@@ -45,6 +45,9 @@ class Job {
     def pipelineName
     def qualityGate
     def qualityGateName
+    def autotestName
+    def testReportFramework
+    def autotestBranch
 
     Job(type, platform, script) {
         this.type = type
