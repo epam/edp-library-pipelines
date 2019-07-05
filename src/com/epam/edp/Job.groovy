@@ -48,6 +48,8 @@ class Job {
     def autotestName
     def testReportFramework
     def autotestBranch
+    def maxOfParallelDeployApps
+    def maxOfParallelDeployServices
 
     Job(type, platform, script) {
         this.type = type
@@ -86,6 +88,9 @@ class Job {
                 catch (Exception ex) {
                     script.error("[JENKINS][ERROR] Couldn't parse stages configuration from parameter STAGE - not valid JSON formate.\r\nException - ${ex}")
                 }
+            case JobType.DEPLOY.value:
+                this.maxOfParallelDeployApps = getParameterValue("MAX_PARALLEL_APPS", 5)
+                this.maxOfParallelDeployServices = getParameterValue("MAX_PARALLEL_SERVICES", 3)
         }
     }
 
