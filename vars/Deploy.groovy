@@ -53,39 +53,64 @@ def call() {
 
             def parameters = []
             def sortedVersions = []
+            def LATEST_TAG = "latest"
+            def STABLE_TAG = "stable"
 
             context.job.codebasesList.each() { codebase ->
-                codebase.tags = ['noImageExists']
-                def imageStreamExists = sh(
-                        script: "oc -n ${context.job.metaProject} get is ${codebase.inputIs} --no-headers | awk '{print \$1}'",
-                        returnStdout: true
-                ).trim()
-                if (imageStreamExists != "")
-                    codebase.tags = sh(
-                            script: "oc -n ${context.job.metaProject} get is ${codebase.inputIs} -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
-                            returnStdout: true
-                    ).trim().tokenize()
-                def latestTag = codebase.tags.find { it == 'latest' }
-                if (latestTag) {
-                    codebase.tags = codebase.tags.minus(latestTag)
-                    codebase.tags.add(0, latestTag)
-                }
-                if (codebase.tags != ['noImageExists']) {
-                    codebase.tags.add(0, "No deploy")
+                codebase.tags = getCodebaseTags(codebase, context, codebase.inputIs)
+
+                if (!codebase.tags.contains(LATEST_TAG)) {
+                    codebase.tags += [LATEST_TAG]
                 }
 
                 sortedVersions = sortTags(codebase.tags)
+
+                outputIsVersions = getCodebaseTags(codebase, context, codebase.outputIs)
+                sortedOutputIsVersions = sortTags(outputIsVersions)
+
+                codebase.latest = getFirstTag(sortedVersions)
+                codebase.stable = getFirstTag(sortedOutputIsVersions)
+
+                if (codebase.stable == "noImageExists") {
+                    sortedVersions -= [STABLE_TAG]
+                }
+
+                println("Latest tag: ${codebase.latest}")
+                println("Stable tag: ${codebase.stable}")
+
+                sortedVersions = sortedVersions
+                        .collect{tag -> tag.replaceAll(/^latest/, "${LATEST_TAG} (${codebase.latest})") }
+                        .collect{tag -> tag.replaceAll(/^stable/, "${STABLE_TAG} (${codebase.stable})") }
+
+                println("sorted Params: ${sortedVersions}")
 
                 parameters.add(choice(choices: "${sortedVersions.join('\n')}", description: '', name: "${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"))
             }
             context.job.userInputImagesToDeploy = input id: 'userInput', message: 'Provide the following information', parameters: parameters
 
+            println("USERS_INPUT_IMAGES_TO_DEPLOY: ${context.job.userInputImagesToDeploy}")
+            println(context.job.userInputImagesToDeploy.getClass())
+
             context.job.codebasesList.each() { codebase ->
-                if (context.job.userInputImagesToDeploy instanceof java.lang.String)
+                if (context.job.userInputImagesToDeploy instanceof java.lang.String) {
                     codebase.version = context.job.userInputImagesToDeploy
-                else
+                    if (codebase.version.startsWith(LATEST_TAG))
+                        codebase.version = LATEST_TAG
+                    if (codebase.version.startsWith(STABLE_TAG))
+                        codebase.version = STABLE_TAG
+                }
+                else {
+                    context.job.userInputImagesToDeploy.each() { item ->
+                        if (item.value.startsWith(LATEST_TAG)) {
+                            context.job.userInputImagesToDeploy.put(item.key, LATEST_TAG)
+                        }
+                        if (item.value.startsWith(STABLE_TAG)) {
+                            context.job.userInputImagesToDeploy.put(item.key, STABLE_TAG)
+                        }
+                    }
                     codebase.version = context.job.userInputImagesToDeploy["${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"]
-                codebase.version = codebase.version ? codebase.version : "latest"
+                }
+                codebase.version = codebase.version ? codebase.version : LATEST_TAG
             }
 
             if (!context.job.codebasesList)
@@ -136,6 +161,41 @@ def call() {
     }
 }
 
+def getCodebaseTags(codebase, context, is) {
+    codebase.tags = ['noImageExists']
+    def imageStreamExists = sh(
+            script: "oc -n ${context.job.metaProject} get is ${is} --no-headers | awk '{print \$1}'",
+            returnStdout: true
+    ).trim()
+    if (imageStreamExists != "")
+        codebase.tags = sh(
+                script: "oc -n ${context.job.metaProject} get is ${is} -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
+                returnStdout: true
+        ).trim().tokenize()
+    def latestTag = codebase.tags.find { it == 'latest' }
+    if (latestTag) {
+        codebase.tags = codebase.tags.minus(latestTag)
+        codebase.tags.add(0, latestTag)
+    }
+    if (codebase.tags != ['noImageExists']) {
+        codebase.tags.add(0, "No deploy")
+    }
+
+    return codebase.tags
+}
+
+@NonCPS
+def getFirstTag(tags) {
+    def tag = tags.stream()
+            .filter { it != "latest" }
+            .filter { it != "stable" }
+            .filter { it != "No deploy" }
+            .findFirst()
+            .get()
+
+    return tag
+}
+
 @NonCPS
 def sortTags(tags) {
     def map = ["latest": 2, "stable": 1, "No deploy": 3]
@@ -144,7 +204,9 @@ def sortTags(tags) {
             .collect { new ComparableVersion(it) }
             .sort { e1, e2 ->
         def res = map.getOrDefault(e1.toString(), 0) - map.getOrDefault(e2.toString(), 0)
-        if (res == 0){ e1.compareTo(e2) }
+        if (res == 0) {
+            e1.compareTo(e2)
+        }
         res
     }
     .collect { item -> item.toString() }
