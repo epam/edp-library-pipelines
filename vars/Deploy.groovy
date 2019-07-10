@@ -63,6 +63,10 @@ def call() {
                     codebase.tags += [LATEST_TAG]
                 }
 
+                if (!codebase.tags.contains(STABLE_TAG)) {
+                    codebase.tags += [STABLE_TAG]
+                }
+
                 sortedVersions = sortTags(codebase.tags)
 
                 outputIsVersions = getCodebaseTags(codebase, context, codebase.outputIs)
@@ -73,6 +77,10 @@ def call() {
 
                 if (codebase.stable == "noImageExists") {
                     sortedVersions -= [STABLE_TAG]
+                }
+
+                if (codebase.latest == "noImageExists") {
+                    sortedVersions -= [LATEST_TAG]
                 }
 
                 println("Latest tag: ${codebase.latest}")
