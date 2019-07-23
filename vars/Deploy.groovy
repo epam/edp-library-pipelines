@@ -20,7 +20,6 @@ import com.epam.edp.JobType
 import com.epam.edp.Nexus
 import com.epam.edp.Jenkins
 import com.epam.edp.platform.PlatformType
-import org.apache.maven.artifact.versioning.*
 import com.epam.edp.platform.PlatformFactory
 import com.epam.edp.buildtool.BuildToolFactory
 import com.epam.edp.stages.StageFactory
@@ -51,96 +50,43 @@ def call() {
 
             context.environment = new Environment(context.job.deployProject, context.platform, this)
 
-            def parameters = []
-            def sortedVersions = []
-
-            context.job.codebasesList.each() { codebase ->
-                codebase.tags = ['noImageExists']
-                def imageStreamExists = sh(
-                        script: "oc -n ${context.job.metaProject} get is ${codebase.inputIs} --no-headers | awk '{print \$1}'",
-                        returnStdout: true
-                ).trim()
-                if (imageStreamExists != "")
-                    codebase.tags = sh(
-                            script: "oc -n ${context.job.metaProject} get is ${codebase.inputIs} -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
-                            returnStdout: true
-                    ).trim().tokenize()
-                def latestTag = codebase.tags.find { it == 'latest' }
-                if (latestTag) {
-                    codebase.tags = codebase.tags.minus(latestTag)
-                    codebase.tags.add(0, latestTag)
-                }
-                if (codebase.tags != ['noImageExists']) {
-                    codebase.tags.add(0, "No deploy")
-                }
-
-                sortedVersions = sortTags(codebase.tags)
-
-                parameters.add(choice(choices: "${sortedVersions.join('\n')}", description: '', name: "${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"))
-            }
-            context.job.userInputImagesToDeploy = input id: 'userInput', message: 'Provide the following information', parameters: parameters
-
-            context.job.codebasesList.each() { codebase ->
-                if (context.job.userInputImagesToDeploy instanceof java.lang.String)
-                    codebase.version = context.job.userInputImagesToDeploy
-                else
-                    codebase.version = context.job.userInputImagesToDeploy["${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"]
-                codebase.version = codebase.version ? codebase.version : "latest"
-            }
-
-            if (!context.job.codebasesList)
-                error("[JENKINS][ERROR] Environment ${context.job.stageName} is not found in project configs")
-
             context.job.printDebugInfo(context)
             context.job.setDisplayName("${currentBuild.displayName}-${context.job.deployProject}")
 
-            context.job.runStage("Deploy", context)
-            stage("${context.job.qualityGateName}") {
-                try {
-                    switch (context.job.qualityGate) {
-                        case "manual":
-                            input "Is everything OK on project ${context.job.deployProject}?"
-                            break
-                        case "autotests":
-                            node("maven") {
-                                if (!context.job.stageAutotestsList.isEmpty()) {
-                                    context.buildTool = new BuildToolFactory().getBuildToolImpl("maven", this, context.nexus)
-                                    context.buildTool.init()
-                                    context.job.runStage("automation-tests", context)
-                                }
+            context.job.generateInputDataForDeployJob()
+        }
+
+        context.job.runStage("Deploy", context)
+        stage("${context.job.qualityGateName}") {
+            try {
+                switch (context.job.qualityGate) {
+                    case "manual":
+                        input "Is everything OK on project ${context.job.deployProject}?"
+                        break
+                    case "autotests":
+                        node("maven") {
+                            if (!context.job.stageAutotestsList.isEmpty()) {
+                                context.buildTool = new BuildToolFactory().getBuildToolImpl("maven", this, context.nexus)
+                                context.buildTool.init()
+                                context.job.runStage("automation-tests", context)
                             }
-                            break
-                    }
-                }
-                catch (Exception ex) {
-                    context.job.setDescription("Stage Quality gate for ${context.job.deployProject} has been failed", true)
-                    error("[JENKINS][ERROR] Stage Quality gate for ${context.job.deployProject} has been failed. Reason - ${ex}")
+                        }
+                        break
                 }
             }
-            context.job.promotion.targetProject = context.job.metaProject
-            context.job.promotion.sourceProject = context.job.metaProject
-            context.job.runStage("Promote-images", context)
-            println("[UPDATED CODEBASES] - ${context.environment.updatedCodebases}")
-
-            if (context.environment.updatedCodebases.isEmpty()) {
-                println("[JENKINS][DEBUG] There are no codebase that have been updated, pipeline has stopped")
-                return
+            catch (Exception ex) {
+                context.job.setDescription("Stage Quality gate for ${context.job.deployProject} has been failed", true)
+                error("[JENKINS][ERROR] Stage Quality gate for ${context.job.deployProject} has been failed. Reason - ${ex}")
             }
         }
-    }
-}
+        context.job.promotion.targetProject = context.job.metaProject
+        context.job.promotion.sourceProject = context.job.metaProject
+        context.job.runStage("Promote-images", context)
+        println("[UPDATED CODEBASES] - ${context.environment.updatedCodebases}")
 
-@NonCPS
-def sortTags(tags) {
-    def map = ["latest": 2, "stable": 1, "No deploy": 3]
-
-    return tags
-            .collect { new ComparableVersion(it) }
-            .sort { e1, e2 ->
-        def res = map.getOrDefault(e1.toString(), 0) - map.getOrDefault(e2.toString(), 0)
-        if (res == 0){ e1.compareTo(e2) }
-        res
+        if (context.environment.updatedCodebases.isEmpty()) {
+            println("[JENKINS][DEBUG] There are no codebase that have been updated, pipeline has stopped")
+            return
+        }
     }
-    .collect { item -> item.toString() }
-            .reverse()
 }

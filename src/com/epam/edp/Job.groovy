@@ -16,6 +16,8 @@ package com.epam.edp
 
 import groovy.json.JsonSlurperClassic
 import com.epam.edp.platform.Platform
+import org.apache.maven.artifact.versioning.*
+
 
 class Job {
     def type
@@ -45,6 +47,8 @@ class Job {
     def pipelineName
     def qualityGate
     def qualityGateName
+    def deployJobParameters = []
+    def sortedVersions = []
 
     Job(type, platform, script) {
         this.type = type
@@ -123,6 +127,64 @@ class Job {
             item.inputIs = codebaseBranchList["${item.name}"].inputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
             item.outputIs = codebaseBranchList["${item.name}"].outputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
 
+        }
+
+        setCodebasesTags()
+    }
+
+    def setCodebasesTags() {
+        codebasesList.each() { codebase ->
+            def tags = ['noImageExists']
+            def imageStreamExists = script.sh(
+                    script: "oc -n ${metaProject} get is ${codebase.inputIs} --no-headers | awk '{print \$1}'",
+                    returnStdout: true
+            ).trim()
+            if (imageStreamExists != "")
+                tags = script.sh(
+                        script: "oc -n ${metaProject} get is ${codebase.inputIs} -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
+                        returnStdout: true
+                ).trim().tokenize()
+            def latestTag = tags.find { it == 'latest' }
+            if (latestTag) {
+                tags = tags.minus(latestTag)
+                tags.add(0, latestTag)
+            }
+            if (tags != ['noImageExists']) {
+                tags.add(0, "No deploy")
+            }
+
+            codebase.sortedTags = sortTags(tags)
+        }
+    }
+
+    @NonCPS
+    private def sortTags(tags) {
+        def map = ["latest": 2, "stable": 1, "No deploy": 3]
+
+        return tags
+                .collect { new ComparableVersion(it) }
+                .sort { e1, e2 ->
+            def res = map.getOrDefault(e1.toString(), 0) - map.getOrDefault(e2.toString(), 0)
+            if (res == 0){ e1.compareTo(e2) }
+            res
+        }
+        .collect { item -> item.toString() }
+                .reverse()
+    }
+
+    def generateInputDataForDeployJob() {
+        codebasesList.each() { codebase ->
+            deployJobParameters.add(script.choice(choices: "${codebase.sortedTags.join('\n')}", description: '', name: "${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"))
+        }
+
+        userInputImagesToDeploy = script.input id: 'userInput', message: 'Provide the following information', parameters: deployJobParameters
+
+        codebasesList.each() { codebase ->
+            if (userInputImagesToDeploy instanceof java.lang.String)
+                codebase.version = userInputImagesToDeploy
+            else
+                codebase.version = userInputImagesToDeploy["${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"]
+            codebase.version = codebase.version ? codebase.version : "latest"
         }
     }
 
