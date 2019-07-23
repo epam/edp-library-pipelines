@@ -29,6 +29,7 @@ class Job {
     def deployTemplatesDirectory
     def edpName
     def stageName
+    def runStageName
     def metaProject
     def deployProject
     def stageWithoutPrefixName
@@ -38,7 +39,6 @@ class Job {
     def jenkinsUrl
     def codebasesList = []
     def servicesList = []
-    def stageAutotestsList = []
     def userInputImagesToDeploy
     def inputProjectPrefix
     def promotion = [:]
@@ -47,6 +47,7 @@ class Job {
     def adminConsoleUrl
     def sharedSecretsMask = "edp-shared-"
     def pipelineName
+    def qualityGates = [:]
     def qualityGate
     def qualityGateName
     def deployJobParameters = []
@@ -109,8 +110,7 @@ class Job {
         def stageContent = getStageFromAdminConsole(this.pipelineName, stageName, "cd-pipeline")
         def pipelineContent = getPipelineFromAdminConsole(this.pipelineName, "cd-pipeline")
         this.servicesList = pipelineContent.services
-        this.qualityGate = stageContent.qualityGate
-        this.qualityGateName = stageContent.jenkinsStepName
+        this.qualityGates = stageContent.qualityGates
         this.stageWithoutPrefixName = "${this.pipelineName}-${stageName}"
         this.deployProject = "${this.edpName}-${this.pipelineName}-${stageName}"
         stageContent.applications.each() { item ->
@@ -118,10 +118,6 @@ class Job {
             codebaseBranchList["${item.name}"] = ["branch"   : item.branchName,
                                                   "inputIs" : item.inputIs,
                                                   "outputIs": item.outputIs]
-        }
-
-        stageContent.autotests.each() { item ->
-            stageAutotestsList.add(item)
         }
 
         def iterator = codebasesList.listIterator()
@@ -290,8 +286,8 @@ class Job {
         script.println("[JENKINS][DEBUG] Pipeline's context:\n${debugOutput}")
     }
 
-    def runStage(stageName, context) {
-        script.stage(stageName) {
+    def runStage(stageName, context, runStageName = null) {
+        script.stage(runStageName ? runStageName : stageName) {
             if (context.codebase)
                 context.factory.getStage(stageName.toLowerCase(),
                         context.codebase.config.build_tool.toLowerCase(),

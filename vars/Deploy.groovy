@@ -58,37 +58,36 @@ def call() {
 
         context.job.runStage("Deploy", context)
 
-        try {
-            switch (context.job.qualityGate) {
-                case "manual":
-                    stage("${context.job.qualityGateName}") {
-                        input "Is everything OK on project ${context.job.deployProject}?"
-                    }
-                    break
-                case "autotests":
-                    node("maven") {
-                        if (!context.job.stageAutotestsList.isEmpty()) {
-                            context.job.stageAutotestsList.each() { item ->
-                                context.buildTool = new BuildToolFactory().getBuildToolImpl(item.buildTool, this, context.nexus)
-                                context.buildTool.init()
-                                context.job.autotestName = item.name
-                                context.job.testReportFramework = item.testReportFramework
-                                context.job.autotestBranch = item.branchName
-                                context.job.runStage("automation-tests", context)
+            context.job.qualityGates.each() { qualityGate ->
+                try {
+                    switch (qualityGate.qualityGateType) {
+                        case "manual":
+                            stage("${qualityGate.stepName}") {
+                                input "Is everything OK on project ${context.job.deployProject}?"
                             }
-                        }
+                            break
+                        case "autotests":
+                            node("maven") {
+                                println("Contents - ${qualityGate.autotest}")
+                                context.buildTool = new BuildToolFactory().getBuildToolImpl(qualityGate.autotest.build_tool, this, context.nexus)
+                                context.buildTool.init()
+                                context.job.autotestName = qualityGate.autotest.name
+                                context.job.testReportFramework = qualityGate.autotest.testReportFramework
+                                context.job.autotestBranch = qualityGate.codebaseBranch.branchName
+                                context.job.runStage("automation-tests", context, qualityGate.stepName)
+                            }
+                            break
                     }
-                    break
+                }
+                catch (Exception ex) {
+                    context.job.setDescription("Stage Quality gate ${qualityGate.stepName} for ${context.job.deployProject} has been failed", true)
+                    error("[JENKINS][ERROR] Stage Quality gate ${qualityGate.stepName} for ${context.job.deployProject} has been failed. Reason - ${ex}")
+                }
             }
-        }
-        catch (Exception ex) {
-            context.job.setDescription("Stage Quality gate for ${context.job.deployProject} has been failed", true)
-            error("[JENKINS][ERROR] Stage Quality gate for ${context.job.deployProject} has been failed. Reason - ${ex}")
-        }
-        context.job.promotion.targetProject = context.job.metaProject
-        context.job.promotion.sourceProject = context.job.metaProject
-        context.job.runStage("Promote-images", context)
-        println("[UPDATED CODEBASES] - ${context.environment.updatedCodebases}")
+            context.job.promotion.targetProject = context.job.metaProject
+            context.job.promotion.sourceProject = context.job.metaProject
+            context.job.runStage("Promote-images", context)
+            println("[UPDATED CODEBASES] - ${context.environment.updatedCodebases}")
 
         if (context.environment.updatedCodebases.isEmpty()) {
             println("[JENKINS][DEBUG] There are no codebase that have been updated, pipeline has stopped")
