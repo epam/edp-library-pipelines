@@ -48,8 +48,7 @@ class Job {
     def sharedSecretsMask = "edp-shared-"
     def pipelineName
     def qualityGates = [:]
-    def qualityGate
-    def qualityGateName
+    def applicationsToPromote
     def deployJobParameters = []
     def sortedVersions = []
     def autotestName
@@ -109,6 +108,7 @@ class Job {
         def codebaseBranchList = [:]
         def stageContent = getStageFromAdminConsole(this.pipelineName, stageName, "cd-pipeline")
         def pipelineContent = getPipelineFromAdminConsole(this.pipelineName, "cd-pipeline")
+        this.applicationsToPromote = pipelineContent.applicationsToPromote
         this.servicesList = pipelineContent.services
         this.qualityGates = stageContent.qualityGates
         this.stageWithoutPrefixName = "${this.pipelineName}-${stageName}"
