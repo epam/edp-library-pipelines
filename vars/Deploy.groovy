@@ -87,11 +87,5 @@ def call() {
         context.job.promotion.sourceProject = context.job.metaProject
 
         context.job.runStage("Promote-images", context)
-        println("[UPDATED CODEBASES] - ${context.environment.updatedCodebases}")
-
-        if (context.environment.updatedCodebases.isEmpty()) {
-            println("[JENKINS][DEBUG] There are no codebase that have been updated, pipeline has stopped")
-            return
-        }
     }
 }
