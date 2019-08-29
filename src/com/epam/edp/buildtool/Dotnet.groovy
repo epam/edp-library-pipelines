@@ -30,15 +30,19 @@ class Dotnet implements BuildTool {
     def init() {
         this.hostedRepository = "${nexus.repositoriesUrl}/edp-dotnet-hosted/"
         this.groupRepository = "${nexus.repositoriesUrl}/edp-dotnet-group/"
-        this.scripts = [ 'get-nuget-token': ['scriptPath': this.script.libraryResource("nexus/get-nuget-token.groovy")]]
+        this.scripts = ['get-nuget-token': ['scriptPath': this.script.libraryResource("nexus/get-nuget-token.groovy")]]
         this.sln_filename = null
         this.nugetApiKey = getNugetToken("get-nuget-token")
     }
 
     private def getNugetToken(scriptName) {
+        def result
         script.writeFile file: "${scriptName}.groovy", text: this.scripts["${scriptName}"].scriptPath
         nexus.uploadGroovyScriptToNexus(scriptName, "${scriptName}.groovy")
-        def result = nexus.runNexusGroovyScript(scriptName, "{\"name\": \"${nexus.autouser}\"}")
+        script.withCredentials([script.usernamePassword(credentialsId: "${nexus.credentialsId}",
+                passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+            result = nexus.runNexusGroovyScript(scriptName, "{\"name\": \"${script.USERNAME}\"}")
+        }
         def response = new JsonSlurperClassic().parseText(result.content)
         return new JsonSlurperClassic().parseText(response.result).nuGetApiKey
     }
