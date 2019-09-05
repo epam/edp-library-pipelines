@@ -44,7 +44,8 @@ def call() {
             context.sonar.init()
 
             context.codebase = new Codebase(context.job, context.gerrit.project, context.platform, this)
-            context.codebase.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, context.gerrit.project)
+            context.codebase.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, context.gerrit.project,
+                    context.gerrit.repositoryRelativePath)
 
             context.factory = new StageFactory(script: this)
             context.factory.loadEdpStages().each() { context.factory.add(it) }

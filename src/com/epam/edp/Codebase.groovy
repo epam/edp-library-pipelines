@@ -29,6 +29,7 @@ class Codebase {
     def buildVersion = ""
     def deployableModuleDir = ""
     def imageBuildArgs = []
+    def gitServerCrName = ""
 
     Codebase(job, name, platform, script) {
         this.job = job
@@ -38,12 +39,13 @@ class Codebase {
     }
 
 
-    def setConfig(gerrit_autouser, gerrit_host, gerrit_sshPort, gerrit_project) {
+    def setConfig(gerrit_autouser, gerrit_host, gerrit_sshPort, gerrit_project, repositoryRelativePath) {
         def componentSettings = null
         componentSettings = job.getCodebaseFromAdminConsole(this.name)
         if (componentSettings == null)
             script.error("[JENKINS][ERROR] Component ${this.name} has not been found in configuration")
-        componentSettings.cloneUrl = "ssh://${gerrit_autouser}@${gerrit_host}:${gerrit_sshPort}/${gerrit_project}"
+        componentSettings.cloneUrl = "ssh://${gerrit_autouser}@${gerrit_host}:${gerrit_sshPort}${repositoryRelativePath?.trim() ? repositoryRelativePath : "/" + gerrit_project}"
         this.config = componentSettings
+        this.gitServerCrName = componentSettings.gitserver
     }
 }

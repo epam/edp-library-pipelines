@@ -38,7 +38,8 @@ def call() {
             context.gerrit.init()
 
             context.codebase = new Codebase(context.job, context.gerrit.project, context.platform, this)
-            context.codebase.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, context.gerrit.project)
+            context.codebase.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, context.gerrit.project,
+                    context.gerrit.repositoryRelativePath)
 
             context.factory = new StageFactory(script: this)
             context.factory.loadEdpStages().each() { context.factory.add(it) }
@@ -61,6 +62,10 @@ def call() {
                 string(name: 'TYPE', value: "${context.codebase.config.type}"),
                 string(name: 'BUILD_TOOL', value: "${context.codebase.config.build_tool}"),
                 string(name: 'BRANCH', value: "${context.job.releaseName}"),
+                string(name: 'GIT_SERVER_CR_NAME', value: "${context.codebase.gitServerCrName}"),
+                string(name: 'GIT_SERVER_CR_VERSION', value: "${context.job.getParameterValue("GIT_SERVER_CR_VERSION")}"),
+                string(name: 'GIT_CREDENTIALS_ID', value: "${context.job.getParameterValue("GIT_CREDENTIALS_ID")}"),
+                string(name: 'REPOSITORY_PATH', value: "${context.job.getParameterValue("REPOSITORY_PATH")}"),
         ]
 
         context.job.stages.each() { stage ->

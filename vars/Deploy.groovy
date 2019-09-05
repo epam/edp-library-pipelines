@@ -42,9 +42,6 @@ def call() {
             context.jenkins = new Jenkins(context.job, context.platform, this)
             context.jenkins.init()
 
-            context.gerrit = new Gerrit(context.job, context.platform, this)
-            context.gerrit.init()
-
             context.factory = new StageFactory(script: this)
             context.factory.loadEdpStages().each() { context.factory.add(it) }
 
