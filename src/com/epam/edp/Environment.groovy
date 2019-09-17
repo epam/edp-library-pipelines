@@ -30,21 +30,4 @@ class Environment {
         this.script = script
         this.platform = platform
     }
-
-    def setConfig() {
-        def componentSettings = findEnvironment(this.name, "env.settings.json")
-        if (componentSettings == null)
-            script.error("[JENKINS][ERROR] Environment ${this.name} has not been found in configuration")
-        this.config = componentSettings
-    }
-
-    private def findEnvironment(environmentToFind, configMapKey) {
-        def configJson = platform.getJsonPathValue("cm","project-settings",".data.${configMapKey.replaceAll("\\.","\\\\.")}")
-        def config = new JsonSlurperClassic().parseText(configJson)
-        for (item in config) {
-            if (item.name == environmentToFind)
-                return item
-        }
-        return null
-    }
 }

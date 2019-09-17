@@ -47,11 +47,6 @@
 </ul>
 <p>getJsonPathValue(String k8s_kind, String k8s_kind_name, String jsonPath): return String value of specific parameter of particular object using jsonPath utility</p>
 <ul>
-<li><strong>Example:</strong></li>
-</ul>
-<code>&nbsp;&nbsp;context.platform.getJsonPathValue("cm","project-settings",".data.username")</code>
-<p><strong><em>BuildTool()</em></strong> - which contains methods for working with different buildTool from ENUM BuildToolType.(<strong><em>Should be invoked on slave build agents</em></strong>)</p>
-<ul>
 <li><strong>Properties:</strong></li>
 </ul>
 <p>Script script - Object with type script, in most cases if class created from Jenkins pipelines it is "this"</p>
@@ -84,7 +79,7 @@
 <p>Script script - Object with type script, in most cases if class created from Jenkins pipelines it is "this"</p>
 <p>Platform platform - Object of a class Platform()</p>
 <p>String name - Name for the application for creating object</p>
-<p>Map config - Map of configuration settings for particular application which is loaded from config map project-settings</p>
+<p>Map config - Map of configuration settings for particular application</p>
 <p>String version - Application version, initially empty. Is set on get-version step.</p>
 <p>String deployableModule - The name of deployable module for multi module applications, initially empty.</p>
 <p>String buildVersion - Version of built artifact, contains build number of Job initially empty</p>

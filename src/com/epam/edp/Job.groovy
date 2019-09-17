@@ -75,7 +75,6 @@ class Job {
         this.edpName = platform.getJsonPathValue("cm", "user-settings", ".data.edp_name")
         this.adminConsoleUrl = platform.getJsonPathValue("cm", "user-settings", ".data.admin_console_url")
         this.codebasesList = getCodebaseFromAdminConsole()
-        this.servicesList = getProjectConfiguration("service.settings.json")
         this.buildUser = getBuildUser()
         switch (type) {
             case JobType.CREATERELEASE.value:
@@ -299,11 +298,6 @@ class Job {
 
     private def getBuildCause() {
         return platform.getJsonPathValue("build", "${this.deployProject}-deploy-pipeline-${script.BUILD_NUMBER}", ".spec.triggeredBy[0].message")
-    }
-
-    private def getProjectConfiguration(configMapKey) {
-        def json = platform.getJsonPathValue("cm", "project-settings", ".data.${configMapKey.replaceAll("\\.", "\\\\.")}")
-        return new JsonSlurperClassic().parseText(json)
     }
 
     def getTokenFromAdminConsole() {
