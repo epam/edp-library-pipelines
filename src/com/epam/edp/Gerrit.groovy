@@ -37,6 +37,10 @@ class Gerrit {
     def sshPort
     def patchsetNumber = 0
     def repositoryRelativePath
+    def gitServerCrName
+    def gitServerCrVersion
+    def gitServerCrApiGroup
+    def codebaseCrApiGroup
 
     Gerrit(job, platform, script) {
         this.script = script
@@ -45,18 +49,19 @@ class Gerrit {
     }
 
     def init() {
-        def gitServerCrName = job.getParameterValue("GIT_SERVER_CR_NAME")
-        def gitServerCrVersion = job.getParameterValue("GIT_SERVER_CR_VERSION")
-        def gitServerName = "${GIT_SERVER_PLURAL_NAME}.${gitServerCrVersion}.${EDP_EPAM_COM_POSTFIX}"
+        this.gitServerCrName = job.getParameterValue("GIT_SERVER_CR_NAME")
+        this.gitServerCrVersion = job.getParameterValue("GIT_SERVER_CR_VERSION")
+        this.gitServerCrApiGroup = "${GIT_SERVER_PLURAL_NAME}.${gitServerCrVersion}.${EDP_EPAM_COM_POSTFIX}"
+        this.codebaseCrApiGroup = "${CODEBASE_PLURAL_NAME}.${gitServerCrVersion}.${EDP_EPAM_COM_POSTFIX}"
 
         script.println("[JENKINS][DEBUG] Git Server CR Name: ${gitServerCrName}")
         script.println("[JENKINS][DEBUG] Git Server CR Version: ${gitServerCrVersion}")
-        script.println("[JENKINS][DEBUG] Git Server Name: ${gitServerName}")
+        script.println("[JENKINS][DEBUG] Git Server CR API Group: ${gitServerCrApiGroup}")
 
-        this.credentialsId = platform.getJsonPathValue(gitServerName, gitServerCrName, ".spec.nameSshKeySecret")
-        this.autouser = platform.getJsonPathValue(gitServerName, gitServerCrName, ".spec.gitUser")
-        this.host = platform.getJsonPathValue(gitServerName, gitServerCrName, ".spec.gitHost")
-        this.sshPort = platform.getJsonPathValue(gitServerName, gitServerCrName, ".spec.sshPort")
+        this.credentialsId = platform.getJsonPathValue(gitServerCrApiGroup, gitServerCrName, ".spec.nameSshKeySecret")
+        this.autouser = platform.getJsonPathValue(gitServerCrApiGroup, gitServerCrName, ".spec.gitUser")
+        this.host = platform.getJsonPathValue(gitServerCrApiGroup, gitServerCrName, ".spec.gitHost")
+        this.sshPort = platform.getJsonPathValue(gitServerCrApiGroup, gitServerCrName, ".spec.sshPort")
 
         script.println("[JENKINS][DEBUG] credentialsId: ${this.credentialsId}")
         script.println("[JENKINS][DEBUG] autouser: ${this.autouser}")
@@ -79,9 +84,9 @@ class Gerrit {
                     script.error("[JENKINS][ERROR] Couldn't determine project, please make sure that GERRIT_PROJECT_NAME variable is defined")
         }
 
-        def strategy = platform.getJsonPathValue("${CODEBASE_PLURAL_NAME}.${gitServerCrVersion}.${EDP_EPAM_COM_POSTFIX}", this.project, ".spec.strategy")
+        def strategy = platform.getJsonPathValue(codebaseCrApiGroup, this.project, ".spec.strategy")
         if (strategy == "import") {
-            this.repositoryRelativePath = platform.getJsonPathValue("${CODEBASE_PLURAL_NAME}.${gitServerCrVersion}.${EDP_EPAM_COM_POSTFIX}", this.project, ".spec.gitUrlPath")
+            this.repositoryRelativePath = platform.getJsonPathValue(codebaseCrApiGroup, this.project, ".spec.gitUrlPath")
         }
 
     }

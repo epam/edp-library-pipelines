@@ -62,9 +62,12 @@ def call() {
                 string(name: 'TYPE', value: "${context.codebase.config.type}"),
                 string(name: 'BUILD_TOOL', value: "${context.codebase.config.build_tool}"),
                 string(name: 'BRANCH', value: "${context.job.releaseName}"),
-                string(name: 'GIT_SERVER_CR_NAME', value: "${context.codebase.gitServerCrName}"),
-                string(name: 'GIT_SERVER_CR_VERSION', value: "${context.job.getParameterValue("GIT_SERVER_CR_VERSION")}"),
-                string(name: 'GIT_CREDENTIALS_ID', value: "${context.job.getParameterValue("GIT_CREDENTIALS_ID")}"),
+                string(name: 'GIT_SERVER', value: "${context.gerrit.host}"),
+                string(name: 'GIT_SSH_PORT', value: "${context.gerrit.sshPort}"),
+                string(name: 'GIT_USERNAME', value: "${context.gerrit.autouser}"),
+                string(name: 'GIT_SERVER_CR_NAME', value: "${context.gerrit.gitServerCrName}"),
+                string(name: 'GIT_SERVER_CR_VERSION', value: "${context.gerrit.gitServerCrVersion}"),
+                string(name: 'GIT_CREDENTIALS_ID', value: "${context.gerrit.credentialsId}"),
                 string(name: 'REPOSITORY_PATH', value: "${context.job.getParameterValue("REPOSITORY_PATH")}"),
         ]
 
