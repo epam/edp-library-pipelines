@@ -37,7 +37,7 @@ class Nexus {
 
     def init() {
         this.autouser = job.getParameterValue("NEXUS_AUTOUSER", "jenkins")
-        this.credentialsId = job.getParameterValue("NEXUS_CREDENTIALS", "nexus")
+        this.credentialsId = job.getParameterValue("NEXUS_CREDENTIALS", "ci.user")
         this.host = job.getParameterValue("NEXUS_HOST", "nexus")
         this.port = job.getParameterValue("NEXUS_HTTP_PORT", "8081")
         this.repositoriesUrl = "http://${this.host}:${this.port}/repository"
