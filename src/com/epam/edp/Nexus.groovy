@@ -62,7 +62,7 @@ class Nexus {
     }
 
     def deleteNexusGroovyScript(name) {
-        script.httpRequest authentication: 'nexus',
+        script.httpRequest authentication: "${this.credentialsId}",
                 httpMode: 'DELETE',
                 url: "${this.restUrl}/v1/script/${name}",
                 contentType: 'APPLICATION_JSON',
@@ -70,7 +70,7 @@ class Nexus {
     }
 
     def addNexusGroovyScript(requestBody) {
-        script.httpRequest authentication: 'nexus',
+        script.httpRequest authentication: "${this.credentialsId}",
                 httpMode: 'POST',
                 url: "${this.restUrl}/v1/script",
                 contentType: 'APPLICATION_JSON',
@@ -78,7 +78,7 @@ class Nexus {
     }
 
     def runNexusGroovyScript(name, requestBody) {
-        script.httpRequest authentication: 'nexus',
+        script.httpRequest authentication: "${this.credentialsId}",
                 httpMode: 'POST',
                 url: "${this.restUrl}/v1/script/${name}/run",
                 contentType: 'TEXT_PLAIN',
@@ -86,7 +86,7 @@ class Nexus {
     }
 
     def getNexusGroovyScript(name) {
-        script.httpRequest authentication: 'nexus',
+        script.httpRequest authentication: "${this.credentialsId}",
                 httpMode: 'GET',
                 url: "${this.restUrl}/v1/script/${name}",
                 validResponseCodes: '200,404'
