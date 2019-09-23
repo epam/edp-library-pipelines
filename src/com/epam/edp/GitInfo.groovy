@@ -17,7 +17,7 @@ package com.epam.edp
 import com.epam.edp.platform.Platform
 import groovy.json.JsonSlurperClassic
 
-class Gerrit {
+class GitInfo {
     Script script
     Platform platform
     Job job
@@ -42,7 +42,7 @@ class Gerrit {
     def gitServerCrApiGroup
     def codebaseCrApiGroup
 
-    Gerrit(job, platform, script) {
+    GitInfo(job, platform, script) {
         this.script = script
         this.platform = platform
         this.job = job

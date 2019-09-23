@@ -3,7 +3,7 @@
 <p><strong>Build pipeline consists of several steps:</strong></p>
 <p><strong><em>On master:</em></strong></p>
 <ul>
-<li>Initialization of all objects(Platform, Job, Gerrit, Nexus, Sonar, Application, StageFactory) and loading default implementations of EDP stages.</li>
+<li>Initialization of all objects(Platform, Job, GitInfo, Nexus, Sonar, Application, StageFactory) and loading default implementations of EDP stages.</li>
 </ul>
 <p><strong><em>On particular slave</em></strong> which depends on build tool:</p>
 <ul>
@@ -86,15 +86,15 @@
 <ul>
 <li><strong>Methods</strong>:</li>
 </ul>
-<p>setConfig(String gerrit_autouser, String gerrit_host, String gerrit_sshPort, String gerrit_project): set the config property with values from config map</p>
+<p>setConfig(String gitAutouser, String gitHost, String gitSshPort, String gitProject): set the config property with values from config map</p>
 <ul>
 <li><strong>Example</strong>:</li>
 </ul>
 <code>
-&nbsp;&nbsp;context.application = new Application(context.job, context.gerrit.project, context.platform, this)<br/>
-&nbsp;&nbsp;context.application.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, context.gerrit.project)<br/>
+&nbsp;&nbsp;context.application = new Application(context.job, context.git.project, context.platform, this)<br/>
+&nbsp;&nbsp;context.application.setConfig(context.git.autouser, context.git.host, context.git.sshPort, context.git.project)<br/>
 </code>
-<p><strong><em>Job(type: JobType.value, platform: Platform, script: Script)</em></strong> - Class which describe the Gerrit tool</p>
+<p><strong><em>Job(type: JobType.value, platform: Platform, script: Script)</em></strong> - Class which describe the Git tool</p>
 <ul>
 <li><strong>Properties</strong>:</li>
 </ul>
@@ -125,33 +125,33 @@
 &nbsp;&nbsp;context.job.setDisplayName("test")<br/>
 &nbsp;&nbsp;context.job.setDescription("Name: ${context.application.config.name}")<br/>
 </code>
-<p><strong><em>Gerrit(Job job, Platform platform, Script script)</em></strong> - Class which describe the Gerrit tool</p>
+<p><strong><em>GitInfo(Job job, Platform platform, Script script)</em></strong> - Class which describe the Git tool</p>
 <ul>
 <li><strong>Properties</strong>:</li>
 </ul>
 <p>Script script - Object with type script, in most cases if class created from Jenkins pipelines it is "this"</p>
 <p>Platform platform - Object of a class Platform()</p>
 <p>Job job - Object of a class Job()</p>
-<p>String credentialsId - Credential Id in Jenkins for Gerrit</p>
-<p>String autouser - Username of autouser in Gerrit for integration with Jenkins</p>
-<p>String host - Gerrit host</p>
+<p>String credentialsId - Credential Id in Jenkins for Git</p>
+<p>String autouser - Username of autouser in Git for integration with Jenkins</p>
+<p>String host - Git host</p>
 <p>String project - project name of built application</p>
 <p>String branch - branch to build application from</p>
-<p>String changeNumber - change number of Gerrit commit</p>
-<p>String changeName - change name of Gerrit commit</p>
-<p>String refspecName - refspecName of Gerrit commit</p>
-<p>String sshPort - gerrit ssh port number</p>
-<p>String patchsetNumber - patchsetNumber of Gerrit commit</p>
+<p>String changeNumber - change number of Git commit</p>
+<p>String changeName - change name of Git commit</p>
+<p>String refspecName - refspecName of Git commit</p>
+<p>String sshPort - git ssh port number</p>
+<p>String patchsetNumber - patchsetNumber of Git commit</p>
 <ul>
 <li><strong>Methods</strong>:</li>
 </ul>
-<p>init(): set all the properties of Gerrit object</p>
+<p>init(): set all the properties of Git object</p>
 <ul>
 <li><strong>Example</strong>:</li>
 </ul>
 <code>
-&nbsp;&nbsp;context.gerrit = new Gerrit(context.job, context.platform, this)<br/>
-&nbsp;&nbsp;context.gerrit.init()<br/>
+&nbsp;&nbsp;context.git = new GitInfo(context.job, context.platform, this)<br/>
+&nbsp;&nbsp;context.git.init()<br/>
 </code>
 <p><strong><em>Nexus(Job job, Platform platform, Script script)</em></strong> - Class which describe the Nexus tool</p>
 <ul>
@@ -241,11 +241,11 @@
 <ul>
 <li>String context.workDir</li>
 <li>StageFactory context.factory</li>
-<li>String context.gerrit.branch</li>
-<li>String context.gerrit.credentialsId</li>
+<li>String context.git.branch</li>
+<li>String context.git.credentialsId</li>
 <li>String context.application.config.cloneUrl</li>
 </ul>
-<p><strong><em><h3>Gerrit Checkout:</h3></em></strong></p>
+<p><strong><em><h3>Git Checkout:</h3></em></strong></p>
 <p>name = "gerrit-checkout",</p>
 <p>buildTool = ["maven", "npm", "dotnet","gradle"]</p>
 <p>type = [ProjectType.APPLICATION, ProjectType.AUTOTESTS, ProjectType.LIBRARY]</p>
@@ -253,9 +253,9 @@
 <ul>
 <li>String context.workDir</li>
 <li>StageFactory context.factory</li>
-<li>String context.gerrit.changeName</li>
-<li>String context.gerrit.refspecName</li>
-<li>String context.gerrit.credentialsId</li>
+<li>String context.git.changeName</li>
+<li>String context.git.refspecName</li>
+<li>String context.git.credentialsId</li>
 <li>String context.application.config.cloneUrl</li>
 </ul>
 <p><strong><em><h3>Compile:</h3></em></strong></p>
@@ -304,7 +304,7 @@
 <ul>
 <li>String context.workDir</li>
 <li>Map(empty) context.application</li>
-<li>String context.gerrit.branch</li>
+<li>String context.git.branch</li>
 <li>Job context.job</li>
 </ul>
 <p>output:</p>
@@ -322,7 +322,7 @@
 <li>String context.nexus.credentialsId</li>
 <li>String context.buildTool.command</li>
 <li>Job context.job</li>
-<li>String context.gerrit.branch</li>
+<li>String context.git.branch</li>
 </ul>
 <p>output:</p>
 <ul>
@@ -339,7 +339,7 @@
 <li>String context.nexus.credentialsId</li>
 <li>String context.buildTool.command</li>
 <li>Job context.job</li>
-<li>String context.gerrit.branch</li>
+<li>String context.git.branch</li>
 </ul>
 <p>output:</p>
 <ul>
@@ -354,7 +354,7 @@
 <ul>
 <li>String context.workDir</li>
 <li>Job context.job</li>
-<li>String context.gerrit.branch</li>
+<li>String context.git.branch</li>
 </ul>
 <p>output:</p>
 <ul>
@@ -409,8 +409,8 @@
 <li>String context.application.name</li>
 <li>String context.buildTool.sln_filename</li>
 <li>String context.sonar.route</li>
-<li>String context.gerrit.changeName(Only for codereview pipeline)</li>
-<li>String context.gerrit.branch(Only for build pipeline)</li>
+<li>String context.git.changeName(Only for codereview pipeline)</li>
+<li>String context.git.branch(Only for build pipeline)</li>
 </ul>
 <p>buildTool = ["gradle"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
@@ -422,8 +422,8 @@
 <li>String context.buildTool.command</li>
 <li>String context.application.name</li>
 <li>String context.sonarRoute</li>
-<li>String context.gerrit.changeName(Only for codereview pipeline)</li>
-<li>String context.gerrit.branch(Only for build pipeline)</li>
+<li>String context.git.changeName(Only for codereview pipeline)</li>
+<li>String context.git.branch(Only for build pipeline)</li>
 </ul>
 <p>buildTool = ["maven"]</p>
 <p>type = [ProjectType.APPLICATION, ProjectType.AUTOTESTS, ProjectType.LIBRARY]</p>
@@ -435,8 +435,8 @@
 <li>String context.application.name</li>
 <li>String context.buildTool.command</li>
 <li>String context.sonar.route</li>
-<li>String context.gerrit.changeName(Only for codereview pipeline)</li>
-<li>String context.gerrit.branch(Only for build pipeline)</li>
+<li>String context.git.changeName(Only for codereview pipeline)</li>
+<li>String context.git.branch(Only for build pipeline)</li>
 </ul>
 <p>buildTool = ["npm"]</p>
 <p>type = [ProjectType.APPLICATION]</p>
@@ -446,8 +446,8 @@
 <li>String context.job.type</li>
 <li>String context.sonar.route</li>
 <li>String context.application.name</li>
-<li>String context.gerrit.changeName(Only for codereview pipeline)</li>
-<li>String context.gerrit.branch(Only for build pipeline)</li>
+<li>String context.git.changeName(Only for codereview pipeline)</li>
+<li>String context.git.branch(Only for build pipeline)</li>
 </ul>
 <p><strong><em><h3>Build:</h3></em></strong></p>
 <p>name = "build"</p>
@@ -536,7 +536,7 @@
 <p>context required:</p>
 <ul>
 <li>String context.workDir</li>
-<li>String context.gerrit.project</li>
+<li>String context.git.project</li>
 <li>String context.buildTool.sln_filename</li>
 <li>String context.buildTool.snugetApiKey</li>
 <li>String context.buildTool.hostedRepository</li>
@@ -568,7 +568,7 @@
 <li>String context.workDir</li>
 <li>String context.nexus.credentialsId</li>
 <li>String context.buildTool.hostedRepository</li>
-<li>String context.gerrit.autouser</li>
+<li>String context.git.autouser</li>
 </ul>
 <p><strong><em><h3>Git tag:</h3></em></strong></p>
 <p>name = "git-tag"</p>
@@ -577,10 +577,10 @@
 <p>context required:</p>
 <ul>
 <li>String context.workDir</li>
-<li>String context.gerrit.credentialsId</li>
-<li>String context.gerrit.sshPort</li>
-<li>String context.gerrit.host</li>
-<li>String context.gerrit.autouser</li>
+<li>String context.git.credentialsId</li>
+<li>String context.git.sshPort</li>
+<li>String context.git.host</li>
+<li>String context.git.autouser</li>
 <li>String context.application.buildVersion</li>
 </ul>
 
@@ -650,7 +650,7 @@ node('maven') {<br />
 &nbsp; &nbsp; context.factory = new StageFactory(script: this)<br />
 &nbsp;&nbsp;&nbsp; context.factory.loadEdpStages().each() { context.factory.add(it) }<br />
 &nbsp;&nbsp;&nbsp;<br />
-&nbsp;&nbsp;&nbsp; context.gerrit = [:]<br />
+&nbsp;&nbsp;&nbsp; context.git = [:]<br />
 &nbsp;&nbsp;&nbsp; context.application = [:]<br />
 &nbsp;&nbsp;&nbsp; context.application.config = [:]<br />
 &nbsp;&nbsp;&nbsp; context.buildTool = [:]<br />
@@ -659,8 +659,8 @@ node('maven') {<br />
 &nbsp;<br />
 &nbsp;&nbsp;&nbsp;<br />
 &nbsp;&nbsp;&nbsp; stage("checkout") {<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.gerrit.branch = "master"<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; context.gerrit.credentialsId = "jenkins"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.git.branch = "master"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; context.git.credentialsId = "jenkins"<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; context.application.config.cloneUrl = "ssh://jenkins@gerrit:32092/sit-718-cloned-java-maven-project"<br />
 &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;context.factory.getStage("checkout","maven","application").run(context)<br />
 &nbsp;&nbsp;&nbsp; }<br />
@@ -694,7 +694,7 @@ pipeline {<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.factory = new StageFactory(script: this)<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.factory.loadEdpStages().each() { context.factory.add(it) }<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.gerrit = [:]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.git = [:]<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.application = [:]<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.application.config = [:]<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.buildTool = [:]<br />
@@ -706,8 +706,8 @@ pipeline {<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; stage("Checkout") {<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; steps {<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; script {<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.gerrit.branch = "master"<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.gerrit.credentialsId = "jenkins"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.git.branch = "master"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.git.credentialsId = "jenkins"<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.application.config.cloneUrl = "ssh://jenkins@gerrit:32092/sit-718-cloned-java-maven-project"<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; context.factory.getStage("checkout","maven","application").run(context)<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br />

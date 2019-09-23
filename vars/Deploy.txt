@@ -3,7 +3,7 @@
 <p><strong>Deploy pipeline consists of several steps:</strong></p>
 <p><strong><em>On master:</em></strong></p>
 <ul>
-<li>Initialization of all objects(Platform, Job, Gerrit, Nexus, StageFactory) and loading default implementations of EDP stages.</li>
+<li>Initialization of all objects(Platform, Job, GitInfo, Nexus, StageFactory) and loading default implementations of EDP stages.</li>
 <li>Creating environment if not exists</li>
 <li>Deploying last applications versions</li>
 <li>Run predefined manual gates</li>
@@ -88,13 +88,13 @@
 <ul>
 <li><strong>Methods</strong>:</li>
 </ul>
-<p>setConfig(String gerrit_autouser, String gerrit_host, String gerrit_sshPort, String gerrit_project): set the config property with values from config map</p>
+<p>setConfig(String gitAutouser, String gitHost, String gitSshPort, String gitProject): set the config property with values from config map</p>
 <ul>
 <li><strong>Example</strong>:</li>
 </ul>
 <code>
-&nbsp;&nbsp;context.application = new Application(context.job, context.gerrit.project, context.platform, this)<br/>
-&nbsp;&nbsp;context.application.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, context.gerrit.project)<br/>
+&nbsp;&nbsp;context.application = new Application(context.job, context.git.project, context.platform, this)<br/>
+&nbsp;&nbsp;context.application.setConfig(context.git.autouser, context.git.host, context.git.sshPort, context.git.project)<br/>
 </code>
 <p><strong><em>Job(type: JobType.value, platform: Platform, script: Script)</em></strong> - Class which describe the Gerrit tool</p>
 <ul>
@@ -127,7 +127,7 @@
 &nbsp;&nbsp;context.job.setDisplayName("test")<br/>
 &nbsp;&nbsp;context.job.setDescription("Name: ${context.application.config.name}")<br/>
 </code>
-<p><strong><em>Gerrit(Job job, Platform platform, Script script)</em></strong> - Class which describe the Gerrit tool</p>
+<p><strong><em>GitInfo(Job job, Platform platform, Script script)</em></strong> - Class which describe the Gerrit tool</p>
 <ul>
 <li><strong>Properties</strong>:</li>
 </ul>
@@ -142,7 +142,7 @@
 <p>String changeNumber - change number of Gerrit commit</p>
 <p>String changeName - change name of Gerrit commit</p>
 <p>String refspecName - refspecName of Gerrit commit</p>
-<p>String sshPort - gerrit ssh port number</p>
+<p>String sshPort - git ssh port number</p>
 <p>String patchsetNumber - patchsetNumber of Gerrit commit</p>
 <ul>
 <li><strong>Methods</strong>:</li>
@@ -152,8 +152,8 @@
 <li><strong>Example</strong>:</li>
 </ul>
 <code>
-&nbsp;&nbsp;context.gerrit = new Gerrit(context.job, context.platform, this)<br/>
-&nbsp;&nbsp;context.gerrit.init()<br/>
+&nbsp;&nbsp;context.git = new GitInfo(context.job, context.platform, this)<br/>
+&nbsp;&nbsp;context.git.init()<br/>
 </code>
 <p><strong><em>Nexus(Job job, Platform platform, Script script)</em></strong> - Class which describe the Nexus tool</p>
 <ul>
@@ -215,7 +215,7 @@
 <ul>
 <li>String context.workDir</li>
 <li>StageFactory context.factory</li>
-<li>String context.gerrit.credentialsId</li>
+<li>String context.git.credentialsId</li>
 <li>String context.autotest.config.cloneUrl</li>
 <li>String context.autotest.name</li>
 <li>String context.job.stageWithoutPrefixName</li>
@@ -230,8 +230,8 @@
 <ul>
 <li>String context.workDir</li>
 <li>StageFactory context.factory</li>
-<li>String context.gerrit.autouser</li>
-<li>String context.gerrit.host</li>
+<li>String context.git.autouser</li>
+<li>String context.git.host</li>
 <li>String context.application.config.cloneUrl</li>
 <li>String context.jenkins.token</li>
 <li>String context.job.edpName</li>
@@ -285,7 +285,7 @@
 <p><code><code></code></code></p>
 <p style="padding-left: 60px;">context.platform = new PlatformFactory().getPlatformImpl(PlatformType.OPENSHIFT, this)<br /> context.job = new com.epam.edp.Job(JobType.DEPLOY.value, context.platform, this)<br /> context.job.init()<br /> context.job.initDeployJob()<br /> println("[JENKINS][DEBUG] Created object job with type - ${context.job.type}")<br /> <br /> context.nexus = new com.epam.edp.Nexus(context.job, context.platform, this)<br /> context.nexus.init()<br /> <br /> context.jenkins = new com.epam.edp.Jenkins(context.job, context.platform, this)<br /> context.jenkins.init()</p>
 <p><code><code></code></code></p>
-<p style="padding-left: 60px;">context.gerrit = new com.epam.edp.Gerrit(context.job, context.platform, this)<br /> context.gerrit.init()</p>
+<p style="padding-left: 60px;">context.git = new com.epam.edp.GitInfo(context.job, context.platform, this)<br /> context.git.init()</p>
 <p><code><code></code></code></p>
 <p style="padding-left: 60px;">context.factory = new StageFactory(script: this)<br /> context.factory.loadEdpStages().each() { context.factory.add(it) }</p>
 <p><code><code></code></code></p>
@@ -313,7 +313,7 @@
 <p style="padding-left: 120px;">steps {</p>
 <p style="padding-left: 150px;">script {</p>
 <p style="padding-left: 180px;">context.platform = new PlatformFactory().getPlatformImpl(PlatformType.OPENSHIFT, this)<br /> context.job = new com.epam.edp.Job(JobType.DEPLOY.value, context.platform, this)<br /> context.job.init()<br /> context.job.initDeployJob()<br /> println("[JENKINS][DEBUG] Created object job with type - ${context.job.type}")<br /> <br /> context.nexus = new com.epam.edp.Nexus(context.job, context.platform, this)<br /> context.nexus.init()<br /> <br /> context.jenkins = new com.epam.edp.Jenkins(context.job, context.platform, this)<br /> context.jenkins.init()</p>
-<p style="padding-left: 180px;">context.gerrit = new com.epam.edp.Gerrit(context.job, context.platform, this)<br /> context.gerrit.init()</p>
+<p style="padding-left: 180px;">context.git = new com.epam.edp.GitInfo(context.job, context.platform, this)<br /> context.git.init()</p>
 <p style="padding-left: 180px;">context.factory = new StageFactory(script: this)<br /> context.factory.loadEdpStages().each() { context.factory.add(it) }</p>
 <p style="padding-left: 180px;">context.environment = new com.epam.edp.Environment(context.job.deployProject, context.platform, this)<br /> context.job.printDebugInfo(context)<br /> context.job.setDisplayName("${currentBuild.displayName}-${context.job.deployProject}")</p>
 <p style="padding-left: 180px;">context.job.generateInputDataForDeployJob()</p>

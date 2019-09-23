@@ -1,16 +1,16 @@
-<p><strong>CreateRelease()</strong> &ndash; function that allows you to use EDP Implementation for your CreateRelease pipeline. This pipeline intended to create release branches in application Gerrit repository.</p>
+<p><strong>CreateRelease()</strong> &ndash; function that allows you to use EDP Implementation for your CreateRelease pipeline. This pipeline intended to create release branches in application Git repository.</p>
 <p><em>All values of different parameters which are used during pipeline execution are stored in Map "context".</em></p>
 <p><strong>Create-release pipeline is parameterized:</strong></p>
 <ul>
-<li>RELEASE_NAME - The name of release, to be precise the name of the branch to be created in Gerrit</li>
-<li>COMMIT_ID - Commit ID from Gerrit application repository that new branch will be created from</li>
+<li>RELEASE_NAME - The name of release, to be precise the name of the branch to be created in Git</li>
+<li>COMMIT_ID - Commit ID from Git application repository that new branch will be created from</li>
 </ul>
 <p><strong>Create-release pipeline consists of several steps:</strong></p>
 <p><strong><em>On master:</em></strong></p>
 <ul>
-<li>Initialization of all objects(Platform, Job, Gerrit, Application, StageFactory) and loading default implementations of EDP stages.</li>
+<li>Initialization of all objects(Platform, Job, GitInfo, Application, StageFactory) and loading default implementations of EDP stages.</li>
 <li>Creating work dir for application sources</li>
-<li>Checking out application project form Gerrit</li>
+<li>Checking out application project form Git</li>
 <li>Creating branch with given name</li>
 <li>Triggering Jeknins job for creating Code-review and Build pipelines for created branch</li>
 </ul>
@@ -89,15 +89,15 @@
 <ul>
 <li><strong>Methods</strong>:</li>
 </ul>
-<p>setConfig(String gerrit_autouser, String gerrit_host, String gerrit_sshPort, String gerrit_project): set the config property with values from config map</p>
+<p>setConfig(String gitAutouser, String gitHost, String gitSshPort, String gitProject): set the config property with values from config map</p>
 <ul>
 <li><strong>Example</strong>:</li>
 </ul>
 </code>
-&nbsp;&nbsp;context.application = new Application(context.job, context.gerrit.project, context.platform, this)<br/>
-&nbsp;&nbsp;context.application.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, context.gerrit.project)<br/>
+&nbsp;&nbsp;context.application = new Application(context.job, context.git.project, context.platform, this)<br/>
+&nbsp;&nbsp;context.application.setConfig(context.git.autouser, context.git.host, context.git.sshPort, context.git.project)<br/>
 </code>
-<p><strong><em>Job(type: JobType.value, platform: Platform, script: Script)</em></strong> - Class which describe the Gerrit tool</p>
+<p><strong><em>Job(type: JobType.value, platform: Platform, script: Script)</em></strong> - Class which describe the Git tool</p>
 <ul>
 <li><strong>Properties</strong>:</li>
 </ul>
@@ -110,7 +110,7 @@
 <p>String envToPromote - The name of the environment for promoting images.</p>
 <p>Boolean promoteImages - Defines whether images should be promoted or not.</p>
 <p>String releaseName - Name of release and branch to be created.</p>
-<p>String releaseFromCommitId - Commit ID from Gerrit application repository that new branch will be created from.</p>
+<p>String releaseFromCommitId - Commit ID from Git application repository that new branch will be created from.</p>
 <ul>
 <li><strong>Methods</strong>:</li>
 </ul>
@@ -130,33 +130,33 @@
 &nbsp;&nbsp;context.job.setDisplayName("test")<br/>
 &nbsp;&nbsp;context.job.setDescription("Name: ${context.application.config.name}")<br/>
 </code>
-<p><strong><em>Gerrit(Job job, Platform platform, Script script)</em></strong> - Class which describe the Gerrit tool</p>
+<p><strong><em>GitInfo(Job job, Platform platform, Script script)</em></strong> - Class which describe the Git tool</p>
 <ul>
 <li><strong>Properties</strong>:</li>
 </ul>
 <p>Script script - Object with type script, in most cases if class created from Jenkins pipelines it is "this"</p>
 <p>Platform platform - Object of a class Platform()</p>
 <p>Job job - Object of a class Job()</p>
-<p>String credentialsId - Credential Id in Jenkins for Gerrit</p>
-<p>String autouser - Username of autouser in Gerrit for integration with Jenkins</p>
-<p>String host - Gerrit host</p>
+<p>String credentialsId - Credential Id in Jenkins for Git</p>
+<p>String autouser - Username of autouser in Git for integration with Jenkins</p>
+<p>String host - Git host</p>
 <p>String project - project name of built application</p>
 <p>String branch - branch to build application from</p>
 <p>String changeNumber - change number of Gerrit commit</p>
 <p>String changeName - change name of Gerrit commit</p>
 <p>String refspecName - refspecName of Gerrit commit</p>
-<p>String sshPort - gerrit ssh port number</p>
+<p>String sshPort - git ssh port number</p>
 <p>String patchsetNumber - patchsetNumber of Gerrit commit</p>
 <ul>
 <li><strong>Methods</strong>:</li>
 </ul>
-<p>init(): set all the properties of Gerrit object</p>
+<p>init(): set all the properties of GitInfo object</p>
 <ul>
 <li><strong>Example</strong>:</li>
 </ul>
 <code>
-&nbsp;&nbsp;context.gerrit = new Gerrit(context.job, context.platform, this)<br/>
-&nbsp;&nbsp;context.gerrit.init()<br/>
+&nbsp;&nbsp;context.git = new GitInfo(context.job, context.platform, this)<br/>
+&nbsp;&nbsp;context.git.init()<br/>
 </code>
 <p><strong><em>Nexus(Job job, Platform platform, Script script)</em></strong> - Class which describe the Nexus tool</p>
 <ul>
@@ -246,8 +246,8 @@
 <ul>
 <li>String context.workDir</li>
 <li>StageFactory context.factory</li>
-<li>String context.gerrit.branch</li>
-<li>String context.gerrit.credentialsId</li>
+<li>String context.git.branch</li>
+<li>String context.git.credentialsId</li>
 <li>String context.application.config.cloneUrl</li>
 </ul>
 <p><strong><em><h3>Create Branch:</h3></em></strong></p>
@@ -258,10 +258,10 @@
 <ul>
 <li>String context.workDir</li>
 <li>StageFactory context.factory</li>
-<li>String context.gerrit.autouser</li>
-<li>String context.gerrit.host</li>
-<li>String context.gerrit.sshPort</li>
-<li>String context.gerrit.credentialsId</li>
+<li>String context.git.autouser</li>
+<li>String context.git.host</li>
+<li>String context.git.sshPort</li>
+<li>String context.git.credentialsId</li>
 <li>String context.job.releaseName</li>
 <li>String context.job.releaseFromCommitId(Can be empty. By default is empty.)</li>
 </ul>
@@ -347,16 +347,16 @@ node('master') {<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.workDir.deleteDir()<br /><br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.factory = new StageFactory(script: this)<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.factory.loadEdpStages().each() { context.factory.add(it) }<br /><br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.gerrit = [:]<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.gerrit.branch = "master"<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.gerrit.credentialsId = "jenkins"<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.gerrit.sshPort = sh(<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.git = [:]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.git.branch = "master"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.git.credentialsId = "jenkins"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.git.sshPort = sh(<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;script: "oc get svc gerrit -o jsonpath='{.spec.ports[?(@.name==\"ssh\")].targetPort}'",<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;returnStdout: true<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;).trim()<br /><br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.application = [:]<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.application.config = [:]<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.application.config.cloneUrl = "ssh://jenkins@gerrit:${context.gerrit.sshPort}/&#60;gerrit_projectname>"<br /><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.application.config.cloneUrl = "ssh://jenkins@gerrit:${context.git.sshPort}/&#60;gerrit_projectname>"<br /><br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.job = [:]<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.job.releaseName = env["RELEASE_NAME"]<br /><br />
 &nbsp;&nbsp;&nbsp;}<br /><br />
@@ -385,16 +385,16 @@ pipeline {<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.workDir.deleteDir()<br /><br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.factory = new StageFactory(script: this)<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.factory.loadEdpStages().each() { context.factory.add(it) }<br /><br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.gerrit = [:]<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.gerrit.branch = "master"<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.gerrit.credentialsId = "jenkins"<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.gerrit.sshPort = sh(<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.git = [:]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.git.branch = "master"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.git.credentialsId = "jenkins"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.git.sshPort = sh(<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;script: "oc get svc gerrit -o jsonpath='{.spec.ports[?(@.name==\"ssh\")].targetPort}'",<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;returnStdout: true<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;).trim()<br /><br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.application = [:]<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.application.config = [:]<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.application.config.cloneUrl = "ssh://jenkins@gerrit:${context.gerrit.sshPort}/&#60;gerrit_project_name"<br /><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.application.config.cloneUrl = "ssh://jenkins@gerrit:${context.git.sshPort}/&#60;gerrit_project_name"<br /><br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.job = [:]<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context.job.releaseName = env["RELEASE_NAME"]<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br />

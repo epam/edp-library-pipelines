@@ -14,7 +14,6 @@
 
 import com.epam.edp.Codebase
 import com.epam.edp.Environment
-import com.epam.edp.Gerrit
 import com.epam.edp.Job
 import com.epam.edp.JobType
 import com.epam.edp.Nexus

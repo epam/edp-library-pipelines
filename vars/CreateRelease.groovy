@@ -15,7 +15,7 @@
 import com.epam.edp.Codebase
 import com.epam.edp.Job
 import com.epam.edp.JobType
-import com.epam.edp.Gerrit
+import com.epam.edp.GitInfo
 import com.epam.edp.Nexus
 import com.epam.edp.Sonar
 import com.epam.edp.platform.PlatformType
@@ -34,12 +34,12 @@ def call() {
             context.job.init()
             println("[JENKINS][DEBUG] Created object job with type - ${context.job.type}")
 
-            context.gerrit = new Gerrit(context.job, context.platform, this)
-            context.gerrit.init()
+            context.git = new GitInfo(context.job, context.platform, this)
+            context.git.init()
 
-            context.codebase = new Codebase(context.job, context.gerrit.project, context.platform, this)
-            context.codebase.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, context.gerrit.project,
-                    context.gerrit.repositoryRelativePath)
+            context.codebase = new Codebase(context.job, context.git.project, context.platform, this)
+            context.codebase.setConfig(context.git.autouser, context.git.host, context.git.sshPort, context.git.project,
+                    context.git.repositoryRelativePath)
 
             context.factory = new StageFactory(script: this)
             context.factory.loadEdpStages().each() { context.factory.add(it) }
@@ -62,12 +62,12 @@ def call() {
                 string(name: 'TYPE', value: "${context.codebase.config.type}"),
                 string(name: 'BUILD_TOOL', value: "${context.codebase.config.build_tool}"),
                 string(name: 'BRANCH', value: "${context.job.releaseName}"),
-                string(name: 'GIT_SERVER', value: "${context.gerrit.host}"),
-                string(name: 'GIT_SSH_PORT', value: "${context.gerrit.sshPort}"),
-                string(name: 'GIT_USERNAME', value: "${context.gerrit.autouser}"),
-                string(name: 'GIT_SERVER_CR_NAME', value: "${context.gerrit.gitServerCrName}"),
-                string(name: 'GIT_SERVER_CR_VERSION', value: "${context.gerrit.gitServerCrVersion}"),
-                string(name: 'GIT_CREDENTIALS_ID', value: "${context.gerrit.credentialsId}"),
+                string(name: 'GIT_SERVER', value: "${context.git.host}"),
+                string(name: 'GIT_SSH_PORT', value: "${context.git.sshPort}"),
+                string(name: 'GIT_USERNAME', value: "${context.git.autouser}"),
+                string(name: 'GIT_SERVER_CR_NAME', value: "${context.git.gitServerCrName}"),
+                string(name: 'GIT_SERVER_CR_VERSION', value: "${context.git.gitServerCrVersion}"),
+                string(name: 'GIT_CREDENTIALS_ID', value: "${context.git.credentialsId}"),
                 string(name: 'REPOSITORY_PATH', value: "${context.job.getParameterValue("REPOSITORY_PATH")}"),
         ]
 

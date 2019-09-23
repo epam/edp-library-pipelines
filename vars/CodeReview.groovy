@@ -15,7 +15,7 @@
 import com.epam.edp.Codebase
 import com.epam.edp.Job
 import com.epam.edp.JobType
-import com.epam.edp.Gerrit
+import com.epam.edp.GitInfo
 import com.epam.edp.Nexus
 import com.epam.edp.Sonar
 import com.epam.edp.platform.PlatformType
@@ -34,8 +34,8 @@ def call() {
             context.job.init()
             println("[JENKINS][DEBUG] Created object job with type - ${context.job.type}")
 
-            context.gerrit = new Gerrit(context.job, context.platform, this)
-            context.gerrit.init()
+            context.git = new GitInfo(context.job, context.platform, this)
+            context.git.init()
 
             context.nexus = new Nexus(context.job, context.platform, this)
             context.nexus.init()
@@ -43,16 +43,16 @@ def call() {
             context.sonar = new Sonar(context.job, context.platform, this)
             context.sonar.init()
 
-            context.codebase = new Codebase(context.job, context.gerrit.project, context.platform, this)
-            context.codebase.setConfig(context.gerrit.autouser, context.gerrit.host, context.gerrit.sshPort, context.gerrit.project,
-                    context.gerrit.repositoryRelativePath)
+            context.codebase = new Codebase(context.job, context.git.project, context.platform, this)
+            context.codebase.setConfig(context.git.autouser, context.git.host, context.git.sshPort, context.git.project,
+                    context.git.repositoryRelativePath)
 
             context.factory = new StageFactory(script: this)
             context.factory.loadEdpStages().each() { context.factory.add(it) }
 
             context.job.printDebugInfo(context)
             println("[JENKINS][DEBUG] Codebase config - ${context.codebase.config}")
-            context.job.setDisplayName("${currentBuild.number}-${context.gerrit.branch}(${context.gerrit.changeName})")
+            context.job.setDisplayName("${currentBuild.number}-${context.git.branch}(${context.git.changeName})")
             context.job.setDescription("Name: ${context.codebase.config.name}\r\nLanguage: ${context.codebase.config.language}" +
                     "\r\nBuild tool: ${context.codebase.config.build_tool}\r\nFramework: ${context.codebase.config.framework}")
         }
