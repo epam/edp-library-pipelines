@@ -301,16 +301,17 @@ class Job {
     }
 
     def getTokenFromAdminConsole() {
-        def userCredentials = getCredentialsFromSecret("admin-console-reader")
-        def clientCredentials = getCredentialsFromSecret("admin-console-client")
+        def userCredentials = getCredentialsFromSecret("ac-reader")
+
+        def clientSecret = getSecretField("admin-console-client", "clientSecret")
 
         def dnsWildcard = platform.getJsonPathValue("cm", "user-settings", ".data.dns_wildcard")
 
-        def response = script.httpRequest url: "https://keycloak-security.${dnsWildcard}/auth/realms/${this.edpName}-edp/protocol/openid-connect/token",
+        def response = script.httpRequest url: "https://keycloak-security.${dnsWildcard}/auth/realms/${this.edpName}-edp-cicd-main/protocol/openid-connect/token",
                 httpMode: 'POST',
                 contentType: 'APPLICATION_FORM',
                 requestBody: "grant_type=password&username=${userCredentials.username}&password=${userCredentials.password}" +
-                        "&client_id=${clientCredentials.username}&client_secret=${clientCredentials.password}",
+                        "&client_id=admin-console-client&client_secret=${clientSecret}",
                 consoleLogResponseBody: true
 
         return new JsonSlurperClassic()
