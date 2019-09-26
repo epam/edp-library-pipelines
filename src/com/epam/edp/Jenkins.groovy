@@ -30,6 +30,6 @@ class Jenkins {
     }
 
     def init() {
-        this.token = new String(platform.getJsonPathValue("secret","jenkins-token",".data.token").decodeBase64())
+        this.token = new String(platform.getJsonPathValue("secret","jenkins-admin-token",".data.token").decodeBase64())
     }
 }
