@@ -52,6 +52,11 @@ class Job {
     def deployJobParameters = []
     def sortedVersions = []
     def autotestName
+    def gitProjectPath
+    def credentialsId
+    def autouser
+    def host
+    def sshPort
     def testReportFramework
     def autotestBranch
     def maxOfParallelDeployApps
@@ -135,6 +140,17 @@ class Job {
         }
 
         setCodebaseTags()
+    }
+
+    def setGitServerDataToJobContext(gitServerName) {
+        def gitServerCrApiGroup = "gitservers.${getParameterValue("GIT_SERVER_CR_VERSION")}.edp.epam.com"
+        this.credentialsId = platform.getJsonPathValue(gitServerCrApiGroup, gitServerName, ".spec.nameSshKeySecret")
+        this.autouser = platform.getJsonPathValue(gitServerCrApiGroup, gitServerName, ".spec.gitUser")
+        this.host = platform.getJsonPathValue(gitServerCrApiGroup, gitServerName, ".spec.gitHost")
+        this.sshPort = platform.getJsonPathValue(gitServerCrApiGroup, gitServerName, ".spec.sshPort")
+
+        println("[JENKINS][DEBUG] GitServer data is set up: credId - ${this.credentialsId}," +
+                " autouser - ${this.autouser}, host - ${this.host}, sshPort - ${this.sshPort}")
     }
 
     def setCodebaseTags() {

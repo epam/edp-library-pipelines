@@ -67,6 +67,13 @@ def call() {
                             println("Contents - ${qualityGate.autotest}")
                             context.buildTool = new BuildToolFactory().getBuildToolImpl(qualityGate.autotest.build_tool, this, context.nexus)
                             context.buildTool.init()
+
+                            if (qualityGate.autotest.strategy == "import") {
+                                context.job.gitProjectPath = qualityGate.autotest.gitProjectPath
+                            }
+
+                            context.job.setGitServerDataToJobContext(qualityGate.autotest.gitServer)
+
                             context.job.autotestName = qualityGate.autotest.name
                             context.job.testReportFramework = qualityGate.autotest.testReportFramework
                             context.job.autotestBranch = qualityGate.codebaseBranch.branchName
