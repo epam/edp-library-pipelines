@@ -16,21 +16,17 @@ package com.epam.edp.buildtool
 
 import com.epam.edp.Nexus
 
-def getBuildToolImpl(builtTool, script, Nexus nexus) {
-    switch (builtTool.toLowerCase()) {
-        case BuildToolType.MAVEN.value:
-            return new Maven(script: script, nexus: nexus)
-        case BuildToolType.NPM.value:
-            return new Npm(script: script, nexus: nexus)
-        case BuildToolType.GRADLE.value:
-            return new Gradle(script: script, nexus: nexus)
-        case BuildToolType.DOTNET.value:
-            return new Dotnet(script: script, nexus: nexus)
-        default:
-            return new Any(script: script, nexus: nexus)
-    }
-}
+class Any implements BuildTool {
+    Script script
+    Nexus nexus
 
-interface BuildTool {
-    def init()
+    def settings
+    def hostedRepository
+    def groupRepository
+
+
+    def init() {
+        this.hostedRepository = "${nexus.repositoriesUrl}/edp-npm-hosted/"
+        this.groupRepository = "${nexus.repositoriesUrl}/edp-npm-group/"
+    }
 }
