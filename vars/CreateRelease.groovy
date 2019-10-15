@@ -54,7 +54,7 @@ def call() {
         context.workDir = new File("/tmp/${RandomStringUtils.random(10, true, true)}")
         context.workDir.deleteDir()
 
-        context.triggerJobName = "job-provisions/default"
+        context.triggerJobName = "job-provisions/${context.codebase.config.jobprovisioning}"
         context.triggerJobWait = true
         context.triggerJobParameters = [
                 string(name: 'PARAM', value: "true"),
