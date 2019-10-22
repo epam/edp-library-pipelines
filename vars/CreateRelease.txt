@@ -72,7 +72,7 @@
 <ul>
 <li><strong>Example:</strong></li>
 </ul>
-<code>&nbsp;&nbsp;context.platform = new PlatformFactory().getPlatformImpl(PlatformType.OPENSHIFT, this)</code>
+<code>&nbsp;&nbsp;context.platform = new PlatformFactory().getPlatformImpl(this)</code>
 <p><strong><em>Application(String name, Platform platform, Script script)</em></strong> - Class which describe the application object</p>
 <ul>
 <li><strong>Properties</strong>:</li>

@@ -30,6 +30,6 @@ class Sonar {
     }
 
     def init() {
-        this.route = platform.getJsonPathValue("route","sonar",".spec.host")
+        this.route = platform.getExternalEndpoint("sonar")
     }
 }

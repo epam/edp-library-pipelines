@@ -28,7 +28,7 @@ def call() {
     def context = [:]
     node("master") {
         stage("Init") {
-            context.platform = new PlatformFactory().getPlatformImpl(PlatformType.OPENSHIFT, this)
+            context.platform = new PlatformFactory().getPlatformImpl(this)
 
             context.job = new Job(JobType.DEPLOY.value, context.platform, this)
             context.job.init()

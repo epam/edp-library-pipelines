@@ -14,20 +14,24 @@
 
 package com.epam.edp.platform
 
-def getPlatformImpl(script) {
-    def platformType = System.getenv("PLATFORM_TYPE")
-    switch (platformType.toLowerCase()) {
-        case PlatformType.OPENSHIFT.value:
-            return new Openshift(script: script)
-        case PlatformType.KUBERNETES.value:
-            return new Kubernetes(script: script)
-        default:
-            script.error("[JENKINS][ERROR] Failed to determine platform type")
-    }
-}
+class Kubernetes implements Platform {
+    Script script
 
-interface Platform {
-    def getJsonPathValue(object, name, jsonPath)
-    def getJsonValue(object, name)
-    def getExternalEndpoint(name)
+    def getJsonPathValue(object, name, jsonPath) {
+        script.sh(
+                script: "kubectl get ${object} ${name} -o jsonpath='{${jsonPath}}'",
+                returnStdout: true
+        ).trim()
+    }
+
+    def getJsonValue(object, name) {
+        script.sh(
+                script: "kubectl get ${object} ${name} -o json",
+                returnStdout: true
+        ).trim()
+    }
+
+    def getExternalEndpoint(name) {
+        return getJsonPathValue("ingress", name, ".spec.rules[0].host")
+    }
 }

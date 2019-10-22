@@ -14,20 +14,10 @@
 
 package com.epam.edp.platform
 
-class Openshift implements Platform {
+class Openshift extends Kubernetes {
     Script script
 
-    def getJsonPathValue(object, name, jsonPath) {
-        script.sh(
-                script: "oc get ${object} ${name} -o jsonpath='{${jsonPath}}'",
-                returnStdout: true
-        ).trim()
-    }
-
-    def getJsonValue(object, name) {
-        script.sh(
-                script: "oc get ${object} ${name} -o json",
-                returnStdout: true
-        ).trim()
+    def getExternalEndpoint(name) {
+        return getJsonPathValue("route", name, ".spec.host")
     }
 }
