@@ -13,22 +13,56 @@
  limitations under the License.*/
 
 package com.epam.edp.platform
+import groovy.json.JsonSlurperClassic
 
 class Kubernetes implements Platform {
     Script script
 
     def getJsonPathValue(object, name, jsonPath) {
-        script.sh(
+        return script.sh(
                 script: "kubectl get ${object} ${name} -o jsonpath='{${jsonPath}}'",
                 returnStdout: true
         ).trim()
     }
 
     def getJsonValue(object, name) {
-        script.sh(
+        return script.sh(
                 script: "kubectl get ${object} ${name} -o json",
                 returnStdout: true
         ).trim()
+    }
+
+    def apply(fileName) {
+        script.sh(script: "oc apply -f ${fileName}")
+    }
+
+    def deleteObject(objectType, objectName, force = false) {
+        def command = "kubectl delete ${objectType} ${objectName}"
+        if (force) {
+            command = "${command} --force --grace-period=0"
+        }
+        try {
+            script.sh(script: "${command}")
+        } catch(Exception ex){}
+    }
+
+    def copyToPod(source, destination, podName,podNamespace = null, podContainerName = null) {
+        def command = "kubectl cp ${source} "
+
+        if (podNamespace)
+            command = "${command}${podNamespace}/"
+
+        command = "${command}${podName}:${destination}"
+
+        if (podContainerName)
+            command = "${command} -c ${podContainerName}"
+        script.sh(script: "${command}")
+    }
+
+    def getObjectStatus(objectType, objectName) {
+        def output = getJsonValue(objectType, objectName)
+        def parsedInitContainer = new JsonSlurperClassic().parseText(output)
+        return parsedInitContainer["status"]
     }
 
     def getExternalEndpoint(name) {

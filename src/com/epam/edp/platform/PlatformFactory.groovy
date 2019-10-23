@@ -16,6 +16,8 @@ package com.epam.edp.platform
 
 def getPlatformImpl(script) {
     def platformType = System.getenv("PLATFORM_TYPE")
+    if (!platformType)
+        script.error("[JENKINS][ERROR] Mandatory environment variable PLATFORM_TYPE is not defined")
     switch (platformType.toLowerCase()) {
         case PlatformType.OPENSHIFT.value:
             return new Openshift(script: script)
@@ -30,4 +32,8 @@ interface Platform {
     def getJsonPathValue(object, name, jsonPath)
     def getJsonValue(object, name)
     def getExternalEndpoint(name)
+    def apply(fileName)
+    def copyToPod(source, destination, podName,podNamespace, podContainerName)
+    def deleteObject(objectType, objectName, force)
+    def getObjectStatus(objectType, objectName)
 }
