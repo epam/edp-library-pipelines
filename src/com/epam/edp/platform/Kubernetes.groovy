@@ -68,4 +68,14 @@ class Kubernetes implements Platform {
     def getExternalEndpoint(name) {
         return getJsonPathValue("ingress", name, ".spec.rules[0].host")
     }
+
+    def checkObjectExists(objectType, objectName) {
+        def res = script.sh(
+                script: "kubectl get ${objectType} ${objectName} --ignore-not-found=true",
+                returnStdout: true
+        ).trim()
+        if (res == "")
+            return false
+        return true
+    }
 }
