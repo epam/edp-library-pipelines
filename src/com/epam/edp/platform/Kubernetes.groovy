@@ -32,6 +32,20 @@ class Kubernetes implements Platform {
         ).trim()
     }
 
+    def getImageStream(imageStreamName, crApiGroup) {
+        return script.sh(
+                script: "kubectl get cbis.${crApiGroup} ${imageStreamName} --no-headers | awk '{print \$1}'",
+                returnStdout: true
+        ).trim()
+    }
+
+    def getImageStreamTags(imageStreamName, crApiGroup) {
+        script.sh(
+                script: "kubectl get cbis.${crApiGroup} ${imageStreamName} -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
+                returnStdout: true
+        ).trim().tokenize()
+    }
+
     def apply(fileName) {
         script.sh(script: "oc apply -f ${fileName}")
     }

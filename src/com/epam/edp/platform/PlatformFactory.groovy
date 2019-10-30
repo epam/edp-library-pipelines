@@ -36,5 +36,7 @@ interface Platform {
     def copyToPod(source, destination, podName,podNamespace, podContainerName)
     def deleteObject(objectType, objectName, force)
     def getObjectStatus(objectType, objectName)
+    def getImageStream(imageStreamName, crApiGroup)
+    def getImageStreamTags(imageStreamName, crApiGroup)
     def checkObjectExists(objectType, objectName)
 }

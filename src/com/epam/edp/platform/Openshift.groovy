@@ -20,4 +20,18 @@ class Openshift extends Kubernetes {
     def getExternalEndpoint(name) {
         return getJsonPathValue("route", name, ".spec.host")
     }
+
+    def getImageStream(imageStreamName, crApiGroup) {
+        return script.sh(
+                script: "oc get is ${imageStreamName} --no-headers | awk '{print \$1}'",
+                returnStdout: true
+        ).trim()
+    }
+
+    def getImageStreamTags(imageStreamName, crApiGroup) {
+        script.sh(
+                script: "oc get is ${imageStreamName} -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
+                returnStdout: true
+        ).trim().tokenize()
+    }
 }

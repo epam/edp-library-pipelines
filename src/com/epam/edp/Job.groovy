@@ -139,7 +139,8 @@ class Job {
 
         }
 
-        setCodebaseTags()
+        def crApiGroup = "${getParameterValue("GIT_SERVER_CR_VERSION")}.edp.epam.com"
+        setCodebaseTags(crApiGroup)
     }
 
     def setGitServerDataToJobContext(gitServerName) {
@@ -153,9 +154,9 @@ class Job {
                 " autouser - ${this.autouser}, host - ${this.host}, sshPort - ${this.sshPort}")
     }
 
-    def setCodebaseTags() {
+    def setCodebaseTags(crApiGroup) {
         codebasesList.each() { codebase ->
-            def codebaseTags = getCodebaseTags(codebase,codebase.inputIs)
+            def codebaseTags = getCodebaseTags(crApiGroup,codebase.inputIs)
 
             if (!codebaseTags.contains(LATEST_TAG))
                 codebaseTags += [LATEST_TAG]
@@ -165,7 +166,7 @@ class Job {
 
             codebase.sortedTags = sortTags(codebaseTags)
 
-            def outputIsVersions = getCodebaseTags(codebase, codebase.outputIs)
+            def outputIsVersions = getCodebaseTags(crApiGroup, codebase.outputIs)
             def sortedOutputIsVersions = sortTags(outputIsVersions)
 
             codebase.latest = getFirstTag(codebase.sortedTags)
@@ -190,17 +191,11 @@ class Job {
         }
     }
 
-    def getCodebaseTags(codebase, imageStream) {
+    def getCodebaseTags(crApiGroup, imageStream) {
         def tags = ['noImageExists']
-        def imageStreamExists = script.sh(
-                script: "oc -n ${metaProject} get is ${imageStream} --no-headers | awk '{print \$1}'",
-                returnStdout: true
-        ).trim()
+        def imageStreamExists = platform.getImageStream(imageStream, crApiGroup)
         if (imageStreamExists != "")
-            tags = script.sh(
-                    script: "oc -n ${metaProject} get is ${imageStream} -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
-                    returnStdout: true
-            ).trim().tokenize()
+            tags = platform.getImageStreamTags(imageStream, crApiGroup)
         def latestTag = tags.find { it == 'latest' }
         if (latestTag) {
             tags = tags.minus(latestTag)
