@@ -20,6 +20,8 @@ import org.apache.maven.artifact.versioning.*
 
 
 class Job {
+    final String EDP_EPAM_COM_POSTFIX = "edp.epam.com"
+
     def type
     Script script
     Platform platform
@@ -61,6 +63,9 @@ class Job {
     def autotestBranch
     def maxOfParallelDeployApps
     def maxOfParallelDeployServices
+    def crApiVersion = "v2"
+    def crApiGroup
+    def dnsWildcard
 
     Job(type, platform, script) {
         this.type = type
@@ -74,6 +79,9 @@ class Job {
     }
 
     def init() {
+        this.dnsWildcard = platform.getJsonPathValue("jenkins", "jenkins", ".spec.edpSpec.dnsWildcard")
+        this.crApiVersion = getParameterValue("GIT_SERVER_CR_VERSION")
+        this.crApiGroup = "${crApiVersion}.${EDP_EPAM_COM_POSTFIX}"
         this.deployTemplatesDirectory = getParameterValue("DEPLOY_TEMPLATES_DIRECTORY", "deploy-templates")
         this.buildUrl = getParameterValue("BUILD_URL")
         this.jenkinsUrl = getParameterValue("JENKINS_URL")
@@ -83,10 +91,10 @@ class Job {
         this.buildUser = getBuildUser()
         switch (type) {
             case JobType.CREATERELEASE.value:
-                this.releaseName = getParameterValue("RELEASE_NAME").toLowerCase()
-                if (!this.releaseName) {
+                if (!getParameterValue("RELEASE_NAME")) {
                     script.error("[JENKINS][ERROR] Parameter RELEASE_NAME is mandatory to be specified, please check configuration of job")
                 }
+                this.releaseName = getParameterValue("RELEASE_NAME").toLowerCase()
                 this.releaseFromCommitId = getParameterValue("COMMIT_ID", "")
             case [JobType.BUILD.value, JobType.CODEREVIEW.value, JobType.CREATERELEASE.value]:
                 def stagesConfig = getParameterValue("STAGES")
@@ -139,8 +147,7 @@ class Job {
 
         }
 
-        def crApiGroup = "${getParameterValue("GIT_SERVER_CR_VERSION")}.edp.epam.com"
-        setCodebaseTags(crApiGroup)
+        setCodebaseTags(this.crApiGroup)
     }
 
     def setGitServerDataToJobContext(gitServerName) {
@@ -339,7 +346,7 @@ class Job {
                 customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
                 consoleLogResponseBody: true
 
-        return new JsonSlurperClassic().parseText(response.content.toLowerCase())
+        return new JsonSlurperClassic().parseText(response.content)
     }
 
     def getStageFromAdminConsole(pipelineName, stageName, pipelineType) {

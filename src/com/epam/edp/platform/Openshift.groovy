@@ -24,7 +24,7 @@ class Openshift extends Kubernetes {
 
     def getImageStream(imageStreamName, crApiGroup) {
         return script.sh(
-                script: "oc get is ${imageStreamName} --no-headers | awk '{print \$1}'",
+                script: "oc get is ${imageStreamName} --ignore-not-found=true --no-headers | awk '{print \$1}'",
                 returnStdout: true
         ).trim()
     }
@@ -34,5 +34,52 @@ class Openshift extends Kubernetes {
                 script: "oc get is ${imageStreamName} -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
                 returnStdout: true
         ).trim().tokenize()
+    }
+
+    def createProjectIfNotExist(name, edpName) {
+        script.openshift.withCluster() {
+            if (!script.openshift.selector("project", name).exists()) {
+                script.openshift.newProject(name)
+                def groupList = ["${edpName}-edp-super-admin", "${edpName}-edp-admin"]
+                groupList.each() { group ->
+                    script.sh("oc adm policy add-role-to-group admin ${group} -n ${name}")
+                }
+                script.sh("oc adm policy add-role-to-group view ${edpName}-edp-view -n ${name}")
+            }
+        }
+    }
+
+    def getObjectList(objectType) {
+        script.openshift.withProject() {
+            return script.openshift.selector(objectType)
+        }
+    }
+
+    def copySharedSecrets(sharedSecretName, secretName, project) {
+        script.sh("oc get --export -o yaml secret ${sharedSecretName} | " +
+                "sed -e 's/name: ${sharedSecretName}/name: ${secretName}/' | " +
+                "oc -n ${project} apply -f -")
+    }
+
+    def createRoleBinding(user, project) {
+        script.sh("oc adm policy add-role-to-user admin ${user} -n ${project}")
+    }
+
+    def deployCodebase(project, templateName, imageName, codebase, dnsWildcard = null, timeout = null, isDeployed = null) {
+        script.sh("oc -n ${project} process -f ${templateName} " +
+                "-p IMAGE_NAME=${imageName} " +
+                "-p APP_VERSION=${codebase.version} " +
+                "-p NAMESPACE=${project} " +
+                "--local=true -o json | oc -n ${project} apply -f -")
+    }
+
+    def verifyDeployedCodebase(name, project) {
+        script.openshiftVerifyDeployment apiURL: '', authToken: '', depCfg: "${name}",
+                namespace: "${project}", verbose: 'false',
+                verifyReplicaCount: 'true', waitTime: '600', waitUnit: 'sec'
+    }
+
+    def rollbackDeployedCodebase(name, project) {
+        script.sh("oc -n ${project} rollout undo dc ${name}")
     }
 }

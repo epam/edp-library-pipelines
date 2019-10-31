@@ -19,23 +19,29 @@ class Kubernetes implements Platform {
     Script script
     def promoteStageName = "Promote-images-ecr"
 
-    def getJsonPathValue(object, name, jsonPath) {
+    def getJsonPathValue(object, name, jsonPath, project = null) {
+        def command = "kubectl get ${object} ${name} -o jsonpath='{${jsonPath}}'"
+        if (project)
+            command = "${command} -n ${project}"
         return script.sh(
-                script: "kubectl get ${object} ${name} -o jsonpath='{${jsonPath}}'",
+                script: command,
                 returnStdout: true
         ).trim()
     }
 
-    def getJsonValue(object, name) {
+    def getJsonValue(object, name, project = null) {
+        def command = "kubectl get ${object} ${name} -o json"
+        if (project)
+            command = "${command} -n ${project}"
         return script.sh(
-                script: "kubectl get ${object} ${name} -o json",
+                script: command,
                 returnStdout: true
         ).trim()
     }
 
     def getImageStream(imageStreamName, crApiGroup) {
         return script.sh(
-                script: "kubectl get cbis.${crApiGroup} ${imageStreamName} --no-headers | awk '{print \$1}'",
+                script: "kubectl get cbis.${crApiGroup} ${imageStreamName} --ignore-not-found=true --no-headers | awk '{print \$1}'",
                 returnStdout: true
         ).trim()
     }
@@ -74,8 +80,8 @@ class Kubernetes implements Platform {
         script.sh(script: "${command}")
     }
 
-    def getObjectStatus(objectType, objectName) {
-        def output = getJsonValue(objectType, objectName)
+    def getObjectStatus(objectType, objectName, project = null) {
+        def output = getJsonValue(objectType, objectName, project)
         def parsedInitContainer = new JsonSlurperClassic().parseText(output)
         return parsedInitContainer["status"]
     }
@@ -84,13 +90,80 @@ class Kubernetes implements Platform {
         return getJsonPathValue("ingress", name, ".spec.rules[0].host")
     }
 
-    def checkObjectExists(objectType, objectName) {
+    def checkObjectExists(objectType, objectName, project = null) {
+        def command = "kubectl get ${objectType} ${objectName} --ignore-not-found=true"
+        if (project)
+            command = "${command} -n ${project}"
+
         def res = script.sh(
-                script: "kubectl get ${objectType} ${objectName} --ignore-not-found=true",
+                script: command,
                 returnStdout: true
         ).trim()
         if (res == "")
             return false
         return true
+    }
+
+    def createProjectIfNotExist(name, edpName) {
+        if (!checkObjectExists("ns", name))
+            script.sh("kubectl create ns ${name}")
+    }
+
+    def getObjectList(objectType) {
+        return script.sh(
+                script: "kubectl get ${objectType} -o jsonpath='{.items[*].metadata.name}'",
+                returnStdout: true
+        ).trim().tokenize()
+    }
+
+    def copySharedSecrets(sharedSecretName, secretName, project) {
+        script.sh("kubectl get --export -o yaml secret ${sharedSecretName} | " +
+                "sed -e 's/name: ${sharedSecretName}/name: ${secretName}/' | " +
+                "kubectl -n ${project} apply -f -")
+    }
+
+    def createRoleBinding(user, project) {
+        println("[JENKINS][DEBUG] Security model for kubernetes hasn't defined yet")
+    }
+
+    def createConfigMapFromFile(cmName, project, filePath) {
+        script.sh("kubectl create configmap ${cmName} -n ${project} --from-file=${filePath} --dry-run -o yaml | oc apply -f -")
+    }
+
+    def deployCodebase(project, chartPath, imageName, codebase, dnsWildcard, timeout, isDeployed) {
+        def command = isDeployed ? "upgrade --force" : "install -n"
+        script.sh("helm ${command} " +
+                "${project}-${codebase.name} " +
+                "--wait " +
+                "--timeout=${timeout} " +
+                "--namespace ${project} " +
+                "--set name=${codebase.name} " +
+                "--set namespace=${project} " +
+                "--set image.name=${imageName} " +
+                "--set image.version=${codebase.version} " +
+                "--set database.required=${codebase.db_kind != "" ? true : false} " +
+                "--set database.version=${codebase.db_version} " +
+                "--set database.capacity=${codebase.db_capacity} " +
+                "--set database.database.storageClass=${codebase.db_storage} " +
+                "--set ingress.required=${codebase.route_site != "" ? true : false} " +
+                "--set ingress.path=${codebase.route_path} " +
+                "--set ingress.site=${codebase.route_site} " +
+                "--set dnsWildcard=${dnsWildcard} " +
+                "${chartPath}")
+    }
+
+    def verifyDeployedCodebase(name, project) {
+        def deployedCodebases = script.sh(
+                script: "helm ls --namespace=${project} -a -q",
+                returnStdout: true
+        ).trim().tokenize()
+        if (deployedCodebases.contains("${project}-${name}".toString()))
+            return true
+
+        return false
+    }
+
+    def rollbackDeployedCodebase(name, project) {
+        script.sh("helm rollback ${project}-${name} 0")
     }
 }

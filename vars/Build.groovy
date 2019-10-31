@@ -58,7 +58,7 @@ def call() {
         }
     }
 
-    node(context.codebase.config.jenkinsslave.toLowerCase()) {
+    node(context.codebase.config.jenkinsSlave.toLowerCase()) {
         context.workDir = new File("/tmp/${RandomStringUtils.random(10, true, true)}")
         context.workDir.deleteDir()
 

@@ -24,7 +24,6 @@ class GitInfo {
 
     static final String GIT_SERVER_PLURAL_NAME = "gitservers"
     static final String CODEBASE_PLURAL_NAME = "codebases"
-    static final String EDP_EPAM_COM_POSTFIX = "edp.epam.com"
 
     def credentialsId
     def autouser
@@ -50,9 +49,9 @@ class GitInfo {
 
     def init() {
         this.gitServerCrName = job.getParameterValue("GIT_SERVER_CR_NAME")
-        this.gitServerCrVersion = job.getParameterValue("GIT_SERVER_CR_VERSION")
-        this.gitServerCrApiGroup = "${GIT_SERVER_PLURAL_NAME}.${gitServerCrVersion}.${EDP_EPAM_COM_POSTFIX}"
-        this.codebaseCrApiGroup = "${CODEBASE_PLURAL_NAME}.${gitServerCrVersion}.${EDP_EPAM_COM_POSTFIX}"
+        this.gitServerCrVersion = job.crApiVersion
+        this.gitServerCrApiGroup = "${GIT_SERVER_PLURAL_NAME}.${gitServerCrVersion}.${job.EDP_EPAM_COM_POSTFIX}"
+        this.codebaseCrApiGroup = "${CODEBASE_PLURAL_NAME}.${gitServerCrVersion}.${job.EDP_EPAM_COM_POSTFIX}"
 
         script.println("[JENKINS][DEBUG] Git Server CR Name: ${gitServerCrName}")
         script.println("[JENKINS][DEBUG] Git Server CR Version: ${gitServerCrVersion}")

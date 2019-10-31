@@ -46,6 +46,6 @@ class Codebase {
             script.error("[JENKINS][ERROR] Component ${this.name} has not been found in configuration")
         componentSettings.cloneUrl = "ssh://${gitAutouser}@${gitHost}:${gitSshPort}${repositoryRelativePath?.trim() ? repositoryRelativePath : "/" + gitProject}"
         this.config = componentSettings
-        this.gitServerCrName = componentSettings.gitserver
+        this.gitServerCrName = componentSettings.gitServer
     }
 }

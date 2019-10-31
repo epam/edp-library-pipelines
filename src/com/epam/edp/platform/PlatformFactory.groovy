@@ -29,14 +29,22 @@ def getPlatformImpl(script) {
 }
 
 interface Platform {
-    def getJsonPathValue(object, name, jsonPath)
-    def getJsonValue(object, name)
+    def getJsonPathValue(object, name, jsonPath, project)
+    def getJsonValue(object, name, project)
     def getExternalEndpoint(name)
     def apply(fileName)
     def copyToPod(source, destination, podName,podNamespace, podContainerName)
     def deleteObject(objectType, objectName, force)
-    def getObjectStatus(objectType, objectName)
+    def getObjectStatus(objectType, objectName, project)
     def getImageStream(imageStreamName, crApiGroup)
     def getImageStreamTags(imageStreamName, crApiGroup)
-    def checkObjectExists(objectType, objectName)
+    def checkObjectExists(objectType, objectName, project)
+    def createProjectIfNotExist(name, edpName)
+    def getObjectList(objectType)
+    def copySharedSecrets(sharedSecretName, secretName, project)
+    def createRoleBinding(user, project)
+    def createConfigMapFromFile(cmName, project, filePath)
+    def deployCodebase(project, templateName, imageName, codebase, dnsWildcard, timeout, isDeployed)
+    def verifyDeployedCodebase(name, project)
+    def rollbackDeployedCodebase(name, project)
 }
