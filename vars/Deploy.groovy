@@ -89,6 +89,6 @@ def call() {
         }
         context.job.promotion.sourceProject = context.job.metaProject
 
-        context.job.runStage("Promote-images", context)
+        context.job.runStage(context.platform.promoteStageName, context)
     }
 }
