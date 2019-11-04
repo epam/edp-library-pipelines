@@ -78,7 +78,7 @@ class Job {
         this.buildUrl = getParameterValue("BUILD_URL")
         this.jenkinsUrl = getParameterValue("JENKINS_URL")
         this.edpName = platform.getJsonPathValue("cm", "user-settings", ".data.edp_name")
-        this.adminConsoleUrl = platform.getJsonPathValue("cm", "user-settings", ".data.admin_console_url")
+        this.adminConsoleUrl = platform.getJsonPathValue("edpcomponent", "edp-admin-console", ".spec.url")
         this.codebasesList = getCodebaseFromAdminConsole()
         this.buildUser = getBuildUser()
         switch (type) {
@@ -316,9 +316,9 @@ class Job {
 
         def clientSecret = getSecretField("admin-console-client", "clientSecret")
 
-        def dnsWildcard = platform.getJsonPathValue("cm", "user-settings", ".data.dns_wildcard")
+        def keycloakUrl = platform.getJsonPathValue("edpcomponent", "main-keycloak", ".spec.url")
 
-        def response = script.httpRequest url: "https://keycloak-security.${dnsWildcard}/auth/realms/${this.edpName}-edp-cicd-main/protocol/openid-connect/token",
+        def response = script.httpRequest url: "${keycloakUrl}/auth/realms/${this.edpName}-edp-cicd-main/protocol/openid-connect/token",
                 httpMode: 'POST',
                 contentType: 'APPLICATION_FORM',
                 requestBody: "grant_type=password&username=${userCredentials.username}&password=${userCredentials.password}" +
