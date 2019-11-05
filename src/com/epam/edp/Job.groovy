@@ -119,7 +119,7 @@ class Job {
         this.deployProject = "${this.edpName}-${this.pipelineName}-${stageName}"
         stageContent.applications.each() { item ->
             stageCodebasesList.add(item.name)
-            codebaseBranchList["${item.name}"] = ["branch"   : item.branchName,
+            codebaseBranchList["${item.name}"] = ["branch"  : item.branchName,
                                                   "inputIs" : item.inputIs,
                                                   "outputIs": item.outputIs]
         }
@@ -156,7 +156,7 @@ class Job {
 
     def setCodebaseTags(crApiGroup) {
         codebasesList.each() { codebase ->
-            def codebaseTags = getCodebaseTags(crApiGroup,codebase.inputIs)
+            def codebaseTags = getCodebaseTags(crApiGroup, codebase.inputIs)
 
             if (!codebaseTags.contains(LATEST_TAG))
                 codebaseTags += [LATEST_TAG]
@@ -184,8 +184,8 @@ class Job {
             script.println("Stable tag: ${codebase.stable}")
 
             codebase.sortedTags = codebase.sortedTags
-                    .collect{tag -> tag.replaceAll(/^latest/, "${LATEST_TAG} (${codebase.latest})") }
-                    .collect{tag -> tag.replaceAll(/^stable/, "${STABLE_TAG} (${codebase.stable})") }
+                    .collect { tag -> tag.replaceAll(/^latest/, "${LATEST_TAG} (${codebase.latest})") }
+                    .collect { tag -> tag.replaceAll(/^stable/, "${STABLE_TAG} (${codebase.stable})") }
 
             script.println("sorted Params: ${codebase.sortedTags}")
         }
@@ -227,11 +227,12 @@ class Job {
         return tags
                 .collect { new ComparableVersion(it) }
                 .sort { e1, e2 ->
-            def res = map.getOrDefault(e1.toString(), 0) - map.getOrDefault(e2.toString(), 0)
-            if (res == 0){ e1.compareTo(e2) }
-            res
-        }
-        .collect { item -> item.toString() }
+                    def res = map.getOrDefault(e1.toString(), 0) - map.getOrDefault(e2.toString(), 0)
+                    if (res == 0)
+                        return e1 <=> e2
+                    return res
+                }
+                .collect { item -> item.toString() }
                 .reverse()
     }
 
@@ -250,8 +251,7 @@ class Job {
                     codebase.version = LATEST_TAG
                 if (codebase.version.startsWith(STABLE_TAG))
                     codebase.version = STABLE_TAG
-            }
-            else {
+            } else {
                 userInputImagesToDeploy.each() { item ->
                     if (item.value.startsWith(LATEST_TAG)) {
                         userInputImagesToDeploy.put(item.key, LATEST_TAG)
