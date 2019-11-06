@@ -89,6 +89,10 @@ def call() {
         }
         context.job.promotion.sourceProject = context.job.metaProject
 
-        context.job.runStage(context.platform.promoteStageName, context)
+        if (context.job.applicationsToPromote) {
+            if (!context.job.applicationsToPromote.isEmpty()) {
+                context.job.runStage(context.platform.promoteStageName, context)
+            }
+        }
     }
 }
