@@ -139,6 +139,8 @@ class Kubernetes implements Platform {
                 "--namespace ${project} " +
                 "--set name=${codebase.name} " +
                 "--set namespace=${project} " +
+                "--set cdPipelineName=${codebase.cdPipelineName} " +
+                "--set cdPipelineStageName=${codebase.cdPipelineStageName} " +
                 "--set image.name=${imageName} " +
                 "--set image.version=${codebase.version} " +
                 "--set database.required=${codebase.db_kind != "" ? true : false} " +
