@@ -32,7 +32,6 @@ class Job {
     def edpName
     def stageName
     def runStageName
-    def metaProject
     def deployProject
     def stageWithoutPrefixName
     def buildCause
@@ -115,7 +114,6 @@ class Job {
     def initDeployJob() {
         this.pipelineName = script.JOB_NAME.split("-cd-pipeline")[0]
         this.stageName = script.JOB_NAME.split('/')[1]
-        this.metaProject = "${this.edpName}-edp-cicd"
         def stageCodebasesList = []
         def codebaseBranchList = [:]
         def stageContent = getStageFromAdminConsole(this.pipelineName, stageName, "cd-pipeline")

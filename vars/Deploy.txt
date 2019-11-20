@@ -237,7 +237,6 @@
 <li>String context.job.edpName</li>
 <li>String context.job.buildUrl</li>
 <li>String context.job.jenkinsUrl</li>
-<li>String context.job.metaProject</li>
 <li>List context.job.applicationsList [['name':'application1_name','version':'application1_version],...]</li>
 <li>String context.job.deployTemplatesDirectory</li>
 </ul>

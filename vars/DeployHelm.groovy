@@ -87,7 +87,6 @@ def call() {
                 error("[JENKINS][ERROR] Stage Quality gate ${qualityGate.stepName} for ${context.job.deployProject} has been failed. Reason - ${ex}")
             }
         }
-        context.job.promotion.sourceProject = context.job.metaProject
 
         context.job.runStage(context.platform.promoteStageName, context)
     }
