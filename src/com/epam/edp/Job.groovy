@@ -85,7 +85,7 @@ class Job {
         this.deployTemplatesDirectory = getParameterValue("DEPLOY_TEMPLATES_DIRECTORY", "deploy-templates")
         this.buildUrl = getParameterValue("BUILD_URL")
         this.jenkinsUrl = getParameterValue("JENKINS_URL")
-        this.edpName = platform.getJsonPathValue("cm", "user-settings", ".data.edp_name")
+        this.edpName = platform.getJsonPathValue("cm", "edp-config", ".data.edp_name")
         this.adminConsoleUrl = platform.getJsonPathValue("edpcomponent", "edp-admin-console", ".spec.url")
         this.codebasesList = getCodebaseFromAdminConsole()
         this.buildUser = getBuildUser()
