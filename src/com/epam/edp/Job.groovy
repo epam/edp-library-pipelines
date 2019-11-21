@@ -33,6 +33,7 @@ class Job {
     def stageName
     def runStageName
     def deployProject
+    def ciProject
     def stageWithoutPrefixName
     def buildCause
     def buildUser
@@ -123,6 +124,7 @@ class Job {
         this.qualityGates = stageContent.qualityGates
         this.stageWithoutPrefixName = "${this.pipelineName}-${stageName}"
         this.deployProject = "${this.edpName}-${this.pipelineName}-${stageName}"
+        this.ciProject = getParameterValue("CI_NAMESPACE")
         stageContent.applications.each() { item ->
             stageCodebasesList.add(item.name)
             codebaseBranchList["${item.name}"] = ["branch"  : item.branchName,
