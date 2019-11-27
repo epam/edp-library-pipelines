@@ -36,6 +36,13 @@ class Openshift extends Kubernetes {
         ).trim().tokenize()
     }
 
+    def protected getTags(imageStreamName, crApiGroup) {
+        return script.sh(
+                script: "oc get is ${imageStreamName} -o jsonpath='{range .status.tags[*]}{.tag}{\" | \"}{.items[*].created}{\"\\n\"}{end}'",
+                returnStdout: true
+        ).trim().split('\n')
+    }
+
     def createProjectIfNotExist(name, edpName) {
         script.openshift.withCluster() {
             if (!script.openshift.selector("project", name).exists()) {

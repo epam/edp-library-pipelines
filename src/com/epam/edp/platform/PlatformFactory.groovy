@@ -38,6 +38,7 @@ interface Platform {
     def getObjectStatus(objectType, objectName, project)
     def getImageStream(imageStreamName, crApiGroup)
     def getImageStreamTags(imageStreamName, crApiGroup)
+    def getImageStreamTagsWithTime(imageStreamName, crApiGroup)
     def checkObjectExists(objectType, objectName, project)
     def createProjectIfNotExist(name, edpName)
     def getObjectList(objectType)

@@ -14,10 +14,12 @@
 
 package com.epam.edp
 
-import groovy.json.JsonSlurperClassic
 import com.epam.edp.platform.Platform
+import groovy.json.JsonSlurperClassic
 import org.apache.maven.artifact.versioning.*
 
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 
 class Job {
     final String EDP_EPAM_COM_POSTFIX = "edp.epam.com"
@@ -161,6 +163,31 @@ class Job {
                 " autouser - ${this.autouser}, host - ${this.host}, sshPort - ${this.sshPort}")
     }
 
+    @NonCPS
+    def private sortTagsByTime(tags) {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+        return tags.sort { a, b ->
+            dateFormat.parse(b.value).time <=> dateFormat.parse(a.value).time
+        }
+    }
+
+    def private getLastUpdatedTag(tags) {
+        return sortTagsByTime(tags).keySet().stream().findFirst().get()
+    }
+
+    def private getTag(imageStreamName, crApiGroup) {
+        def isExists = platform.getImageStream(imageStreamName, crApiGroup)
+        if (isExists == "") {
+            return "noImageExists"
+        }
+
+        def isTags = platform.getImageStreamTagsWithTime(imageStreamName, crApiGroup)
+        if (isTags == null) {
+            return "noImageExists"
+        }
+        return getLastUpdatedTag(isTags)
+    }
+
     def setCodebaseTags(crApiGroup) {
         codebasesList.each() { codebase ->
             def codebaseTags = getCodebaseTags(crApiGroup, codebase.inputIs)
@@ -176,8 +203,9 @@ class Job {
             def outputIsVersions = getCodebaseTags(crApiGroup, codebase.outputIs)
             def sortedOutputIsVersions = sortTags(outputIsVersions)
 
-            codebase.latest = getFirstTag(codebase.sortedTags)
-            codebase.stable = getFirstTag(sortedOutputIsVersions)
+            codebase.latest = getTag(codebase.inputIs, crApiGroup)
+            codebase.stable = getTag(codebase.outputIs, crApiGroup)
+
 
             if (codebase.stable == "noImageExists") {
                 codebase.sortedTags -= [STABLE_TAG]
@@ -234,12 +262,12 @@ class Job {
         return tags
                 .collect { new ComparableVersion(it) }
                 .sort { e1, e2 ->
-                    def res = map.getOrDefault(e1.toString(), 0) - map.getOrDefault(e2.toString(), 0)
-                    if (res == 0)
-                        return e1 <=> e2
-                    return res
-                }
-                .collect { item -> item.toString() }
+            def res = map.getOrDefault(e1.toString(), 0) - map.getOrDefault(e2.toString(), 0)
+            if (res == 0)
+                return e1 <=> e2
+            return res
+        }
+        .collect { item -> item.toString() }
                 .reverse()
     }
 

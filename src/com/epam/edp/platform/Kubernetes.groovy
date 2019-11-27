@@ -53,6 +53,25 @@ class Kubernetes implements Platform {
         ).trim().tokenize()
     }
 
+    def getImageStreamTagsWithTime(imageStreamName, crApiGroup) {
+        def tags = getTags(imageStreamName, crApiGroup)
+        if (tags == null || tags.size() == 0) {
+            return null
+        }
+
+        return tags.collectEntries {
+            def s = it.split(" | ")
+            [(s[0]): s[2]]
+        }
+    }
+
+    def protected getTags(imageStreamName, crApiGroup) {
+        return script.sh(
+                script: "kubectl get cbis.${crApiGroup} ${imageStreamName} -o jsonpath='{range .spec.tags[*]}{.name}{\" | \"}{.created}{\"\\n\"}{end}'",
+                returnStdout: true
+        ).trim().split('\n')
+    }
+
     def apply(fileName) {
         script.sh(script: "oc apply -f ${fileName}")
     }
