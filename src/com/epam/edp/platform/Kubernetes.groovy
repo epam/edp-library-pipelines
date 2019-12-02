@@ -61,7 +61,7 @@ class Kubernetes implements Platform {
 
         return tags.collectEntries {
             def s = it.split(" | ")
-            [(s[0]): s[2]]
+            "latest" != s[0] ? [(s[0]): s[2]] : [:]
         }
     }
 
