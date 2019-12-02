@@ -39,8 +39,8 @@ def getTokenFromAdminConsole() {
     def clientCredentials = getCredentialsFromSecret("admin-console-client")
 
     def dnsWildcard = getJsonPathValue("cm", "user-settings", ".data.dns_wildcard")
-    def edpName = getJsonPathValue("cm", "user-settings", ".data.edp_name")
-    def response = httpRequest url: "https://keycloak-security.${dnsWildcard}/auth/realms/${edpName}-edp-cicd-main/protocol/openid-connect/token",
+    def realmName = platform.getJsonPathValue("keycloakrealm", "main", ".spec.realmName")
+    def response = httpRequest url: "https://keycloak-security.${dnsWildcard}/auth/realms/${realmName}/protocol/openid-connect/token",
             httpMode: 'POST',
             contentType: 'APPLICATION_FORM',
             requestBody: "grant_type=password&username=${userCredentials.username}&password=${userCredentials.password}" +
