@@ -43,8 +43,9 @@ def getCodebaseFromAdminConsole(codebaseName = null) {
 def getTokenFromAdminConsole() {
     def userCredentials = getCredentialsFromSecret("ac-reader")
     def clientCredentials = getCredentialsFromSecret("admin-console-client")
-    def dnsWildcard = getJsonPathValue("cm", "user-settings", ".data.dns_wildcard")
-    def realmName = platform.getJsonPathValue("keycloakrealm", "main", ".spec.realmName")
+
+    def dnsWildcard = getJsonPathValue("cm", "edp-config", ".data.dns_wildcard")
+    def realmName = getJsonPathValue("keycloakrealm", "main", ".spec.realmName")
     def response = httpRequest url: "https://keycloak-security.${dnsWildcard}/auth/realms/${realmName}/protocol/openid-connect/token",
             httpMode: 'POST',
             contentType: 'APPLICATION_FORM',
@@ -56,6 +57,19 @@ def getTokenFromAdminConsole() {
             .parseText(response.content)
             .access_token
 }
+
+def getStageFromAdminConsole(pipelineName, stageName, pipelineType) {
+    def accessToken = getTokenFromAdminConsole()
+    def adminConsoleUrl = getJsonPathValue("edpcomponent", "edp-admin-console", ".spec.url")
+    def url = "${adminConsoleUrl}" + "/api/v1/edp/${pipelineType}/${pipelineName}/stage/${stageName}"
+    def response = httpRequest url: "${url}",
+            httpMode: 'GET',
+            customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
+            consoleLogResponseBody: true
+
+    return new JsonSlurperClassic().parseText(response.content)
+}
+
 
 private def getCredentialsFromSecret(name) {
     def credentials = [:]
@@ -93,8 +107,29 @@ node("master") {
                             "--from=${DEV_REGISTRY_URL}/${app.name}-${branch} --confirm=true --reference-policy=local --all --insecure=true"
                     sh "oc -n ${projectName} set image-lookup ${app.name}-${branch}"
                 }
-                catch (Exception ex) {
+                catch(Exception ex) {
                     unstable("[JENKINS][DEBUG] Failed to transfer ${app.name}-${branch} repository with error ${ex}")
+                }
+            }
+        }
+
+        def stages = getGoTemplateValue("stages.v2.edp.epam.com",
+                "{{range .items}}{{.metadata.name}}{{\" \"}}{{end}}").split(' ')
+        stages.each() { stage ->
+            def pipelineName = getJsonPathValue("stages.v2.edp.epam.com", stage, ".spec.cdPipeline")
+            def stageName = getJsonPathValue("stages.v2.edp.epam.com", stage, ".spec.name")
+
+            def stageContent = getStageFromAdminConsole(pipelineName, stageName, "cd-pipeline")
+
+            stageContent.applications.each() { app ->
+                println("[JENKINS][DEBUG] Transferring ${app.outputIs} repository")
+                try {
+                    sh "oc -n ${projectName} import-image ${app.outputIs} " +
+                            "--from=${DEV_REGISTRY_URL}/${app.outputIs} --confirm=true --reference-policy=local --all --insecure=true"
+                    sh "oc -n ${projectName} set image-lookup ${app.outputIs}"
+                }
+                catch(Exception ex) {
+                    unstable("[JENKINS][DEBUG] Failed to transfer ${app.outputIs} repository with error ${ex}")
                 }
             }
         }
