@@ -33,19 +33,15 @@ class Job {
     def deployTemplatesDirectory
     def edpName
     def stageName
-    def runStageName
     def deployProject
     def ciProject
     def stageWithoutPrefixName
-    def buildCause
     def buildUser
     def buildUrl
     def jenkinsUrl
     def codebasesList = []
     def servicesList = []
     def userInputImagesToDeploy
-    def inputProjectPrefix
-    def promotion = [:]
     def releaseName
     def releaseFromCommitId
     def adminConsoleUrl
@@ -55,14 +51,12 @@ class Job {
     def applicationsToPromote
     def deployJobParameters = []
     def sortedVersions = []
-    def autotestName
     def gitProjectPath
     def credentialsId
     def autouser
     def host
     def sshPort
     def testReportFramework
-    def autotestBranch
     def maxOfParallelDeployApps
     def maxOfParallelDeployServices
     def crApiVersion = "v2"
@@ -91,6 +85,17 @@ class Job {
         this.adminConsoleUrl = platform.getJsonPathValue("edpcomponent", "edp-admin-console", ".spec.url")
         this.codebasesList = getCodebaseFromAdminConsole()
         this.buildUser = getBuildUser()
+
+        def stagesConfig = getParameterValue("STAGES")
+        if (!stagesConfig?.trim())
+            script.error("[JENKINS][ERROR] Parameter STAGES is mandatory to be specified, please check configuration of job")
+        try {
+            this.stages = new JsonSlurperClassic().parseText(stagesConfig)
+        }
+        catch (Exception ex) {
+            script.error("[JENKINS][ERROR] Couldn't parse stages configuration from parameter STAGE - not valid JSON formate.\r\nException - ${ex}")
+        }
+
         switch (type) {
             case JobType.CREATERELEASE.value:
                 if (!getParameterValue("RELEASE_NAME")) {
@@ -98,16 +103,6 @@ class Job {
                 }
                 this.releaseName = getParameterValue("RELEASE_NAME").toLowerCase()
                 this.releaseFromCommitId = getParameterValue("COMMIT_ID", "")
-            case [JobType.BUILD.value, JobType.CODEREVIEW.value, JobType.CREATERELEASE.value]:
-                def stagesConfig = getParameterValue("STAGES")
-                if (!stagesConfig?.trim())
-                    script.error("[JENKINS][ERROR] Parameter STAGES is mandatory to be specified, please check configuration of job")
-                try {
-                    this.stages = new JsonSlurperClassic().parseText(stagesConfig)
-                }
-                catch (Exception ex) {
-                    script.error("[JENKINS][ERROR] Couldn't parse stages configuration from parameter STAGE - not valid JSON formate.\r\nException - ${ex}")
-                }
             case JobType.DEPLOY.value:
                 this.maxOfParallelDeployApps = getParameterValue("MAX_PARALLEL_APPS", 5)
                 this.maxOfParallelDeployServices = getParameterValue("MAX_PARALLEL_SERVICES", 3)

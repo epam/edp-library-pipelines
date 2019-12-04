@@ -16,7 +16,6 @@ package com.epam.edp.platform
 
 class Openshift extends Kubernetes {
     Script script
-    def promoteStageName = "Promote-images"
 
     def getExternalEndpoint(name) {
         return getJsonPathValue("route", name, ".spec.host")

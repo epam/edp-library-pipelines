@@ -52,45 +52,19 @@ def call() {
             context.job.generateInputDataForDeployJob()
         }
 
-        context.job.runStage("Deploy", context)
-
-        context.job.qualityGates.each() { qualityGate ->
-            try {
-                switch (qualityGate.qualityGateType) {
-                    case "manual":
-                        stage("${qualityGate.stepName}") {
-                            input "Is everything OK on project ${context.job.deployProject}?"
-                        }
-                        break
-                    case "autotests":
-                        node("maven") {
-                            println("Contents - ${qualityGate.autotest}")
-                            context.buildTool = new BuildToolFactory().getBuildToolImpl(qualityGate.autotest.build_tool, this, context.nexus)
-                            context.buildTool.init()
-
-                            if (qualityGate.autotest.strategy == "import") {
-                                context.job.gitProjectPath = qualityGate.autotest.gitProjectPath
-                            }
-
-                            context.job.setGitServerDataToJobContext(qualityGate.autotest.gitServer)
-
-                            context.job.autotestName = qualityGate.autotest.name
-                            context.job.testReportFramework = qualityGate.autotest.testReportFramework
-                            context.job.autotestBranch = qualityGate.codebaseBranch.branchName
-                            context.job.runStage("automation-tests", context, qualityGate.stepName)
-                        }
-                        break
+        context.job.stages.each() { stage ->
+            if (stage instanceof ArrayList) {
+                def parallelStages = [:]
+                stage.each() { parallelStage ->
+                    parallelStages["${parallelStage.name}"] = {
+                        context.stepName = parallelStage.step_name
+                        context.job.runStage(parallelStage.name, context, parallelStage.step_name)
+                    }
                 }
-            }
-            catch (Exception ex) {
-                context.job.setDescription("Stage Quality gate ${qualityGate.stepName} for ${context.job.deployProject} has been failed", true)
-                error("[JENKINS][ERROR] Stage Quality gate ${qualityGate.stepName} for ${context.job.deployProject} has been failed. Reason - ${ex}")
-            }
-        }
-
-        if (context.job.applicationsToPromote) {
-            if (!context.job.applicationsToPromote.isEmpty()) {
-                context.job.runStage(context.platform.promoteStageName, context)
+                parallel parallelStages
+            } else {
+                context.stepName = stage.step_name
+                context.job.runStage(stage.name, context, stage.step_name)
             }
         }
     }

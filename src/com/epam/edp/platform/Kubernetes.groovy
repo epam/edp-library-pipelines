@@ -17,7 +17,6 @@ import groovy.json.JsonSlurperClassic
 
 class Kubernetes implements Platform {
     Script script
-    def promoteStageName = "Promote-images-ecr"
 
     def getJsonPathValue(object, name, jsonPath, project = null) {
         def command = "kubectl get ${object} ${name} -o jsonpath='{${jsonPath}}'"
