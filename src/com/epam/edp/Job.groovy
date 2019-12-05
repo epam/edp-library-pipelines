@@ -50,13 +50,10 @@ class Job {
     def qualityGates = [:]
     def applicationsToPromote
     def deployJobParameters = []
-    def sortedVersions = []
-    def gitProjectPath
     def credentialsId
     def autouser
     def host
     def sshPort
-    def testReportFramework
     def maxOfParallelDeployApps
     def maxOfParallelDeployServices
     def crApiVersion = "v2"
