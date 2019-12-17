@@ -79,13 +79,13 @@ class Openshift extends Kubernetes {
                 "--local=true -o json | oc -n ${project} apply -f -")
     }
 
-    def verifyDeployedCodebase(name, project) {
-        script.openshiftVerifyDeployment apiURL: '', authToken: '', depCfg: "${name}",
-                namespace: "${project}", verbose: 'false',
-                verifyReplicaCount: 'true', waitTime: '600', waitUnit: 'sec'
+    def verifyDeployedCodebase(name, project, kind) {
+        script.timeout(600) {
+            script.sh("oc -n ${project} rollout status ${kind}/${name}")
+        }
     }
 
-    def rollbackDeployedCodebase(name, project) {
-        script.sh("oc -n ${project} rollout undo dc ${name}")
+    def rollbackDeployedCodebase(name, project, kind) {
+        script.sh("oc -n ${project} rollout undo ${kind}/${name}")
     }
 }

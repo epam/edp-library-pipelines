@@ -48,7 +48,7 @@ class Job {
     def sharedSecretsMask = "edp-shared-"
     def pipelineName
     def qualityGates = [:]
-    def applicationsToPromote
+    def applicationsToPromote = []
     def deployJobParameters = []
     def credentialsId
     def autouser

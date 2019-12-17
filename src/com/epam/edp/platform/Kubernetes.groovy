@@ -172,7 +172,7 @@ class Kubernetes implements Platform {
                 "${chartPath}")
     }
 
-    def verifyDeployedCodebase(name, project) {
+    def verifyDeployedCodebase(name, project, kind = null) {
         def deployedCodebases = script.sh(
                 script: "helm ls --namespace=${project} -a -q",
                 returnStdout: true
@@ -183,7 +183,7 @@ class Kubernetes implements Platform {
         return false
     }
 
-    def rollbackDeployedCodebase(name, project) {
+    def rollbackDeployedCodebase(name, project, kind = null) {
         script.sh("helm rollback ${project}-${name} 0")
     }
 }

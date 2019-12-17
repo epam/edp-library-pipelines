@@ -46,6 +46,6 @@ interface Platform {
     def createRoleBinding(user, project)
     def createConfigMapFromFile(cmName, project, filePath)
     def deployCodebase(project, templateName, imageName, codebase, dnsWildcard, timeout, isDeployed)
-    def verifyDeployedCodebase(name, project)
-    def rollbackDeployedCodebase(name, project)
+    def verifyDeployedCodebase(name, project, kind)
+    def rollbackDeployedCodebase(name, project, kind)
 }
