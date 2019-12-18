@@ -30,7 +30,6 @@ allprojects {
     }
 
     apply plugin: 'java'
-    apply plugin: 'maven'
     apply plugin: 'jacoco'
     apply plugin: 'maven-publish'
 
