@@ -14,8 +14,8 @@
 
 package com.epam.edp.platform
 
-def getPlatformImpl(script) {
-    def platformType = System.getenv("PLATFORM_TYPE")
+def getPlatformImpl(script, customPlatformType = null) {
+    def platformType = customPlatformType ? customPlatformType : System.getenv("PLATFORM_TYPE")
     if (!platformType)
         script.error("[JENKINS][ERROR] Mandatory environment variable PLATFORM_TYPE is not defined")
     switch (platformType.toLowerCase()) {
