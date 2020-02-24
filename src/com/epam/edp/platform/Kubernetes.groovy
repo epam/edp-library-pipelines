@@ -72,7 +72,7 @@ class Kubernetes implements Platform {
     }
 
     def apply(fileName) {
-        script.sh(script: "oc apply -f ${fileName}")
+        script.sh(script: "kubectl apply -f ${fileName}")
     }
 
     def deleteObject(objectType, objectName, force = false) {
@@ -145,7 +145,7 @@ class Kubernetes implements Platform {
     }
 
     def createConfigMapFromFile(cmName, project, filePath) {
-        script.sh("kubectl create configmap ${cmName} -n ${project} --from-file=${filePath} --dry-run -o yaml | oc apply -f -")
+        script.sh("kubectl create configmap ${cmName} -n ${project} --from-file=${filePath} --dry-run -o yaml | kubectl apply -f -")
     }
 
     def deployCodebase(project, chartPath, codebase, imageName = null, timeout = "300s", parametersMap, values = null) {
