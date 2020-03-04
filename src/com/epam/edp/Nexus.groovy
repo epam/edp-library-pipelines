@@ -26,6 +26,7 @@ class Nexus {
     def credentialsId
     def host
     def port
+    def basePath
     def repositoriesUrl
     def restUrl
 
@@ -40,8 +41,10 @@ class Nexus {
         this.credentialsId = job.getParameterValue("NEXUS_CREDENTIALS", "ci.user")
         this.host = job.getParameterValue("NEXUS_HOST", "nexus")
         this.port = job.getParameterValue("NEXUS_HTTP_PORT", "8081")
-        this.repositoriesUrl = "http://${this.host}:${this.port}/repository"
-        this.restUrl = "http://${this.host}:${this.port}/service/rest"
+        basePath = platform.getJsonPathValue("nexus", "nexus", ".spec.basePath")
+        this.basePath = basePath != "" ? "/${basePath}" : ""
+        this.repositoriesUrl = "http://${this.host}:${this.port}${this.basePath}/repository"
+        this.restUrl = "http://${this.host}:${this.port}${this.basePath}/service/rest"
     }
 
 
