@@ -53,7 +53,17 @@ def call() {
 
             context.job.printDebugInfo(context)
             println("[JENKINS][DEBUG] Codebase config - ${context.codebase.config}")
-            context.job.setDisplayName("${currentBuild.number}-${context.git.branch}")
+
+            if (context.codebase.config.versioningType == "edp") {
+                def branchIndex = context.codebase.config.codebase_branch.branchName.findIndexOf{it == context.git.branch}
+                def build = context.codebase.config.codebase_branch.build_number.get(branchIndex).toInteger()
+                def version = context.codebase.config.codebase_branch.version.get(branchIndex)
+
+                context.job.setDisplayName("${version}.${++build}")
+            } else {
+                context.job.setDisplayName("${currentBuild.number}-${context.git.branch}")
+            }
+
             context.job.setDescription("Name: ${context.codebase.config.name}\r\nLanguage: ${context.codebase.config.language}" +
                     "\r\nBuild tool: ${context.codebase.config.build_tool}\r\nFramework: ${context.codebase.config.framework}")
         }
