@@ -30,6 +30,9 @@ class Sonar {
     }
 
     def init() {
-        this.route = platform.getExternalEndpoint("sonar")
+        if (platform.checkObjectExists("edpcomponent", "sonar"))
+            this.route = platform.getJsonPathValue("edpcomponent", "sonar", ".spec.url")
+        else
+            script.println("[WARNING] Sonar edpcomponent not exist")
     }
 }
