@@ -15,21 +15,27 @@
 package com.epam.edp.buildtool
 
 import com.epam.edp.Nexus
+import com.epam.edp.Job
 import groovy.json.*
 
 class Dotnet implements BuildTool {
     Script script
     Nexus nexus
+    Job job
 
     def sln_filename
     def hostedRepository
     def groupRepository
     def scripts = [:]
     def nugetApiKey
+    def groupPath
+    def hostedPath
 
     def init() {
-        this.hostedRepository = "${nexus.repositoriesUrl}/edp-dotnet-hosted/"
-        this.groupRepository = "${nexus.repositoriesUrl}/edp-dotnet-group/"
+        this.groupPath = job.getParameterValue("ARTIFACTS_PUBLIC_PATH", "edp-dotnet-group")
+        this.hostedPath = job.getParameterValue("ARTIFACTS_HOSTED_PATH", "edp-dotnet-hosted")
+        this.hostedRepository = "${nexus.repositoriesUrl}/${hostedPath}/"
+        this.groupRepository = "${nexus.repositoriesUrl}/${groupPath}/"
         this.scripts = ['get-nuget-token': ['scriptPath': this.script.libraryResource("nexus/get-nuget-token.groovy")]]
         this.sln_filename = null
         this.nugetApiKey = getNugetToken("get-nuget-token")

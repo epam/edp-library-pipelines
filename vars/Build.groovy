@@ -63,8 +63,8 @@ def call() {
         context.workDir = new File("/tmp/${RandomStringUtils.random(10, true, true)}")
         context.workDir.deleteDir()
 
-        context.buildTool = new BuildToolFactory().getBuildToolImpl(context.codebase.config.build_tool, this, context.nexus)
-        context.buildTool.init()
+            context.buildTool = new BuildToolFactory().getBuildToolImpl(context.codebase.config.build_tool, this, context.nexus, context.job)
+            context.buildTool.init()
 
         context.job.stages.each() { stage ->
             if (stage instanceof ArrayList) {

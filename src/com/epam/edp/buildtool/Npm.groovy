@@ -14,19 +14,25 @@
 
 package com.epam.edp.buildtool
 
+import com.epam.edp.Job
 import com.epam.edp.Nexus
 
 class Npm implements BuildTool {
     Script script
     Nexus nexus
+    Job job
 
     def settings
-    def hostedRepository
     def groupRepository
+    def hostedRepository
+    def groupPath
+    def hostedPath
 
 
     def init() {
-        this.hostedRepository = "${nexus.repositoriesUrl}/edp-npm-hosted/"
-        this.groupRepository = "${nexus.repositoriesUrl}/edp-npm-group/"
+        this.groupPath = job.getParameterValue("ARTIFACTS_PUBLIC_PATH", "edp-npm-group")
+        this.hostedPath = job.getParameterValue("ARTIFACTS_HOSTED_PATH", "edp-npm-hosted")
+        this.hostedRepository = "${nexus.repositoriesUrl}/${hostedPath}/"
+        this.groupRepository = "${nexus.repositoriesUrl}/${groupPath}/"
     }
 }

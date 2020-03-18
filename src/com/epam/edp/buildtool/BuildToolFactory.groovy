@@ -14,20 +14,21 @@
 
 package com.epam.edp.buildtool
 
+import com.epam.edp.Job
 import com.epam.edp.Nexus
 
-def getBuildToolImpl(builtTool, script, Nexus nexus) {
+def getBuildToolImpl(builtTool, script, Nexus nexus, Job job) {
     switch (builtTool.toLowerCase()) {
         case BuildToolType.MAVEN.value:
-            return new Maven(script: script, nexus: nexus)
+            return new Maven(script: script, nexus: nexus, job: job)
         case BuildToolType.NPM.value:
-            return new Npm(script: script, nexus: nexus)
+            return new Npm(script: script, nexus: nexus, job: job)
         case BuildToolType.GRADLE.value:
-            return new Gradle(script: script, nexus: nexus)
+            return new Gradle(script: script, nexus: nexus, job: job)
         case BuildToolType.DOTNET.value:
-            return new Dotnet(script: script, nexus: nexus)
+            return new Dotnet(script: script, nexus: nexus, job: job)
         default:
-            return new Any(script: script, nexus: nexus)
+            return new Any(script: script, nexus: nexus, job: job)
     }
 }
 
