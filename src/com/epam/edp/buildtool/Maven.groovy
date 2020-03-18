@@ -14,23 +14,33 @@
 
 package com.epam.edp.buildtool
 
+import com.epam.edp.Job
 import com.epam.edp.Nexus
 import org.apache.commons.lang.RandomStringUtils
 
 class Maven implements BuildTool {
     Script script
     Nexus nexus
+    Job job
 
     def settings
-    def hostedRepository
     def groupRepository
+    def hostedRepository
     def command
+    def snapshotsPath
+    def releasesPath
+    def groupPath
+    def hostedPath
 
     def init() {
+        this.snapshotsPath = job.getParameterValue("ARTIFACTS_SNAPSHOTS_PATH", "edp-maven-snapshots")
+        this.releasesPath = job.getParameterValue("ARTIFACTS_RELEASES_PATH", "edp-maven-releases")
+        this.hostedPath = job.getParameterValue("ARTIFACTS_HOSTED_PATH", "edp-maven")
+        this.groupPath = job.getParameterValue("ARTIFACTS_PUBLIC_PATH", "edp-maven-group")
         this.settings = writeSettingsFile(this.script.libraryResource("maven/settings.xml"))
-        this.hostedRepository = "${nexus.repositoriesUrl}/edp-maven"
-        this.groupRepository = "${nexus.repositoriesUrl}/edp-maven-group"
-        this.command = "mvn --settings ${this.settings} -Dartifactory.basePath=${nexus.basePath} "
+        this.groupRepository = "${nexus.repositoriesUrl}/${this.groupPath}"
+        this.hostedRepository = "${nexus.repositoriesUrl}/${this.hostedPath}"
+        this.command = "mvn --settings ${this.settings} -Dartifactory.baseUrl=${nexus.baseUrl} -Dartifactory.releasePath=${this.releasesPath} -Dartifactory.snapshotsPath=${this.snapshotsPath} -Dartifactory.groupPath=${this.groupPath} "
     }
 
     private writeSettingsFile(fileContent) {

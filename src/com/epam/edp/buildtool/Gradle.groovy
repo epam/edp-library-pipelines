@@ -16,20 +16,26 @@ package com.epam.edp.buildtool
 
 import com.epam.edp.Nexus
 import org.apache.commons.lang.RandomStringUtils
+import com.epam.edp.Job
 
 class Gradle implements BuildTool {
     Script script
     Nexus nexus
+    Job job
 
     def settings
-    def hostedRepository
     def groupRepository
+    def hostedRepository
     def command
+    def groupPath
+    def hostedPath
 
     def init() {
+        this.hostedPath = job.getParameterValue("ARTIFACTS_HOSTED_PATH", "edp-maven")
+        this.groupPath = job.getParameterValue("ARTIFACTS_PUBLIC_PATH", "edp-maven-group")
+        this.hostedRepository = "${nexus.repositoriesUrl}/${this.hostedPath}"
+        this.groupRepository = "${nexus.repositoriesUrl}/${this.groupPath}"
         this.settings = writeSettingsFile(this.script.libraryResource("gradle/init.gradle"))
-        this.hostedRepository = "${nexus.repositoriesUrl}/edp-maven"
-        this.groupRepository = "${nexus.repositoriesUrl}/edp-maven-group"
         this.command = "gradle -I ${settings} -PnexusMavenRepositoryUrl=${groupRepository}"
     }
 
