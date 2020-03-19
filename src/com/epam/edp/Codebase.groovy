@@ -30,6 +30,8 @@ class Codebase {
     def deployableModuleDir = ""
     def imageBuildArgs = []
     def gitServerCrName = ""
+    def branchVersion = ""
+    def currentBuildNumber = ""
 
     Codebase(job, name, platform, script) {
         this.job = job
@@ -47,5 +49,12 @@ class Codebase {
         componentSettings.cloneUrl = "ssh://${gitAutouser}@${gitHost}:${gitSshPort}${repositoryRelativePath?.trim() ? repositoryRelativePath : "/" + gitProject}"
         this.config = componentSettings
         this.gitServerCrName = componentSettings.gitServer
+    }
+
+    def setVersions(branchVersion, currentBuildNumber, version, buildVersion) {
+        this.branchVersion = branchVersion
+        this.currentBuildNumber = currentBuildNumber
+        this.version = version
+        this.buildVersion = buildVersion
     }
 }
