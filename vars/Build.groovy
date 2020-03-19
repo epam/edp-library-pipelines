@@ -55,9 +55,9 @@ def call() {
             println("[JENKINS][DEBUG] Codebase config - ${context.codebase.config}")
 
             if (context.codebase.config.versioningType == "edp") {
-                def branchIndex = context.codebase.config.codebase_branch.branchName.findIndexOf { it == context.git.branch }
-                def build = context.codebase.config.codebase_branch.build_number.get(branchIndex).toInteger()
-                def version = context.codebase.config.codebase_branch.version.get(branchIndex)
+                def codebaseBranch = getCodebaseBranch(context.codebase.config.codebase_branch,context.git.branch)
+                def build = codebaseBranch.build_number.toInteger()
+                def version = codebaseBranch.version
                 def currentBuildNumber = ++build
 
                 context.codebase.setVersions(version, currentBuildNumber, "${version}.${currentBuildNumber}", "${version}.${currentBuildNumber}")
@@ -105,4 +105,13 @@ def call() {
             }
         }
     }
+}
+
+@NonCPS
+def private getCodebaseBranch(codebaseBranch, gitBranchName) {
+    return codebaseBranch.stream().filter({
+        return it.release.toBoolean() ?
+                it.branchName.replaceAll("release/", "release-") == gitBranchName :
+                it.branchName == gitBranchName
+    }).findFirst().get()
 }
