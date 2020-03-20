@@ -59,6 +59,8 @@ class Job {
     def crApiVersion = "v2"
     def crApiGroup
     def dnsWildcard
+    def keycloakNamespace
+    def keycloakUrl
 
     Job(type, platform, script) {
         this.type = type
@@ -119,6 +121,8 @@ class Job {
         this.stageWithoutPrefixName = "${this.pipelineName}-${stageName}"
         this.deployProject = "${this.edpName}-${this.pipelineName}-${stageName}"
         this.ciProject = getParameterValue("CI_NAMESPACE")
+        this.keycloakNamespace = getParameterValue("KEYCLOAK_NAMESPACE", "security")
+        this.keycloakUrl = getParameterValue("KEYCLOAK_URL")
         stageContent.applications.each() { item ->
             stageCodebasesList.add(item.name)
             codebaseBranchList["${item.name}"] = ["branch"  : item.branchName,
