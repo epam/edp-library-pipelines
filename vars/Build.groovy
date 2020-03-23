@@ -49,13 +49,15 @@ def call() {
 
             context.factory = new StageFactory(script: this)
             context.factory.loadEdpStages().each() { context.factory.add(it) }
-            context.factory.loadCustomStages("${WORKSPACE.replaceAll("@.*", "")}@script/stages").each() { context.factory.add(it) }
+            context.factory.loadCustomStages("${WORKSPACE.replaceAll("@.*", "")}@script/stages").each() {
+                context.factory.add(it)
+            }
 
             context.job.printDebugInfo(context)
             println("[JENKINS][DEBUG] Codebase config - ${context.codebase.config}")
 
             if (context.codebase.config.versioningType == "edp") {
-                def codebaseBranch = getCodebaseBranch(context.codebase.config.codebase_branch,context.git.branch)
+                def codebaseBranch = getCodebaseBranch(context.codebase.config.codebase_branch, context.git.branch)
                 def build = codebaseBranch.build_number.toInteger()
                 def version = codebaseBranch.version
                 def currentBuildNumber = ++build
@@ -98,9 +100,11 @@ def call() {
         } finally {
             if (context.codebase.config.versioningType == "edp" && currentBuild.currentResult == 'SUCCESS') {
                 def codebaseBranchesName = "codebasebranches.${context.job.crApiVersion}.edp.epam.com"
-                def lastSuccessfulBuild = context.platform.getJsonPathValue(codebaseBranchesName, "${context.codebase.config.name}-${context.git.branch}", ".spec.build")
+                def lastSuccessfulBuild = context.platform.getJsonPathValue(codebaseBranchesName, "${context.codebase.config.name}-${context.git.branch.replaceAll(/\//, "-")}", ".spec.build")
                 sh """
-                    kubectl patch ${codebaseBranchesName} ${context.codebase.config.name}-${context.git.branch} --type=merge -p '{\"status\": {\"lastSuccessfulBuild\": "${lastSuccessfulBuild}"}}'
+                    kubectl patch ${codebaseBranchesName} ${context.codebase.config.name}-${
+                    context.git.branch.replaceAll(/\//, "-")
+                } --type=merge -p '{\"status\": {\"lastSuccessfulBuild\": "${lastSuccessfulBuild}"}}'
                 """
             }
         }
@@ -110,8 +114,6 @@ def call() {
 @NonCPS
 def private getCodebaseBranch(codebaseBranch, gitBranchName) {
     return codebaseBranch.stream().filter({
-        return it.release.toBoolean() ?
-                it.branchName.replaceAll("release/", "release-") == gitBranchName :
-                it.branchName == gitBranchName
+        it.branchName == gitBranchName
     }).findFirst().get()
 }
