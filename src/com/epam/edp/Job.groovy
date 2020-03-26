@@ -350,7 +350,7 @@ class Job {
         def keycloakUrl = platform.getJsonPathValue("edpcomponent", "main-keycloak", ".spec.url")
         def realmName = platform.getJsonPathValue("keycloakrealm", "main", ".spec.realmName")
 
-        def response = script.httpRequest url: "${keycloakUrl}/auth/realms/${realmName}/protocol/openid-connect/token",
+        def response = script.httpRequest url: "${keycloakUrl}/realms/${realmName}/protocol/openid-connect/token",
                 httpMode: 'POST',
                 contentType: 'APPLICATION_FORM',
                 requestBody: "grant_type=password&username=${userCredentials.username}&password=${userCredentials.password}" +

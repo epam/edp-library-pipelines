@@ -37,10 +37,10 @@ def getCodebaseFromAdminConsole(codebaseName = null) {
 def getTokenFromAdminConsole() {
     def userCredentials = getCredentialsFromSecret("ac-reader")
     def clientCredentials = getCredentialsFromSecret("admin-console-client")
+    def keycloakUrl = getJsonPathValue("edpcomponent", "main-keycloak", ".spec.url")
 
-    def dnsWildcard = getJsonPathValue("cm", "edp-config", ".data.dns_wildcard")
     def realmName = getJsonPathValue("keycloakrealm", "main", ".spec.realmName")
-    def response = httpRequest url: "https://keycloak-security.${dnsWildcard}/auth/realms/${realmName}/protocol/openid-connect/token",
+    def response = httpRequest url: "${keycloakUrl}/realms/${realmName}/protocol/openid-connect/token",
             httpMode: 'POST',
             contentType: 'APPLICATION_FORM',
             requestBody: "grant_type=password&username=${userCredentials.username}&password=${userCredentials.password}" +
