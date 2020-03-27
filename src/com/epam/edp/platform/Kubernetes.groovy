@@ -148,10 +148,9 @@ class Kubernetes implements Platform {
         script.sh("kubectl create configmap ${cmName} -n ${project} --from-file=${filePath} --dry-run -o yaml | oc apply -f -")
     }
 
-    def deployCodebase(project, chartPath, imageName, codebase, dnsWildcard, timeout, isDeployed) {
-        def command = isDeployed ? "upgrade --force" : "install -n"
-        script.sh("helm ${command} " +
-                "${project}-${codebase.name} " +
+    def deployCodebase(project, chartPath, imageName, codebase, dnsWildcard, timeout = "300s") {
+        script.sh("helm upgrade --force --install " +
+                "${codebase.name} " +
                 "--wait " +
                 "--timeout=${timeout} " +
                 "--namespace ${project} " +

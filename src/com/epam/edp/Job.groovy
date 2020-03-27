@@ -31,6 +31,7 @@ class Job {
     def STABLE_TAG = "stable"
     def stages = [:]
     def deployTemplatesDirectory
+    def deployTimeout
     def edpName
     def stageName
     def deployProject
@@ -119,6 +120,7 @@ class Job {
         this.stageWithoutPrefixName = "${this.pipelineName}-${stageName}"
         this.deployProject = "${this.edpName}-${this.pipelineName}-${stageName}"
         this.ciProject = getParameterValue("CI_NAMESPACE")
+        this.deployTimeout = getParameterValue("DEPLOY_TIMEOUT", "300s")
         stageContent.applications.each() { item ->
             stageCodebasesList.add(item.name)
             codebaseBranchList["${item.name}"] = ["branch"  : item.branchName,
