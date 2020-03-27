@@ -15,6 +15,7 @@
 package com.epam.edp.buildtool
 
 import com.epam.edp.Nexus
+import com.epam.edp.Job
 
 class Any implements BuildTool {
     Script script
