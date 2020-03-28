@@ -183,6 +183,14 @@ class Kubernetes implements Platform {
     }
 
     def rollbackDeployedCodebase(name, project, kind = null) {
-        script.sh("helm rollback ${project}-${name} 0")
+        def releaseStatus = script.sh(
+                script: "helm -n ${project} status ${name} | grep STATUS | awk '{print \$2}'",
+                returnStdout: true
+        ).trim()
+
+        if (releaseStatus != "deployed")
+            script.sh("helm -n ${project} rollback ${name} --wait --cleanup-on-fail")
+        else
+            script.println("[JENKINS][DEBUG] Rollback is not needed current status of ${name} is deployed")
     }
 }
