@@ -61,8 +61,9 @@ def call() {
                 def build = codebaseBranch.build_number.toInteger()
                 def version = codebaseBranch.version
                 def currentBuildNumber = ++build
+                def isReleaseBranch = codebaseBranch.release
 
-                context.codebase.setVersions(version, currentBuildNumber, "${version}.${currentBuildNumber}", "${version}.${currentBuildNumber}")
+                context.codebase.setVersions(version, currentBuildNumber, "${version}.${currentBuildNumber}", "${version}.${currentBuildNumber}", isReleaseBranch)
                 context.job.setDisplayName("${context.codebase.version}")
             } else {
                 context.job.setDisplayName("${currentBuild.number}-${context.git.branch}")
