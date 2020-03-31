@@ -148,10 +148,9 @@ class Kubernetes implements Platform {
         script.sh("kubectl create configmap ${cmName} -n ${project} --from-file=${filePath} --dry-run -o yaml | oc apply -f -")
     }
 
-    def deployCodebase(project, chartPath, imageName, codebase, dnsWildcard, timeout, isDeployed) {
-        def command = isDeployed ? "upgrade --force" : "install -n"
-        script.sh("helm ${command} " +
-                "${project}-${codebase.name} " +
+    def deployCodebase(project, chartPath, imageName, codebase, dnsWildcard, timeout = "300s") {
+        script.sh("helm upgrade --force --install " +
+                "${codebase.name} " +
                 "--wait " +
                 "--timeout=${timeout} " +
                 "--namespace ${project} " +
@@ -184,6 +183,14 @@ class Kubernetes implements Platform {
     }
 
     def rollbackDeployedCodebase(name, project, kind = null) {
-        script.sh("helm rollback ${project}-${name} 0")
+        def releaseStatus = script.sh(
+                script: "helm -n ${project} status ${name} | grep STATUS | awk '{print \$2}'",
+                returnStdout: true
+        ).trim()
+
+        if (releaseStatus != "deployed")
+            script.sh("helm -n ${project} rollback ${name} --wait --cleanup-on-fail")
+        else
+            script.println("[JENKINS][DEBUG] Rollback is not needed current status of ${name} is deployed")
     }
 }
