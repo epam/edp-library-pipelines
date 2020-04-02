@@ -164,7 +164,6 @@ class Kubernetes implements Platform {
                 "--set database.version=${codebase.db_version} " +
                 "--set database.capacity=${codebase.db_capacity} " +
                 "--set database.database.storageClass=${codebase.db_storage} " +
-                "--set ingress.required=${codebase.route_site != "" ? true : false} " +
                 "--set ingress.path=${codebase.route_path} " +
                 "--set ingress.site=${codebase.route_site} " +
                 "--set dnsWildcard=${dnsWildcard} " +
