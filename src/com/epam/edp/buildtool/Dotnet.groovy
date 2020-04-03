@@ -25,16 +25,24 @@ class Dotnet implements BuildTool {
 
     def sln_filename
     def hostedRepository
+    def snapshotRepository
+    def releaseRepository
     def groupRepository
     def scripts = [:]
     def nugetApiKey
     def groupPath
     def hostedPath
+    def snapshotPath
+    def releasePath
 
     def init() {
         this.groupPath = job.getParameterValue("ARTIFACTS_PUBLIC_PATH", "edp-dotnet-group")
         this.hostedPath = job.getParameterValue("ARTIFACTS_HOSTED_PATH", "edp-dotnet-hosted")
+        this.snapshotPath = job.getParameterValue("ARTIFACTS_SNAPSHOT_PATH", "edp-dotnet-snapshots")
+        this.releasePath = job.getParameterValue("ARTIFACTS_RELEASE_PATH", "edp-dotnet-releases")
         this.hostedRepository = "${nexus.repositoriesUrl}/${hostedPath}/"
+        this.snapshotRepository = "${nexus.repositoriesUrl}/${snapshotPath}/"
+        this.releaseRepository = "${nexus.repositoriesUrl}/${releasePath}/"
         this.groupRepository = "${nexus.repositoriesUrl}/${groupPath}/"
         this.scripts = ['get-nuget-token': ['scriptPath': this.script.libraryResource("nexus/get-nuget-token.groovy")]]
         this.sln_filename = null

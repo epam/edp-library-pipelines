@@ -27,12 +27,20 @@ class Npm implements BuildTool {
     def hostedRepository
     def groupPath
     def hostedPath
+    def releaseRepository
+    def snapshotRepository
+    def releasePath
+    def snapshotPath
 
 
     def init() {
         this.groupPath = job.getParameterValue("ARTIFACTS_PUBLIC_PATH", "edp-npm-group")
         this.hostedPath = job.getParameterValue("ARTIFACTS_HOSTED_PATH", "edp-npm-hosted")
+        this.releasePath = job.getParameterValue("ARTIFACTS_RELEASE_PATH", "edp-npm-releases")
+        this.snapshotPath = job.getParameterValue("ARTIFACTS_SNAPSHOT_PATH", "edp-npm-snapshots")
         this.hostedRepository = "${nexus.repositoriesUrl}/${hostedPath}/"
         this.groupRepository = "${nexus.repositoriesUrl}/${groupPath}/"
+        this.releaseRepository = "${nexus.repositoriesUrl}/${releasePath}/"
+        this.snapshotRepository = "${nexus.repositoriesUrl}/${snapshotPath}/"
     }
 }

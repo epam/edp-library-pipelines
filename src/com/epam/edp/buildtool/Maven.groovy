@@ -25,22 +25,22 @@ class Maven implements BuildTool {
 
     def settings
     def groupRepository
-    def hostedRepository
+    def snapshotRepository
+    def releaseRepository
     def command
     def snapshotsPath
     def releasesPath
     def groupPath
-    def hostedPath
     def properties
 
     def init() {
         this.snapshotsPath = job.getParameterValue("ARTIFACTS_SNAPSHOTS_PATH", "edp-maven-snapshots")
         this.releasesPath = job.getParameterValue("ARTIFACTS_RELEASES_PATH", "edp-maven-releases")
-        this.hostedPath = job.getParameterValue("ARTIFACTS_HOSTED_PATH", "edp-maven")
         this.groupPath = job.getParameterValue("ARTIFACTS_PUBLIC_PATH", "edp-maven-group")
         this.settings = writeSettingsFile(this.script.libraryResource("maven/settings.xml"))
         this.groupRepository = "${nexus.repositoriesUrl}/${this.groupPath}"
-        this.hostedRepository = "${nexus.repositoriesUrl}/${this.hostedPath}"
+        this.releaseRepository = "${nexus.repositoriesUrl}/${this.releasesPath}"
+        this.snapshotRepository = "${nexus.repositoriesUrl}/${this.snapshotsPath}"
         this.command = "mvn --settings ${this.settings}"
         this.properties = "-Dartifactory.baseUrl=${nexus.baseUrl} -Dartifactory.releasePath=${this.releasesPath} -Dartifactory.snapshotsPath=${this.snapshotsPath} -Dartifactory.groupPath=${this.groupPath}"
     }
