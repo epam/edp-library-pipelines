@@ -38,11 +38,12 @@ class Maven implements BuildTool {
         this.releasesPath = job.getParameterValue("ARTIFACTS_RELEASES_PATH", "edp-maven-releases")
         this.hostedPath = job.getParameterValue("ARTIFACTS_HOSTED_PATH", "edp-maven")
         this.groupPath = job.getParameterValue("ARTIFACTS_PUBLIC_PATH", "edp-maven-group")
+        this.additionalArgs = job.getParameterValue("ADDITIONAL_BUILDTOOL_ARGS", "")
         this.settings = writeSettingsFile(this.script.libraryResource("maven/settings.xml"))
         this.groupRepository = "${nexus.repositoriesUrl}/${this.groupPath}"
         this.hostedRepository = "${nexus.repositoriesUrl}/${this.hostedPath}"
         this.command = "mvn --settings ${this.settings}"
-        this.properties = "-Dartifactory.baseUrl=${nexus.baseUrl} -Dartifactory.releasePath=${this.releasesPath} -Dartifactory.snapshotsPath=${this.snapshotsPath} -Dartifactory.groupPath=${this.groupPath}"
+        this.properties = "-Dartifactory.baseUrl=${nexus.baseUrl} -Dartifactory.releasePath=${this.releasesPath} -Dartifactory.snapshotsPath=${this.snapshotsPath} -Dartifactory.groupPath=${this.groupPath} ${this.additionalArgs}"
     }
 
     private writeSettingsFile(fileContent) {
