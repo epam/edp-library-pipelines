@@ -32,6 +32,7 @@ class Maven implements BuildTool {
     def groupPath
     def hostedPath
     def properties
+    def additionalArgs
 
     def init() {
         this.snapshotsPath = job.getParameterValue("ARTIFACTS_SNAPSHOTS_PATH", "edp-maven-snapshots")
