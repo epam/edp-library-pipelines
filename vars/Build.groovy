@@ -53,7 +53,7 @@ def call() {
 
             context.job.printDebugInfo(context)
             println("[JENKINS][DEBUG] Codebase config - ${context.codebase.config}")
-            context.job.setDisplayName("${currentBuild.number}-${context.git.branch}")
+            context.job.setDisplayName("${currentBuild.number}-${context.git.displayBranch}")
             context.job.setDescription("Name: ${context.codebase.config.name}\r\nLanguage: ${context.codebase.config.language}" +
                     "\r\nBuild tool: ${context.codebase.config.build_tool}\r\nFramework: ${context.codebase.config.framework}")
         }
