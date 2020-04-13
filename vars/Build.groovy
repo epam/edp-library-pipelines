@@ -66,7 +66,7 @@ def call() {
                 context.codebase.setVersions(version, currentBuildNumber, "${version}.${currentBuildNumber}", "${version}.${currentBuildNumber}", isReleaseBranch)
                 context.job.setDisplayName("${context.codebase.version}")
             } else {
-                context.job.setDisplayName("${currentBuild.number}-${context.git.branch}")
+                context.job.setDisplayName("${currentBuild.number}-${context.git.displayBranch}")
             }
 
             context.job.setDescription("Name: ${context.codebase.config.name}\r\nLanguage: ${context.codebase.config.language}" +
