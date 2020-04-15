@@ -61,7 +61,7 @@ def call() {
                 string(name: 'NAME', value: "${context.codebase.config.name}"),
                 string(name: 'TYPE', value: "${context.codebase.config.type}"),
                 string(name: 'BUILD_TOOL', value: "${context.codebase.config.build_tool}"),
-                string(name: 'BRANCH', value: "${context.job.releaseName.replaceAll("/", "-")}"),
+                string(name: 'BRANCH', value: "${context.job.releaseName}"),
                 string(name: 'GIT_SERVER_CR_NAME', value: "${context.git.gitServerCrName}"),
                 string(name: 'GIT_SERVER_CR_VERSION', value: "${context.git.gitServerCrVersion}"),
                 string(name: 'GIT_CREDENTIALS_ID', value: "${context.git.credentialsId}"),
