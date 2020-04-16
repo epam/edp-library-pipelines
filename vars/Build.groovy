@@ -101,11 +101,10 @@ def call() {
         } finally {
             if (context.codebase.config.versioningType == "edp" && currentBuild.currentResult == 'SUCCESS') {
                 def codebaseBranchesName = "codebasebranches.${context.job.crApiVersion}.edp.epam.com"
-                def lastSuccessfulBuild = context.platform.getJsonPathValue(codebaseBranchesName, "${context.codebase.config.name}-${context.git.branch.replaceAll(/\//, "-")}", ".spec.build")
                 sh """
                     kubectl patch ${codebaseBranchesName} ${context.codebase.config.name}-${
                     context.git.branch.replaceAll(/\//, "-")
-                } --type=merge -p '{\"status\": {\"lastSuccessfulBuild\": "${lastSuccessfulBuild}"}}'
+                } --type=merge -p '{\"status\": {\"lastSuccessfulBuild\": "${context.codebase.currentBuildNumber}"}}'
                 """
             }
         }
