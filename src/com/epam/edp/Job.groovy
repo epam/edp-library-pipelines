@@ -311,7 +311,7 @@ class Job {
     }
 
     def setDescription(description, addDescription = false) {
-        if (addDescription && script.currentBuild.description.length() > 0)
+        if (addDescription && script.currentBuild.description?.trim())
             script.currentBuild.description = "${script.currentBuild.description}\r\n${description}"
         else
             script.currentBuild.description = description
