@@ -311,10 +311,11 @@ class Job {
     }
 
     def setDescription(description, addDescription = false) {
-        if (addDescription && script.currentBuild.description.length() > 0)
-            script.currentBuild.description = "${script.currentBuild.description}\r\n${description}"
-        else
+        if (!addDescription)
             script.currentBuild.description = description
+        else
+            script.currentBuild.description = script.currentBuild.description ? "${script.currentBuild.description}\r\n${description}"
+                    : description
     }
 
     void printDebugInfo(context) {
