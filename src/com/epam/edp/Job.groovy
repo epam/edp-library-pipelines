@@ -61,6 +61,8 @@ class Job {
     def crApiGroup
     def dnsWildcard
     def manualApproveStageTimeout
+    def autodeployTimeout
+    def autodeployLatestVersions
 
     Job(type, platform, script) {
         this.type = type
@@ -123,6 +125,8 @@ class Job {
         this.ciProject = getParameterValue("CI_NAMESPACE")
         this.deployTimeout = getParameterValue("DEPLOY_TIMEOUT", "300s")
         this.manualApproveStageTimeout = getParameterValue("MANUAL_APPROVE_TIMEOUT", "10")
+        this.autodeployTimeout = getParameterValue("AUTODEPLOY_TIMEOUT", "5")
+        this.autodeployLatestVersions = getParameterValue("AUTODEPLOY_LATEST_VERSIONS", false)
         stageContent.applications.each() { item ->
             stageCodebasesList.add(item.name)
             codebaseBranchList["${item.name}"] = ["branch"  : item.branchName,
@@ -268,13 +272,33 @@ class Job {
     }
 
     def generateInputDataForDeployJob() {
+        if (autodeployLatestVersions == "true") {
+            try {
+                script.timeout(time: autodeployTimeout, unit: 'MINUTES') {
+                       setCodebaseVersionFromUser()
+                }
+            } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException ex) {
+                if (ex.getCauses()[0].getUser().toString() == 'SYSTEM') {
+                    script.println("[JENKINS][DEBUG] AUTO_DEPLOY: STARTED")
+                    codebasesList.each() { codebase ->
+                        codebase.version = LATEST_TAG
+                        script.println("[JENKINS][DEBUG] ${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION: ${codebase.latest}")
+                    }
+                } else {
+                    throw ex
+                }
+            }
+        } else {
+            setCodebaseVersionFromUser()
+        }
+    }
+
+    private def setCodebaseVersionFromUser() {
         codebasesList.each() { codebase ->
             deployJobParameters.add(script.choice(choices: "${codebase.sortedTags.join('\n')}", description: '', name: "${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"))
         }
-
         userInputImagesToDeploy = script.input id: 'userInput', message: 'Provide the following information', parameters: deployJobParameters
-        script.println("USERS_INPUT_IMAGES_TO_DEPLOY: ${userInputImagesToDeploy}")
-
+        script.println("[JENKINS][DEBUG] USERS_INPUT_IMAGES_TO_DEPLOY: ${userInputImagesToDeploy}")
         codebasesList.each() { codebase ->
             if (userInputImagesToDeploy instanceof java.lang.String) {
                 codebase.version = userInputImagesToDeploy
