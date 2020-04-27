@@ -49,6 +49,7 @@ def call() {
 
             context.factory = new StageFactory(script: this)
             context.factory.loadEdpStages().each() { context.factory.add(it) }
+            context.factory.loadCustomStagesFromLib().each() { context.factory.add(it) }
             context.factory.loadCustomStages("${WORKSPACE.replaceAll("@.*", "")}@script/stages").each() { context.factory.add(it) }
 
             context.job.printDebugInfo(context)
