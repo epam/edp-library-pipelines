@@ -69,20 +69,19 @@ class GitInfo {
         script.println("[JENKINS][DEBUG] sshPort: ${this.sshPort}")
 
         this.project = defineVariable(["GERRIT_PROJECT", "GERRIT_PROJECT_NAME"])
-        this.branch = defineVariable(["GERRIT_BRANCH", "ghprbActualCommit", "COMMIT_ID", "BRANCH"])
-        this.displayBranch = defineVariable(["GERRIT_BRANCH", "ghprbSourceBranch", "BRANCH"])
+        this.branch = defineVariable(["GERRIT_BRANCH", "ghprbActualCommit", "gitlabMergeRequestLastCommit", "COMMIT_ID", "BRANCH"])
+        this.displayBranch = defineVariable(["GERRIT_BRANCH", "ghprbSourceBranch", "gitlabTargetBranch", "BRANCH"])
 
         switch (job.type) {
             case JobType.CODEREVIEW.value:
-                this.changeNumber = job.getParameterValue("GERRIT_CHANGE_NUMBER")
+                this.changeNumber = defineVariable(["GERRIT_CHANGE_NUMBER", "ghprbPullId", "gitlabMergeRequestIid"])
                 this.patchsetNumber = job.getParameterValue("GERRIT_PATCHSET_NUMBER")
+                this.refspecName = job.getParameterValue("GERRIT_REFSPEC")
                 if (this.patchsetNumber && this.changeNumber)
                     this.changeName = "change-${this.changeNumber}-${this.patchsetNumber}"
 
-                this.changeNumber = this.changeNumber ?: job.getParameterValue("ghprbPullId")
-                this.changeName = this.changeNumber ? "pr-${this.changeNumber}" : ""
-
-                this.refspecName = job.getParameterValue("GERRIT_REFSPEC")
+                if (!this.changeName)
+                    this.changeName = job.getParameterValue("ghprbPullId") ? "pr-${this.changeNumber}" : "mr-${this.changeNumber}"
                 break
             case JobType.CREATERELEASE.value:
                 this.branch = this.branch ?: "master"
