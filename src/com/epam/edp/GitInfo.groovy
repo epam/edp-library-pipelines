@@ -69,7 +69,7 @@ class GitInfo {
         script.println("[JENKINS][DEBUG] sshPort: ${this.sshPort}")
 
         this.project = defineVariable(["GERRIT_PROJECT", "GERRIT_PROJECT_NAME"])
-        this.branch = defineVariable(["GERRIT_BRANCH", "ghprbActualCommit", "gitlabMergeRequestLastCommit", "COMMIT_ID", "BRANCH"])
+        this.branch = defineVariable(["GERRIT_BRANCH", "BRANCH", "ghprbActualCommit", "gitlabMergeRequestLastCommit", "COMMIT_ID"])
         this.displayBranch = defineVariable(["GERRIT_BRANCH", "ghprbSourceBranch", "gitlabTargetBranch", "BRANCH"])
 
         switch (job.type) {
