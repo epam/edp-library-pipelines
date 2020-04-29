@@ -148,26 +148,13 @@ class Kubernetes implements Platform {
         script.sh("kubectl create configmap ${cmName} -n ${project} --from-file=${filePath} --dry-run -o yaml | oc apply -f -")
     }
 
-    def deployCodebase(project, chartPath, imageName, codebase, dnsWildcard, timeout = "300s") {
-        script.sh("helm upgrade --force --install " +
-                "${codebase.name} " +
-                "--wait " +
-                "--timeout=${timeout} " +
-                "--namespace ${project} " +
-                "--set name=${codebase.name} " +
-                "--set namespace=${project} " +
-                "--set cdPipelineName=${codebase.cdPipelineName} " +
-                "--set cdPipelineStageName=${codebase.cdPipelineStageName} " +
-                "--set image.name=${imageName} " +
-                "--set image.version=${codebase.version} " +
-                "--set database.required=${codebase.db_kind != "" ? true : false} " +
-                "--set database.version=${codebase.db_version} " +
-                "--set database.capacity=${codebase.db_capacity} " +
-                "--set database.database.storageClass=${codebase.db_storage} " +
-                "--set ingress.path=${codebase.route_path} " +
-                "--set ingress.site=${codebase.route_site} " +
-                "--set dnsWildcard=${dnsWildcard} " +
-                "${chartPath}")
+    def deployCodebase(project, chartPath, codebase, imageName = null, timeout = "300s", parametersMap) {
+        def command = "helm upgrade --force --install ${codebase.name} --wait --timeout=${timeout} --namespace ${project} ${chartPath}"
+        if(parametersMap)
+            for (param in parametersMap) {
+                command = "${command} --set ${param.name}=${param.value}"
+            }
+        script.sh(command)
     }
 
     def verifyDeployedCodebase(name, project, kind = null) {
