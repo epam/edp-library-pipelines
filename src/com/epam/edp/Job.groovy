@@ -363,7 +363,7 @@ class Job {
             }
         }
         catch(Exception ex) {
-            updateGitlabCommitStatus name: 'Jenkins', state: "failed"
+            script.updateGitlabCommitStatus name: 'Jenkins', state: "failed"
             script.error("[JENKINS][ERROR] Stage ${stageName} has been failed")
         }
     }
