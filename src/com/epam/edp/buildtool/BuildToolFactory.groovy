@@ -27,6 +27,8 @@ def getBuildToolImpl(builtTool, script, Nexus nexus, Job job) {
             return new Gradle(script: script, nexus: nexus, job: job)
         case BuildToolType.DOTNET.value:
             return new Dotnet(script: script, nexus: nexus, job: job)
+        case BuildToolType.PYTHON.value:
+            return new Python(script: script, nexus: nexus, job: job)
         default:
             return new Any(script: script, nexus: nexus, job: job)
     }
