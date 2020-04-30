@@ -352,13 +352,19 @@ class Job {
     }
 
     def runStage(stageName, context, runStageName = null) {
-        script.stage(runStageName ? runStageName : stageName) {
-            if (context.codebase)
-                context.factory.getStage(stageName.toLowerCase(),
-                        context.codebase.config.build_tool.toLowerCase(),
-                        context.codebase.config.type).run(context)
-            else
-                context.factory.getStage(stageName.toLowerCase()).run(context)
+        try {
+            script.stage(runStageName ? runStageName : stageName) {
+                if (context.codebase)
+                    context.factory.getStage(stageName.toLowerCase(),
+                            context.codebase.config.build_tool.toLowerCase(),
+                            context.codebase.config.type).run(context)
+                else
+                    context.factory.getStage(stageName.toLowerCase()).run(context)
+            }
+        }
+        catch(Exception ex) {
+            updateGitlabCommitStatus name: 'Jenkins', state: "failed"
+            script.error("[JENKINS][ERROR] Stage ${stageName} has been failed")
         }
     }
 
