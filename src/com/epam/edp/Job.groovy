@@ -363,8 +363,9 @@ class Job {
             }
         }
         catch(Exception ex) {
+            script.println "[JENKINS][ERROR] Trace: ${ex.getStackTrace().collect { it.toString() }.join('\n')}"
             script.updateGitlabCommitStatus name: 'Jenkins', state: "failed"
-            script.error("[JENKINS][ERROR] Stage ${stageName} has been failed")
+            script.error("[JENKINS][ERROR] Stage ${stageName} has been failed\r\n Exception - ${ex}")
         }
     }
 
