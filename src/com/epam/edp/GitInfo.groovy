@@ -70,7 +70,7 @@ class GitInfo {
 
         this.project = defineVariable(["GERRIT_PROJECT", "GERRIT_PROJECT_NAME"])
         this.branch = defineVariable(["GERRIT_BRANCH", "BRANCH", "ghprbActualCommit", "gitlabMergeRequestLastCommit", "COMMIT_ID"])
-        this.displayBranch = defineVariable(["GERRIT_BRANCH", "ghprbSourceBranch", "ghprbSourceBranch", "BRANCH"])
+        this.displayBranch = defineVariable(["GERRIT_BRANCH", "ghprbSourceBranch", "gitlabSourceBranch", "BRANCH"])
 
         switch (job.type) {
             case JobType.CODEREVIEW.value:
