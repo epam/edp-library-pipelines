@@ -51,7 +51,9 @@ def call() {
             context.factory = new StageFactory(script: this)
             context.factory.loadEdpStages().each() { context.factory.add(it) }
             context.factory.loadCustomStagesFromLib().each() { context.factory.add(it) }
-            context.factory.loadCustomStages("${WORKSPACE.replaceAll("@.*", "")}@script/stages").each() { context.factory.add(it) }
+            context.factory.loadCustomStages("${WORKSPACE.replaceAll("@.*", "")}@script/stages").each() {
+                context.factory.add(it)
+            }
 
             context.job.printDebugInfo(context)
             println("[JENKINS][DEBUG] Codebase config - ${context.codebase.config}")
@@ -73,14 +75,25 @@ def call() {
                 def parallelStages = [:]
                 stage.each() { parallelStage ->
                     parallelStages["${parallelStage.name}"] = {
-                        context.job.runStage(parallelStage.name, context)
+                        try {
+                            context.job.runStage(parallelStage.name, context)
+                        }
+                        catch (Exception ex) {
+                            context.job.failStage(parallelStage.name, ex)
+                        }
                     }
                 }
                 parallel parallelStages
             } else {
-                context.job.runStage(stage.name, context)
+                try {
+                    context.job.runStage(stage.name, context)
+                }
+                catch (Exception ex) {
+                    context.job.failStage(stage.name, ex)
+                }
             }
         }
     }
+
     updateGitlabCommitStatus name: 'Jenkins', state: "success"
 }
