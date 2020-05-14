@@ -270,12 +270,12 @@ class Job {
         return tags
                 .collect { new ComparableVersion(it) }
                 .sort { e1, e2 ->
-            def res = map.getOrDefault(e1.toString(), 0) - map.getOrDefault(e2.toString(), 0)
-            if (res == 0)
-                return e1 <=> e2
-            return res
-        }
-        .collect { item -> item.toString() }
+                    def res = map.getOrDefault(e1.toString(), 0) - map.getOrDefault(e2.toString(), 0)
+                    if (res == 0)
+                        return e1 <=> e2
+                    return res
+                }
+                .collect { item -> item.toString() }
                 .reverse()
     }
 
@@ -283,7 +283,7 @@ class Job {
         if (autodeployLatestVersions == "true") {
             try {
                 script.timeout(time: autodeployTimeout, unit: 'MINUTES') {
-                       setCodebaseVersionFromUser()
+                    setCodebaseVersionFromUser()
                 }
             } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException ex) {
                 if (ex.getCauses()[0].getUser().toString() == 'SYSTEM') {
@@ -360,21 +360,20 @@ class Job {
     }
 
     def runStage(stageName, context, runStageName = null) {
-        try {
-            script.stage(runStageName ? runStageName : stageName) {
-                if (context.codebase)
-                    context.factory.getStage(stageName.toLowerCase(),
-                            context.codebase.config.build_tool.toLowerCase(),
-                            context.codebase.config.type).run(context)
-                else
-                    context.factory.getStage(stageName.toLowerCase()).run(context)
-            }
+        script.stage(runStageName ? runStageName : stageName) {
+            if (context.codebase)
+                context.factory.getStage(stageName.toLowerCase(),
+                        context.codebase.config.build_tool.toLowerCase(),
+                        context.codebase.config.type).run(context)
+            else
+                context.factory.getStage(stageName.toLowerCase()).run(context)
         }
-        catch(Exception ex) {
-            script.println "[JENKINS][ERROR] Trace: ${ex.getStackTrace().collect { it.toString() }.join('\n')}"
-            script.updateGitlabCommitStatus name: 'Jenkins', state: "failed"
-            script.error("[JENKINS][ERROR] Stage ${stageName} has been failed\r\n Exception - ${ex}")
-        }
+    }
+
+    def failStage(stageName, exception) {
+        script.println "[JENKINS][ERROR] Trace: ${exception.getStackTrace().collect { it.toString() }.join('\n')}"
+        script.updateGitlabCommitStatus name: 'Jenkins', state: "failed"
+        script.error("[JENKINS][ERROR] Stage ${stageName.name} has been failed\r\n Exception - ${exception}")
     }
 
     private def getBuildCause() {
