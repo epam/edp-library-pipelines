@@ -12,6 +12,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.*/
 
+
 import com.epam.edp.Codebase
 import com.epam.edp.Job
 import com.epam.edp.JobType
@@ -67,6 +68,7 @@ def call() {
                 string(name: 'GIT_SERVER_CR_VERSION', value: "${context.git.gitServerCrVersion}"),
                 string(name: 'GIT_CREDENTIALS_ID', value: "${context.git.credentialsId}"),
                 string(name: 'REPOSITORY_PATH', value: "${context.job.getParameterValue("REPOSITORY_PATH")}"),
+                string(name: 'JIRA_INTEGRATION_ENABLED', value: "${context.job.getParameterValue("JIRA_INTEGRATION_ENABLED")}")
         ]
 
         context.job.stages.each() { stage ->
