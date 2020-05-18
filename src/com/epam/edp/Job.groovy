@@ -373,7 +373,7 @@ class Job {
     def failStage(stageName, exception) {
         script.println "[JENKINS][ERROR] Trace: ${exception.getStackTrace().collect { it.toString() }.join('\n')}"
         script.updateGitlabCommitStatus name: 'Jenkins', state: "failed"
-        script.error("[JENKINS][ERROR] Stage ${stageName.name} has been failed\r\n Exception - ${exception}")
+        script.error("[JENKINS][ERROR] Stage ${stageName} has been failed\r\n Exception - ${exception}")
     }
 
     private def getBuildCause() {
