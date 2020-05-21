@@ -86,6 +86,10 @@ class GitInfo {
             case JobType.CREATERELEASE.value:
                 this.branch = this.branch ?: "master"
                 break
+            case JobType.BUILD.value:
+                this.changeNumber = job.getParameterValue("GERRIT_CHANGE_NUMBER", 0)
+                this.patchsetNumber = job.getParameterValue("GERRIT_PATCHSET_NUMBER", 0)
+                break
         }
         script.println("[JENKINS][DEBUG]\r\nproject = ${project}\r\nbranch = ${branch}\r\ndisplayBranch = ${displayBranch}")
 
