@@ -71,7 +71,7 @@ class Openshift extends Kubernetes {
         script.sh("oc adm policy add-role-to-user admin ${user} -n ${project}")
     }
 
-    def deployCodebase(project, templateName, codebase, imageName, timeout = null, parametersMap = null) {
+    def deployCodebase(project, templateName, codebase, imageName, timeout = null, parametersMap = null, values = null) {
         script.sh("oc -n ${project} process -f ${templateName} " +
                 "-p IMAGE_NAME=${imageName} " +
                 "-p APP_VERSION=${codebase.version} " +
