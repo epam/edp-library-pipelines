@@ -45,7 +45,7 @@ interface Platform {
     def copySharedSecrets(sharedSecretName, secretName, project)
     def createRoleBinding(user, project)
     def createConfigMapFromFile(cmName, project, filePath)
-    def deployCodebase(project, templateName, codebase, imageName, timeout, parametersMap)
+    def deployCodebase(project, templateName, codebase, imageName, timeout, parametersMap, values)
     def verifyDeployedCodebase(name, project, kind)
     def rollbackDeployedCodebase(name, project, kind)
 }
