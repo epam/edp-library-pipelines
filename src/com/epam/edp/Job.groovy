@@ -359,14 +359,20 @@ class Job {
         script.println("[JENKINS][DEBUG] Pipeline's context:\n${debugOutput}")
     }
 
-    def runStage(stageName, context, runStageName = null) {
-        script.stage(runStageName ? runStageName : stageName) {
-            if (context.codebase)
-                context.factory.getStage(stageName.toLowerCase(),
-                        context.codebase.config.build_tool.toLowerCase(),
-                        context.codebase.config.type).run(context)
-            else
-                context.factory.getStage(stageName.toLowerCase()).run(context)
+    def runStage(stageName, context, displayStageName = null) {
+        displayStageName = displayStageName ? displayStageName : stageName
+        try {
+            script.stage(displayStageName) {
+                if (context.codebase)
+                    context.factory.getStage(stageName.toLowerCase(),
+                            context.codebase.config.build_tool.toLowerCase(),
+                            context.codebase.config.type).run(context)
+                else
+                    context.factory.getStage(stageName.toLowerCase()).run(context)
+            }
+        }
+        catch(Exception ex) {
+            failStage(displayStageName, ex)
         }
     }
 
