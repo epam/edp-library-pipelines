@@ -68,7 +68,8 @@ def call() {
                 string(name: 'GIT_SERVER_CR_VERSION', value: "${context.git.gitServerCrVersion}"),
                 string(name: 'GIT_CREDENTIALS_ID', value: "${context.git.credentialsId}"),
                 string(name: 'REPOSITORY_PATH', value: "${context.job.getParameterValue("REPOSITORY_PATH")}"),
-                string(name: 'JIRA_INTEGRATION_ENABLED', value: "${context.job.getParameterValue("JIRA_INTEGRATION_ENABLED")}")
+                string(name: 'JIRA_INTEGRATION_ENABLED', value: "${context.job.getParameterValue("JIRA_INTEGRATION_ENABLED")}"),
+                string(name: 'PLATFORM_TYPE', value: "${context.job.getParameterValue("PLATFORM_TYPE")}")
         ]
 
         context.job.stages.each() { stage ->
