@@ -60,6 +60,7 @@ class Job {
     def crApiVersion = "v2"
     def crApiGroup
     def dnsWildcard
+    def codebasePath = ""
 
     Job(type, platform, script) {
         this.type = type
