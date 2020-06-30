@@ -45,7 +45,7 @@ def getTokenFromAdminConsole() {
     def clientCredentials = getCredentialsFromSecret("admin-console-client")
     def keycloakUrl = getJsonPathValue("edpcomponent", "main-keycloak", ".spec.url")
 
-    def realmName = getJsonPathValue("keycloakrealm", "main", ".spec.realmName")
+    def realmName = getJsonPathValue("keycloakrealm.v2.epam.com", "main", ".spec.realmName")
     def response = httpRequest url: "${keycloakUrl}/realms/${realmName}/protocol/openid-connect/token",
             httpMode: 'POST',
             contentType: 'APPLICATION_FORM',
