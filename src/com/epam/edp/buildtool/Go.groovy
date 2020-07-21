@@ -1,4 +1,4 @@
-/* Copyright 2018 EPAM Systems.
+/* Copyright 2020 EPAM Systems.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -14,17 +14,27 @@
 
 package com.epam.edp.buildtool
 
-enum BuildToolType {
-    MAVEN("maven"), NPM("npm"), GRADLE("gradle"),
-    DOTNET("dotnet"), PYTHON("python"), GO("go")
+import com.epam.edp.Nexus
+import com.epam.edp.Job
 
-    private String value
+class Go implements BuildTool {
 
-    BuildToolType(String value) {
-        this.value = value
+    Script script
+    Nexus nexus
+    Job job
+
+    def command
+    def envVariables = "GOOS=linux GOARCH=amd64 CGO_ENABLED=0"
+
+    def init() {
+        this.command = "${envVariables} go"
     }
 
-    String getValue() {
-        return value
+    def getGoMainPath() {
+        return script.sh(
+                script: "grep -ir 'package main' | awk -F':' '{print \$1}'",
+                returnStdout: true
+        ).trim()
     }
+
 }

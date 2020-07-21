@@ -29,6 +29,8 @@ def getBuildToolImpl(builtTool, script, Nexus nexus, Job job) {
             return new Dotnet(script: script, nexus: nexus, job: job)
         case BuildToolType.PYTHON.value:
             return new Python(script: script, nexus: nexus, job: job)
+        case BuildToolType.GO.value:
+            return new Go(script: script, nexus: nexus, job: job)
         default:
             return new Any(script: script, nexus: nexus, job: job)
     }
