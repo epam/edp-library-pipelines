@@ -89,7 +89,6 @@ class Job {
         this.jenkinsUrl = getParameterValue("JENKINS_URL")
         this.edpName = platform.getJsonPathValue("cm", "edp-config", ".data.edp_name")
         this.adminConsoleUrl = platform.getJsonPathValue("edpcomponent", "edp-admin-console", ".spec.url")
-        this.codebasesList = getCodebaseFromAdminConsole()
         this.buildUser = getBuildUser()
         this.triggerJobName = getParameterValue("TRIGGER_JOB_NAME")
         this.triggerJobWait = getParameterValue("TRIGGER_JOB_WAIT", false)
@@ -131,6 +130,7 @@ class Job {
         this.qualityGates = stageContent.qualityGates
         this.stageWithoutPrefixName = "${this.pipelineName}-${stageName}"
         this.deployProject = "${this.edpName}-${this.pipelineName}-${stageName}"
+        this.codebasesList = getCodebaseFromAdminConsole()
         this.ciProject = getParameterValue("CI_NAMESPACE")
         this.deployTimeout = getParameterValue("DEPLOY_TIMEOUT", "300s")
         this.manualApproveStageTimeout = getParameterValue("MANUAL_APPROVE_TIMEOUT", "10")
