@@ -23,21 +23,33 @@ class Openshift extends Kubernetes {
 
     def getImageStream(imageStreamName, crApiGroup) {
         return script.sh(
-                script: "oc get is ${imageStreamName} --ignore-not-found=true --no-headers | awk '{print \$1}'",
+                script: "oc get cbis.${crApiGroup} ${imageStreamName} --ignore-not-found=true --no-headers | awk '{print \$1}'",
                 returnStdout: true
         ).trim()
     }
 
+    def getImageStreamTagsWithTime(imageStreamName, crApiGroup) {
+        def tags = getTags(imageStreamName, crApiGroup)
+        if (tags == null || tags.size() == 0) {
+            return null
+        }
+
+        return tags.collectEntries {
+            def s = it.split(" | ")
+            "latest" != s[0] ? [(s[0]): s[2]] : [:]
+        }
+    }
+
     def getImageStreamTags(imageStreamName, crApiGroup) {
         script.sh(
-                script: "oc get is ${imageStreamName} -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
+                script: "oc get cbis.${crApiGroup} ${imageStreamName} -o jsonpath='{range .spec.tags[*]}{.name}{\"\\n\"}{end}'",
                 returnStdout: true
         ).trim().tokenize()
     }
 
     def protected getTags(imageStreamName, crApiGroup) {
         return script.sh(
-                script: "oc get is ${imageStreamName} -o jsonpath='{range .status.tags[*]}{.tag}{\" | \"}{.items[*].created}{\"\\n\"}{end}'",
+                script: "oc get cbis.${crApiGroup} ${imageStreamName} -o jsonpath='{range .spec.tags[*]}{.name}{\" | \"}{.created}{\"\\n\"}{end}'",
                 returnStdout: true
         ).trim().split('\n')
     }
