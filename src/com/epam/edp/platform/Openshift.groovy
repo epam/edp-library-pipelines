@@ -46,11 +46,17 @@ class Openshift extends Kubernetes {
         script.openshift.withCluster() {
             if (!script.openshift.selector("project", name).exists()) {
                 script.openshift.newProject(name)
-                def groupList = ["${edpName}-edp-super-admin", "${edpName}-edp-admin"]
-                groupList.each() { group ->
+
+                def adminGroups = platform.getJsonPathValue("cm", "edp-config", ".data.adminGroups")
+                def developerGroups = platform.getJsonPathValue("cm", "edp-config", ".data.developerGroups")
+
+                adminGroups.split(",").each() { group ->
                     script.sh("oc adm policy add-role-to-group admin ${group} -n ${name}")
                 }
-                script.sh("oc adm policy add-role-to-group view ${edpName}-edp-view -n ${name}")
+
+                developerGroups.split(",").each() { group ->
+                    script.sh("oc adm policy add-role-to-group developer ${group} -n ${name}")
+                }
             }
         }
     }
