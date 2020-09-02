@@ -85,6 +85,17 @@ class Openshift extends Kubernetes {
                 "--local=true -o json | oc -n ${project} apply -f -")
     }
 
+    def deployCodebaseHelm(project, chartPath, codebase, imageName = null, timeout = "300s", parametersMap, values = null) {
+        def command = "helm upgrade --force --install ${codebase.name} --wait --timeout=${timeout} --namespace ${project} ${chartPath}"
+        if(parametersMap)
+            for (param in parametersMap) {
+                command = "${command} --set ${param.name}=${param.value}"
+            }
+        if (values)
+            command = "${command} --values ${values}"
+        script.sh(command)
+    }
+
     def verifyDeployedCodebase(name, project, kind) {
         script.timeout(600) {
             script.sh("oc -n ${project} rollout status ${kind}/${name}")
@@ -93,5 +104,17 @@ class Openshift extends Kubernetes {
 
     def rollbackDeployedCodebase(name, project, kind) {
         script.sh("oc -n ${project} rollout undo ${kind}/${name}")
+    }
+
+    def rollbackDeployedCodebaseHelm(name, project, kind = null) {
+        def releaseStatus = script.sh(
+                script: "helm -n ${project} status ${name} | grep STATUS | awk '{print \$2}'",
+                returnStdout: true
+        ).trim()
+
+        if (releaseStatus != "deployed")
+            script.sh("helm -n ${project} rollback ${name} --wait --cleanup-on-fail")
+        else
+            script.println("[JENKINS][DEBUG] Rollback is not needed current status of ${name} is deployed")
     }
 }
