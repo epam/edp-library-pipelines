@@ -1,4 +1,4 @@
-# EDP Library Pipelines Overview
+# EDP Library Pipelines
 
 EDP Library Pipelines repository - is a repository located in Git that stores all pipelines as a code. The main 
 conception is realized on the [Jenkins Shared Libraries](https://www.jenkins.io/doc/book/pipeline/shared-libraries/) allowing to 
@@ -9,7 +9,7 @@ Every pipeline has a set of stages that are consumed from a pipeline`s parameter
 and can be redefined as well. The realization of stages is described in the EDP Library Stages repository.  
  
 The EDP Library Pipelines repository contains a structure and the execution subsequence of the stages parameters. 
-The EDP Library Stages repository describes the specific steps and their realization in frames of a specific pipeline. 
+The [EDP Library Stages](https://github.com/epmd-edp/edp-library-stages#edp-library-stages) repository describes the specific steps and their realization in frames of a specific pipeline. 
 
 If EDP pipelines are not enough for the CICD needs, it is possible to add a custom stage. To do this, a user 
 creates the stage, adds it to the application repository, thus extending the EDP Pipelines Framework by customization, 
@@ -18,6 +18,7 @@ In such a case, the priority goes to the user stages.
 
 ### Related Articles
 
-- [Add a New Custom Global Pipeline Library](documentation/add_new_custom_global_pipeline_lib.md)
-- [Customize CI Pipeline](documentation/customize_ci_pipeline.md)
+- [Add a New Custom Global Pipeline Library](https://github.com/epmd-edp/admin-console/blob/master/documentation/cicd_customization/add_new_custom_global_pipeline_lib.md#add-a-new-custom-global-pipeline-library)
+- [Customize CI Pipeline](https://github.com/epmd-edp/admin-console/blob/master/documentation/cicd_customization/customize_ci_pipeline.md#customize-ci-pipeline)
 
+>_**NOTE**: To get more accurate information on the CI/CD customization, please refer to the [admin-console](https://github.com/epmd-edp/admin-console/tree/master#edp-admin-console) repository._
