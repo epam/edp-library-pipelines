@@ -1,4 +1,4 @@
-/* Copyright 2018 EPAM Systems.
+/* Copyright 2020 EPAM Systems.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -68,19 +68,33 @@ class Openshift extends Kubernetes {
     }
 
     def getObjectList(objectType) {
-        script.openshift.withProject() {
-            return script.openshift.selector(objectType)
+        script.openshift.withCluster() {
+            script.openshift.withProject() {
+                return script.openshift.selector(objectType)
+            }
         }
     }
 
-    def copySharedSecrets(sharedSecretName, secretName, project) {
-        script.sh("oc get --export -o yaml secret ${sharedSecretName} | " +
-                "sed -e 's/name: ${sharedSecretName}/name: ${secretName}/' | " +
-                "oc -n ${project} apply -f -")
+    def copySharedSecrets(sharedSecretsMask, deployProject) {
+        def secretSelector = getObjectList("secret")
+
+        secretSelector.withEach { secret ->
+            def sharedSecretName = secret.name().split('/')[1]
+            def secretName = sharedSecretName.replace(sharedSecretsMask, '')
+            if (sharedSecretName =~ /${sharedSecretsMask}/)
+                if (!checkObjectExists('secrets', secretName))
+                    script.sh("oc get --export -o yaml secret ${sharedSecretName} | " +
+                            "sed -e 's/name: ${sharedSecretName}/name: ${secretName}/' | " +
+                            "oc -n ${deployProject} apply -f -")
+        }
     }
 
-    def createRoleBinding(user, project) {
-        script.sh("oc adm policy add-role-to-user admin ${user} -n ${project}")
+    def createRoleBinding(user, role, project) {
+        script.sh("oc adm policy add-role-to-user ${role} ${user} -n ${project}")
+    }
+
+    def addSccToUser(user,scc, project) {
+        script.sh("oc adm policy add-scc-to-user ${scc} -z ${user} -n ${project}")
     }
 
     def deployCodebase(project, templateName, codebase, imageName, timeout = null, parametersMap = null, values = null) {
@@ -100,4 +114,9 @@ class Openshift extends Kubernetes {
     def rollbackDeployedCodebase(name, project, kind) {
         script.sh("oc -n ${project} rollout undo ${kind}/${name}")
     }
+
+    def createFullImageName(registryHost,ciProject,imageName) {
+        return "${registryHost}/${ciProject}/${imageName}"
+    }
+
 }
