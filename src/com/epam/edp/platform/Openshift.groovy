@@ -78,14 +78,18 @@ class Openshift extends Kubernetes {
     def copySharedSecrets(sharedSecretsMask, deployProject) {
         def secretSelector = getObjectList("secret")
 
-        secretSelector.withEach { secret ->
-            def sharedSecretName = secret.name().split('/')[1]
-            def secretName = sharedSecretName.replace(sharedSecretsMask, '')
-            if (sharedSecretName =~ /${sharedSecretsMask}/)
-                if (!checkObjectExists('secrets', secretName))
-                    script.sh("oc get --export -o yaml secret ${sharedSecretName} | " +
-                            "sed -e 's/name: ${sharedSecretName}/name: ${secretName}/' | " +
-                            "oc -n ${deployProject} apply -f -")
+        script.openshift.withCluster() {
+            script.openshift.withProject() {
+                secretSelector.withEach { secret ->
+                    def sharedSecretName = secret.name().split('/')[1]
+                    def secretName = sharedSecretName.replace(sharedSecretsMask, '')
+                    if (sharedSecretName =~ /${sharedSecretsMask}/)
+                        if (!checkObjectExists('secrets', secretName))
+                            script.sh("oc get --export -o yaml secret ${sharedSecretName} | " +
+                                    "sed -e 's/name: ${sharedSecretName}/name: ${secretName}/' | " +
+                                    "oc -n ${deployProject} apply -f -")
+                }
+            }
         }
     }
 
