@@ -160,7 +160,7 @@ class Kubernetes implements Platform {
     }
 
     def deployCodebaseHelm(project, chartPath, codebase, imageName = null, timeout = "300s", parametersMap, values = null) {
-        def command = "helm upgrade --atomic --force --install ${codebase.name} --wait --timeout=${timeout} --namespace ${project} ${chartPath}"
+        def command = "helm upgrade --atomic --install ${codebase.name} --wait --timeout=${timeout} --namespace ${project} ${chartPath}"
         if(parametersMap)
             for (param in parametersMap) {
                 command = "${command} --set ${param.name}=${param.value}"
