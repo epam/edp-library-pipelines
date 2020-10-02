@@ -206,6 +206,6 @@ class Kubernetes implements Platform {
     }
 
     def createFullImageName(registryHost,ciProject,imageName) {
-        return "${registryHost}/${imageName}"
+        return "${registryHost}/${ciProject}/${imageName}"
     }
 }

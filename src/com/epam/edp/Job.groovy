@@ -93,6 +93,7 @@ class Job {
         this.triggerJobName = getParameterValue("TRIGGER_JOB_NAME")
         this.triggerJobWait = getParameterValue("TRIGGER_JOB_WAIT", false)
         this.triggerJobPropogate = getParameterValue("TRIGGER_JOB_PROPOGATE", false)
+        this.ciProject = getParameterValue("CI_NAMESPACE")
         setTriggerJobParameter()
 
         def stagesConfig = getParameterValue("STAGES")
