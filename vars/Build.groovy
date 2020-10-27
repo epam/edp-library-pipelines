@@ -95,6 +95,7 @@ def call() {
                 }
             }
         } catch (Exception ex) {
+            println "[JENKINS][ERROR] Trace: ${ex.getStackTrace().collect { it.toString() }.join('\n')}"
             println("[JENKINS][ERROR] Build pipeline has been failed. Reason - ${ex}")
             currentBuild.setResult('FAILED')
         } finally {
