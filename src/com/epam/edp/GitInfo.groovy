@@ -84,7 +84,7 @@ class GitInfo {
                     this.changeName = job.getParameterValue("ghprbPullId") ? "pr-${this.changeNumber}" : "mr-${this.changeNumber}"
                 break
             case JobType.CREATERELEASE.value:
-                this.branch = this.branch ?: "master"
+                this.branch = this.branch ?: ""
                 break
             case JobType.BUILD.value:
                 this.changeNumber = job.getParameterValue("GERRIT_CHANGE_NUMBER", 0)
@@ -95,7 +95,7 @@ class GitInfo {
 
         if (!this.project)
             script.error("[JENKINS][ERROR] Couldn't determine project, please make sure that GERRIT_PROJECT_NAME variable is defined")
-        if (!this.branch)
+        if (!this.branch && job.type != JobType.CREATERELEASE.value)
             script.error("[JENKINS][ERROR] Couldn't determine branch to clone, please make sure that BRANCH variable is defined")
 
         def strategy = platform.getJsonPathValue(codebaseCrApiGroup, this.project, ".spec.strategy")
