@@ -68,6 +68,7 @@ class Job {
     def triggerJobPropogate
     def triggerJobParameters = []
     def defaultHelmDownloadUrl = "https://get.helm.sh/helm-v3.2.4-linux-amd64.tar.gz"
+    def codebasePath = ""
 
     Job(type, platform, script) {
         this.type = type
