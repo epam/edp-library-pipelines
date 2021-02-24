@@ -65,10 +65,15 @@ class Kubernetes implements Platform {
     }
 
     def protected getTags(imageStreamName, crApiGroup) {
-        return script.sh(
+        def tags = script.sh(
                 script: "kubectl get cbis.${crApiGroup} ${imageStreamName} -o jsonpath='{range .spec.tags[*]}{.name}{\" | \"}{.created}{\"\\n\"}{end}'",
                 returnStdout: true
-        ).trim().split('\n')
+        ).trim()
+        if (tags.size() == 0) {
+            return null
+        }
+
+        return tags.split('\n')
     }
 
     def apply(fileName) {

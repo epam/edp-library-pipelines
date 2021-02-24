@@ -48,10 +48,15 @@ class Openshift extends Kubernetes {
     }
 
     def protected getTags(imageStreamName, crApiGroup) {
-        return script.sh(
+        def tags = script.sh(
                 script: "oc get cbis.${crApiGroup} ${imageStreamName} -o jsonpath='{range .spec.tags[*]}{.name}{\" | \"}{.created}{\"\\n\"}{end}'",
                 returnStdout: true
-        ).trim().split('\n')
+        ).trim()
+        if (tags.size() == 0) {
+            return null
+        }
+
+        return tags.split('\n')
     }
 
     def createProjectIfNotExist(name, edpName) {
