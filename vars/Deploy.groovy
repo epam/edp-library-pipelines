@@ -51,7 +51,7 @@ def call() {
             context.job.printDebugInfo(context)
             context.job.setDisplayName("${currentBuild.displayName}-${context.job.deployProject}")
 
-            context.job.generateInputDataForDeployJob()
+            context.job.generateCodebaseVersionsInputData()
         }
 
         context.job.stages.each() { stage ->

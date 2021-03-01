@@ -16,6 +16,7 @@ package com.epam.edp
 
 import com.epam.edp.platform.Platform
 import groovy.json.JsonSlurperClassic
+import groovy.json.JsonSlurper
 import org.apache.maven.artifact.versioning.*
 
 import java.text.DateFormat
@@ -61,8 +62,6 @@ class Job {
     def crApiGroup
     def dnsWildcard
     def manualApproveStageTimeout
-    def autodeployTimeout
-    def autodeployLatestVersions
     def triggerJobName
     def triggerJobWait
     def triggerJobPropogate
@@ -136,8 +135,7 @@ class Job {
         this.ciProject = getParameterValue("CI_NAMESPACE")
         this.deployTimeout = getParameterValue("DEPLOY_TIMEOUT", "300s")
         this.manualApproveStageTimeout = getParameterValue("MANUAL_APPROVE_TIMEOUT", "10")
-        this.autodeployTimeout = getParameterValue("AUTODEPLOY_TIMEOUT", "5")
-        this.autodeployLatestVersions = getParameterValue("AUTODEPLOY_LATEST_VERSIONS", false)
+
         stageContent.applications.each() { item ->
             stageCodebasesList.add(item.name)
             codebaseBranchList["${item.name}"] = ["branch"  : item.branchName,
@@ -282,29 +280,37 @@ class Job {
                 .reverse()
     }
 
-    def generateInputDataForDeployJob() {
-        if (autodeployLatestVersions == "true") {
-            try {
-                script.timeout(time: autodeployTimeout, unit: 'MINUTES') {
-                    setCodebaseVersionFromUser()
-                }
-            } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException ex) {
-                if (ex.getCauses()[0].getUser().toString() == 'SYSTEM') {
-                    script.println("[JENKINS][DEBUG] AUTO_DEPLOY: STARTED")
-                    codebasesList.each() { codebase ->
-                        codebase.version = LATEST_TAG
-                        script.println("[JENKINS][DEBUG] ${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION: ${codebase.latest}")
-                    }
-                } else {
-                    throw ex
-                }
-            }
-        } else {
-            setCodebaseVersionFromUser()
+    def generateCodebaseVersionsInputData() {
+        def autoDeploy = getParameterValue("AUTODEPLOY", false)
+        if (autoDeploy != null && autoDeploy.toBoolean()) {
+            setCodebaseVersionsAutomatically()
+            return
+        }
+        setCodebaseVersionsManually()
+    }
+
+    private def setCodebaseVersionsAutomatically() {
+        def codebaseVersions = getParameterValue("CODEBASE_VERSIONS", "")
+        if (!codebaseVersions?.trim()) {
+            script.error("[JENKINS][ERROR] Codebase versions must be passed to job.")
+        }
+        script.println("[JENKINS][INFO] Auto deploy codebases: ${codebaseVersions}")
+
+        def versions = new JsonSlurper().parseText(codebaseVersions)
+        codebasesList.each() { codebase ->
+            def c = findCodebase(versions, codebase.name)
+            codebase.version = c ? c.tag : "No Deploy"
+            script.println("[JENKINS][DEBUG] ${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION: ${codebase.version}")
         }
     }
 
-    private def setCodebaseVersionFromUser() {
+    @NonCPS
+    private def findCodebase(array, value) {
+        return array.stream().filter {it.codebase == value}.findAny().orElse(null)
+
+    }
+
+    private def setCodebaseVersionsManually() {
         codebasesList.each() { codebase ->
             deployJobParameters.add(script.choice(choices: "${codebase.sortedTags.join('\n')}", description: '', name: "${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"))
         }
