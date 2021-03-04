@@ -14,9 +14,9 @@
 
 package com.epam.edp.buildtool
 
+import com.epam.edp.Job
 import com.epam.edp.Nexus
 import org.apache.commons.lang.RandomStringUtils
-import com.epam.edp.Job
 
 class Gradle implements BuildTool {
     Script script
@@ -29,20 +29,22 @@ class Gradle implements BuildTool {
     def command
     def groupPath
     def hostedPath
+    def properties = ""
 
     def init() {
         this.hostedPath = job.getParameterValue("ARTIFACTS_HOSTED_PATH", "edp-maven")
         this.groupPath = job.getParameterValue("ARTIFACTS_PUBLIC_PATH", "edp-maven-group")
         this.hostedRepository = "${nexus.repositoriesUrl}/${this.hostedPath}"
         this.groupRepository = "${nexus.repositoriesUrl}/${this.groupPath}"
-        this.settings = writeSettingsFile(this.script.libraryResource("gradle/init.gradle"))
-        this.command = "gradle -I ${settings} -PnexusMavenRepositoryUrl=${groupRepository}"
+        this.settings = "-I ${writeSettingsFile(this.script.libraryResource("gradle/init.gradle"))}"
+        this.properties = "-PnexusMavenRepositoryUrl=${groupRepository}"
+        this.command = "gradle ${settings} "
     }
 
     private writeSettingsFile(fileContent) {
         def settingsDir = new File("/tmp/${RandomStringUtils.random(10, true, true)}")
         settingsDir.deleteDir()
         script.writeFile file: "${settingsDir}/init.gradle", text: fileContent
-        return("${settingsDir}/init.gradle")
+        return ("${settingsDir}/init.gradle")
     }
 }
