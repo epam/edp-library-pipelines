@@ -39,7 +39,7 @@ class Nexus {
 
     def init() {
         this.autouser = job.getParameterValue("NEXUS_AUTOUSER", "jenkins")
-        this.credentialsId = job.getParameterValue("NEXUS_CREDENTIALS", "ci.user")
+        this.credentialsId = job.getParameterValue("NEXUS_CREDENTIALS", "nexus-ci.user")
         if (platform.checkObjectExists("nexus","nexus"))
         {
             script.println("[JENKINS][DEBUG] Nexus CR exist")
