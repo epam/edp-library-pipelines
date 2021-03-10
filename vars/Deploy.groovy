@@ -58,7 +58,7 @@ def call() {
             if (stage instanceof ArrayList) {
                 def parallelStages = [:]
                 stage.each() { parallelStage ->
-                    parallelStages["${parallelStage.name}"] = {
+                    parallelStages["${parallelStage.step_name}"] = {
                         context.stepName = parallelStage.step_name
                         context.job.runStage(parallelStage.name, context, parallelStage.step_name)
                     }
