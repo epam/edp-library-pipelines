@@ -131,7 +131,7 @@ class Job {
         this.qualityGates = stageContent.qualityGates
         this.stageWithoutPrefixName = "${this.pipelineName}-${stageName}"
         this.deployProject = "${this.edpName}-${this.pipelineName}-${stageName}"
-        this.codebasesList = getCodebaseFromAdminConsole()
+        this.codebasesList = getCodebaseFromAdminConsole(pipelineContent.codebaseBranches.appName)
         this.ciProject = getParameterValue("CI_NAMESPACE")
         this.deployTimeout = getParameterValue("DEPLOY_TIMEOUT", "300s")
         this.manualApproveStageTimeout = getParameterValue("MANUAL_APPROVE_TIMEOUT", "10")
@@ -143,18 +143,11 @@ class Job {
                                                   "outputIs": item.outputIs]
         }
 
-        def iterator = codebasesList.listIterator()
-        while (iterator.hasNext()) {
-            if (!stageCodebasesList.contains(iterator.next().name)) {
-                iterator.remove()
-            }
-        }
-
         codebasesList.each() { item ->
             item.branch = codebaseBranchList["${item.name}"].branch
-            item.normalizedName = "${item.name}-${item.branch.replaceAll("[^\\p{L}\\p{Nd}]+", "-")}"
-            item.inputIs = codebaseBranchList["${item.name}"].inputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
-            item.outputIs = codebaseBranchList["${item.name}"].outputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
+            item.normalizedName = "${item.name}-${item.branch}"
+            item.inputIs = codebaseBranchList["${item.name}"].inputIs
+            item.outputIs = codebaseBranchList["${item.name}"].outputIs
 
         }
 
@@ -409,16 +402,25 @@ class Job {
                 .access_token
     }
 
-    def getCodebaseFromAdminConsole(codebaseName = null) {
+    def getCodebaseFromAdminConsole(codebaseNames = null) {
         def accessToken = getTokenFromAdminConsole()
-
-        def url = "${adminConsoleUrl}/api/v1/edp/codebase${codebaseName ? "/${codebaseName}" : ""}"
+        def url = getCodebaseRequestUrl(codebaseNames)
         def response = script.httpRequest url: "${url}",
                 httpMode: 'GET',
                 customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
                 consoleLogResponseBody: true
-
         return new JsonSlurperClassic().parseText(response.content)
+    }
+
+    def getCodebaseRequestUrl(codebaseName = null) {
+        if (codebaseName.getClass() == java.lang.String) {
+            return "${adminConsoleUrl}/api/v1/edp/codebase/${codebaseName}"
+        }
+        if (codebaseName.getClass() == java.util.ArrayList) {
+            def codebases = codebaseName.join(",")
+            return "${adminConsoleUrl}/api/v1/edp/codebase?codebases=${codebases}"
+        }
+        return "${adminConsoleUrl}/api/v1/edp/codebase"
     }
 
     def getStageFromAdminConsole(pipelineName, stageName, pipelineType) {
