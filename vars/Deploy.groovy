@@ -59,13 +59,11 @@ def call() {
                 def parallelStages = [:]
                 stage.each() { parallelStage ->
                     parallelStages["${parallelStage.step_name}"] = {
-                        context.stepName = parallelStage.step_name
                         context.job.runStage(parallelStage.name, context, parallelStage.step_name)
                     }
                 }
                 parallel parallelStages
             } else {
-                context.stepName = stage.step_name
                 context.job.runStage(stage.name, context, stage.step_name)
             }
         }

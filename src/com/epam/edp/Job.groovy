@@ -17,6 +17,7 @@ package com.epam.edp
 import com.epam.edp.platform.Platform
 import groovy.json.JsonSlurperClassic
 import groovy.json.JsonSlurper
+import com.epam.edp.stages.impl.cd.impl.AutomationTests
 import org.apache.maven.artifact.versioning.*
 
 import java.text.DateFormat
@@ -363,13 +364,23 @@ class Job {
 
     def runStage(stageName, context, runStageName = null) {
         script.stage(runStageName ? runStageName : stageName) {
-            if (context.codebase)
+            if (context.codebase) {
                 context.factory.getStage(stageName.toLowerCase(),
                         context.codebase.config.build_tool.toLowerCase(),
                         context.codebase.config.type).run(context)
-            else
-                context.factory.getStage(stageName.toLowerCase()).run(context)
+            } else {
+                run(stageName, context, runStageName)
+            }
         }
+    }
+
+    def run(stageName, context, runStageName = null) {
+        def stage = context.factory.getStage(stageName.toLowerCase())
+        if (stage.getClass() == AutomationTests) {
+            stage.run(context, runStageName)
+            return
+        }
+        stage.run(context)
     }
 
     def failStage(stageName, exception) {
