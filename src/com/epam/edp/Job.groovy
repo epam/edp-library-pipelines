@@ -125,14 +125,15 @@ class Job {
         this.stageName = script.JOB_NAME.split('/')[1]
         def stageCodebasesList = []
         def codebaseBranchList = [:]
-        def stageContent = getStageFromAdminConsole(this.pipelineName, stageName, "cd-pipeline")
-        def pipelineContent = getPipelineFromAdminConsole(this.pipelineName, "cd-pipeline")
+        def tmpAccessToken = getTokenFromAdminConsole()
+        def stageContent = getStageFromAdminConsole(this.pipelineName, stageName, "cd-pipeline", tmpAccessToken)
+        def pipelineContent = getPipelineFromAdminConsole(this.pipelineName, "cd-pipeline", tmpAccessToken)
+        this.codebasesList = getCodebaseFromAdminConsole(pipelineContent.codebaseBranches.appName, tmpAccessToken)
         this.applicationsToPromote = pipelineContent.applicationsToPromote
         this.servicesList = pipelineContent.services
         this.qualityGates = stageContent.qualityGates
         this.stageWithoutPrefixName = "${this.pipelineName}-${stageName}"
         this.deployProject = "${this.edpName}-${this.pipelineName}-${stageName}"
-        this.codebasesList = getCodebaseFromAdminConsole(pipelineContent.codebaseBranches.appName)
         this.ciProject = getParameterValue("CI_NAMESPACE")
         this.deployTimeout = getParameterValue("DEPLOY_TIMEOUT", "300s")
         this.manualApproveStageTimeout = getParameterValue("MANUAL_APPROVE_TIMEOUT", "10")
@@ -413,8 +414,8 @@ class Job {
                 .access_token
     }
 
-    def getCodebaseFromAdminConsole(codebaseNames = null) {
-        def accessToken = getTokenFromAdminConsole()
+    def getCodebaseFromAdminConsole(codebaseNames = null, tmpToken = null), {
+        def accessToken = tmpToken ?: getTokenFromAdminConsole()
         def url = getCodebaseRequestUrl(codebaseNames)
         def response = script.httpRequest url: "${url}",
                 httpMode: 'GET',
@@ -434,8 +435,8 @@ class Job {
         return "${adminConsoleUrl}/api/v1/edp/codebase"
     }
 
-    def getStageFromAdminConsole(pipelineName, stageName, pipelineType) {
-        def accessToken = getTokenFromAdminConsole()
+    def getStageFromAdminConsole(pipelineName, stageName, pipelineType, tmpToken = null) {
+        def accessToken = tmpToken ?: getTokenFromAdminConsole()
 
         def url = "${adminConsoleUrl}" + "/api/v1/edp/${pipelineType}/${pipelineName}/stage/${stageName}"
         def response = script.httpRequest url: "${url}",
@@ -446,8 +447,8 @@ class Job {
         return new JsonSlurperClassic().parseText(response.content)
     }
 
-    def getPipelineFromAdminConsole(pipelineName, pipelineType) {
-        def accessToken = getTokenFromAdminConsole()
+    def getPipelineFromAdminConsole(pipelineName, pipelineType, tmpToken = null) {
+        def accessToken = tmpToken ?: getTokenFromAdminConsole()
 
         def url = "${adminConsoleUrl}" + "/api/v1/edp/${pipelineType}/${pipelineName}"
         def response = script.httpRequest url: "${url}",
