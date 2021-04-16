@@ -414,7 +414,7 @@ class Job {
                 .access_token
     }
 
-    def getCodebaseFromAdminConsole(codebaseNames = null, tmpToken = null), {
+    def getCodebaseFromAdminConsole(codebaseNames = null, tmpToken = null) {
         def accessToken = tmpToken ?: getTokenFromAdminConsole()
         def url = getCodebaseRequestUrl(codebaseNames)
         def response = script.httpRequest url: "${url}",
