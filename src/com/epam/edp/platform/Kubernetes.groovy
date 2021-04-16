@@ -40,7 +40,7 @@ class Kubernetes implements Platform {
 
     def getImageStream(imageStreamName, crApiGroup) {
         return script.sh(
-                script: "kubectl get cbis.${crApiGroup} ${imageStreamName} --ignore-not-found=true --no-headers | awk '{print \$1}'",
+                script: "kubectl get cbis.${crApiGroup} ${imageStreamName} --ignore-not-found=true --no-headers -o=custom-columns=NAME:.metadata.name",
                 returnStdout: true
         ).trim()
     }
