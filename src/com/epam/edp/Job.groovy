@@ -147,10 +147,8 @@ class Job {
 
         codebasesList.each() { item ->
             item.branch = codebaseBranchList["${item.name}"].branch
-            item.normalizedName = "${item.name}-${item.branch}"
-            item.inputIs = codebaseBranchList["${item.name}"].inputIs
-            item.outputIs = codebaseBranchList["${item.name}"].outputIs
-
+            item.inputIs = codebaseBranchList["${item.name}"].inputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
+            item.outputIs = codebaseBranchList["${item.name}"].outputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
         }
 
         setCodebaseTags(this.crApiGroup)
