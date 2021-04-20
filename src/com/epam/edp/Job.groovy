@@ -393,18 +393,17 @@ class Job {
     }
 
     def getTokenFromAdminConsole() {
-        def userCredentials = getCredentialsFromSecret("ac-reader")
-
         def clientSecret = getSecretField("admin-console-client", "clientSecret")
-
+        def clientUsername = getSecretField("admin-console-client", "username")
+        def basicAuth = "${clientUsername}:${clientSecret}".bytes.encodeBase64().toString()
         def keycloakUrl = platform.getJsonPathValue("edpcomponent", "main-keycloak", ".spec.url")
         def realmName = platform.getJsonPathValue("keycloakrealm", "main", ".spec.realmName")
 
         def response = script.httpRequest url: "${keycloakUrl}/realms/${realmName}/protocol/openid-connect/token",
                 httpMode: 'POST',
                 contentType: 'APPLICATION_FORM',
-                requestBody: "grant_type=password&username=${userCredentials.username}&password=${userCredentials.password}" +
-                        "&client_id=admin-console-client&client_secret=${clientSecret}",
+                requestBody: "grant_type=client_credentials",
+                customHeaders: [[name: 'Authorization', value: "Basic ${basicAuth}"]],
                 consoleLogResponseBody: true
 
         return new JsonSlurperClassic()
