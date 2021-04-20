@@ -32,7 +32,7 @@ class Go implements BuildTool {
 
     def getGoMainPath() {
         return script.sh(
-                script: "grep -ir 'package main' | awk -F':' '{print \$1}'",
+                script: "grep -irl 'package main'",
                 returnStdout: true
         ).trim()
     }
