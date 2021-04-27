@@ -145,132 +145,76 @@ class Job {
                                                   "outputIs": item.outputIs]
         }
 
-        codebasesList.each() { item ->
-            item.branch = codebaseBranchList["${item.name}"].branch
-            item.inputIs = codebaseBranchList["${item.name}"].inputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
-            item.outputIs = codebaseBranchList["${item.name}"].outputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
-        }
-
-        setCodebaseTags(this.crApiGroup)
-    }
-
-    def setGitServerDataToJobContext(gitServerName) {
-        def gitServerCrApiGroup = "gitservers.${getParameterValue("GIT_SERVER_CR_VERSION")}.edp.epam.com"
-        this.credentialsId = platform.getJsonPathValue(gitServerCrApiGroup, gitServerName, ".spec.nameSshKeySecret")
-        this.autouser = platform.getJsonPathValue(gitServerCrApiGroup, gitServerName, ".spec.gitUser")
-        this.host = platform.getJsonPathValue(gitServerCrApiGroup, gitServerName, ".spec.gitHost")
-        this.sshPort = platform.getJsonPathValue(gitServerCrApiGroup, gitServerName, ".spec.sshPort")
-
-        println("[JENKINS][DEBUG] GitServer data is set up: credId - ${this.credentialsId}," +
-                " autouser - ${this.autouser}, host - ${this.host}, sshPort - ${this.sshPort}")
-    }
-
-    @NonCPS
-    def private sortTagsByTime(tags) {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
-        return tags.sort { a, b ->
-            dateFormat.parse(b.value).time <=> dateFormat.parse(a.value).time
-        }
-    }
-
-    def private getLastUpdatedTag(tags) {
-        return sortTagsByTime(tags).keySet().stream().findFirst().get()
-    }
-
-    def private getTag(imageStreamName, crApiGroup) {
-        def isExists = platform.getImageStream(imageStreamName, crApiGroup)
-        if (isExists == "") {
-            return "noImageExists"
-        }
-
-        def isTags = platform.getImageStreamTagsWithTime(imageStreamName, crApiGroup)
-        if (isTags == null) {
-            return "noImageExists"
-        }
-        return getLastUpdatedTag(isTags)
-    }
-
-    def setCodebaseTags(crApiGroup) {
         codebasesList.each() { codebase ->
-            def codebaseTags = getCodebaseTags(crApiGroup, codebase.inputIs)
-
-            if (!codebaseTags.contains(LATEST_TAG))
-                codebaseTags += [LATEST_TAG]
-
-            if (!codebaseTags.contains(STABLE_TAG))
-                codebaseTags += [STABLE_TAG]
-
-            codebase.sortedTags = sortTags(codebaseTags)
-
-            def outputIsVersions = getCodebaseTags(crApiGroup, codebase.outputIs)
-            def sortedOutputIsVersions = sortTags(outputIsVersions)
-
-            codebase.latest = getTag(codebase.inputIs, crApiGroup)
-            codebase.stable = getTag(codebase.outputIs, crApiGroup)
-
-
-            if (codebase.stable == "noImageExists") {
-                codebase.sortedTags -= [STABLE_TAG]
-            }
-
-            if (codebase.latest == "noImageExists") {
-                codebase.sortedTags -= [LATEST_TAG]
-            }
-
-            script.println("Latest tag: ${codebase.latest}")
-            script.println("Stable tag: ${codebase.stable}")
-
-            codebase.sortedTags = codebase.sortedTags
-                    .collect { tag -> tag.replaceAll(/^latest/, "${LATEST_TAG} (${codebase.latest})") }
-                    .collect { tag -> tag.replaceAll(/^stable/, "${STABLE_TAG} (${codebase.stable})") }
-
-            script.println("sorted Params: ${codebase.sortedTags}")
+            codebase.branch   = codebaseBranchList["${codebase.name}"].branch
+            codebase.inputIs  = codebaseBranchList["${codebase.name}"].inputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
+            codebase.outputIs = codebaseBranchList["${codebase.name}"].outputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
+            setCodebaseTags(codebase)
         }
     }
 
-    def getCodebaseTags(crApiGroup, imageStream) {
+    def setCodebaseTags(codebase) {
+        def cbisSet = "${codebase.inputIs} ${codebase.outputIs}"
+        def cbisData = script.sh(
+                script: "kubectl get codebaseimagestreams.v2.edp.epam.com ${cbisSet} --ignore-not-found=true --output=json",
+                returnStdout: true
+        ).trim()
+        def cbisJsonData = new JsonSlurperClassic().parseText(cbisData)
+        def images = null
+        if (cbisJsonData.items.spec.tags.name[0] != null){
+            images = cbisJsonData.items.spec.tags.name[0]
+        }
         def tags = ['noImageExists']
-        def imageStreamExists = platform.getImageStream(imageStream, crApiGroup)
-        if (imageStreamExists != "")
-            tags = platform.getImageStreamTags(imageStream, crApiGroup)
-        def latestTag = tags.find { it == 'latest' }
-        if (latestTag) {
-            tags = tags.minus(latestTag)
-            tags.add(0, latestTag)
+        if (images != null) {
+            tags = images.reverse()
         }
         if (tags != ['noImageExists']) {
             tags.add(0, "No deploy")
         }
+        def latestTag = getLatestTag(tags)
+        codebase.latest = latestTag
+        tags = setLatestLabelOnTag(tags, latestTag)
+        if (cbisJsonData.items.size() > 1) {
+            def stableTag = getStableTag(cbisJsonData.items[1].spec.tags)
+            codebase.stable = stableTag
+            tags = setStableLabelOnTag(tags, stableTag)
+        }
+        codebase.sortedTags = tags
+        script.println("[JENKINS][DEBUG] Existed tags for ${codebase.name}: ${tags}")
+    }
 
+    def getLatestTag(tags){
+        if (tags == ['noImageExists']){
+            return null
+        }
+        return tags[1]
+    }
+
+    def setLatestLabelOnTag(tags, latestTag) {
+        if (latestTag == null){
+            return tags
+        }
+        tags.add(1, "latest (${latestTag})")
+        script.println("[JENKINS][DEBUG] Latest tag: ${latestTag}")
         return tags
     }
 
-    @NonCPS
-    private def getFirstTag(tags) {
-        def tag = tags.stream()
-                .filter { it != "latest" }
-                .filter { it != "stable" }
-                .filter { it != "No deploy" }
-                .findFirst()
-                .get()
-
-        return tag
+    def getStableTag(verifiedTags){
+        if (verifiedTags == null){
+            return null
+        }
+        def codebasesVerifiedTagsList = verifiedTags.name
+        def codebasesStableTag = codebasesVerifiedTagsList[codebasesVerifiedTagsList.size()-1]
+        return codebasesStableTag
     }
 
-    @NonCPS
-    private def sortTags(tags) {
-        def map = ["latest": 2, "stable": 1, "No deploy": 3]
-
+    def setStableLabelOnTag(tags, stableTag) {
+        if (stableTag == null){
+            return tags
+        }
+        tags.add(2, "stable (${stableTag})")
+        script.println("[JENKINS][DEBUG] Stable tag: ${stableTag}")
         return tags
-                .collect { new ComparableVersion(it) }
-                .sort { e1, e2 ->
-                    def res = map.getOrDefault(e1.toString(), 0) - map.getOrDefault(e2.toString(), 0)
-                    if (res == 0)
-                        return e1 <=> e2
-                    return res
-                }
-                .collect { item -> item.toString() }
-                .reverse()
     }
 
     def generateCodebaseVersionsInputData() {
