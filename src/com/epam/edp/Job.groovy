@@ -74,6 +74,8 @@ class Job {
         this.type = type
         this.script = script
         this.platform = platform
+
+        this.script.println("[JENKINS][DEBUG] Created object job with type - ${this.type}")
     }
 
     def getParameterValue(parameter, defaultValue = null) {
