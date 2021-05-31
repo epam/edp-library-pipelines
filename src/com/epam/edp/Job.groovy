@@ -43,7 +43,6 @@ class Job {
     def buildUrl
     def jenkinsUrl
     def codebasesList = []
-    def servicesList = []
     def userInputImagesToDeploy
     def releaseName
     def releaseFromCommitId
@@ -132,7 +131,6 @@ class Job {
         def pipelineContent = getPipelineFromAdminConsole(this.pipelineName, "cd-pipeline", tmpAccessToken)
         this.codebasesList = getCodebaseFromAdminConsole(pipelineContent.codebaseBranches.appName, tmpAccessToken)
         this.applicationsToPromote = pipelineContent.applicationsToPromote
-        this.servicesList = pipelineContent.services
         this.qualityGates = stageContent.qualityGates
         this.stageWithoutPrefixName = "${this.pipelineName}-${stageName}"
         this.deployProject = "${this.edpName}-${this.pipelineName}-${stageName}"
