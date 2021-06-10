@@ -62,6 +62,7 @@ def call() {
                 string(name: 'PARAM', value: "true"),
                 string(name: 'NAME', value: "${context.codebase.config.name}"),
                 string(name: 'TYPE', value: "${context.codebase.config.type}"),
+                string(name: 'LANGUAGE', value: "${context.codebase.config.language}"),
                 string(name: 'BUILD_TOOL', value: "${context.codebase.config.build_tool}"),
                 string(name: 'DEPLOYMENT_SCRIPT', value: "${context.codebase.config.deploymentScript}"),
                 string(name: 'DEFAULT_BRANCH', value: "${context.codebase.config.defaultBranch}"),
