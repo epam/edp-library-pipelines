@@ -16,7 +16,7 @@ package com.epam.edp.buildtool
 
 enum BuildToolType {
     MAVEN("maven"), NPM("npm"), GRADLE("gradle"),
-    DOTNET("dotnet"), PYTHON("python"), GO("go")
+    DOTNET("dotnet"), PYTHON("python"), GO("go"), CODENARC("codenarc")
 
     private String value
 
