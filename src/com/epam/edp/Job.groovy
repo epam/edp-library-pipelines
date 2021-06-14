@@ -171,7 +171,7 @@ class Job {
         if (tags != ['noImageExists']) {
             tags.add(0, "No deploy")
         }
-        def latestTag = getLatestTag(tags)
+        def latestTag = getLatestTag(tags.reverse())
         codebase.latest = latestTag
         tags = setLatestLabelOnTag(tags, latestTag)
         if (cbisJsonData.items.size() > 1) {
