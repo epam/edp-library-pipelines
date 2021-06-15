@@ -168,11 +168,11 @@ class Job {
         if (images != null) {
             tags = images.reverse()
         }
+        def latestTag = getLatestTag(tags.sort().reverse())
+        codebase.latest = latestTag
         if (tags != ['noImageExists']) {
             tags.add(0, "No deploy")
         }
-        def latestTag = getLatestTag(tags.reverse())
-        codebase.latest = latestTag
         tags = setLatestLabelOnTag(tags, latestTag)
         if (cbisJsonData.items.size() > 1) {
             def stableTag = getStableTag(cbisJsonData.items[1].spec.tags)
@@ -187,7 +187,7 @@ class Job {
         if (tags == ['noImageExists']){
             return null
         }
-        return tags[1]
+        return tags[0]
     }
 
     def setLatestLabelOnTag(tags, latestTag) {
