@@ -227,24 +227,21 @@ class Job {
     }
 
     private def setCodebaseVersionsAutomatically() {
-        def codebaseVersions = getParameterValue("CODEBASE_VERSIONS", "")
-        if (!codebaseVersions?.trim()) {
+        def deployCodebase = getParameterValue("CODEBASE_VERSION", "")
+        if (!deployCodebase?.trim()) {
             script.error("[JENKINS][ERROR] Codebase versions must be passed to job.")
         }
-        script.println("[JENKINS][INFO] Auto deploy codebases: ${codebaseVersions}")
+        script.println("[JENKINS][INFO] Used codebase to autodeploy: ${deployCodebase}")
 
-        def versions = new JsonSlurper().parseText(codebaseVersions)
+        def parsedDeployCodebase = new JsonSlurper().parseText(deployCodebase)
         codebasesList.each() { codebase ->
-            def c = findCodebase(versions, codebase.name)
-            codebase.version = c ? c.tag : "No Deploy"
+            if (codebase.name != parsedDeployCodebase.codebase) {
+                codebase.version = "No Deploy"
+                return
+            }
+            codebase.version = parsedDeployCodebase.tag
             script.println("[JENKINS][DEBUG] ${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION: ${codebase.version}")
         }
-    }
-
-    @NonCPS
-    private def findCodebase(array, value) {
-        return array.stream().filter {it.codebase == value}.findAny().orElse(null)
-
     }
 
     private def setCodebaseVersionsManually() {
