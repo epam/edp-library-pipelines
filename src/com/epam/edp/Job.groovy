@@ -236,7 +236,7 @@ class Job {
         def parsedDeployCodebase = new JsonSlurper().parseText(deployCodebase)
         codebasesList.each() { codebase ->
             if (codebase.name != parsedDeployCodebase.codebase) {
-                codebase.version = "No Deploy"
+                codebase.version = "No deploy"
                 return
             }
             codebase.version = parsedDeployCodebase.tag
