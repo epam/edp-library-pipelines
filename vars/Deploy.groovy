@@ -69,5 +69,12 @@ def call() {
                 context.job.runStage(stage.name, context, stage.step_name)
             }
         }
+
+        if (currentBuild.currentResult == "SUCCESS"){
+            office365ConnectorSend message:"<b>Success:</b> ${env.JOB_NAME} (${env.BUILD_NUMBER}) (<${env.BUILD_URL}|Open>)", color: "228B22", webhookUrl:'https://epam.webhook.office.com/webhookb2/440eb836-524d-44a4-b111-90a6c7830a41@b41b72d0-4e9f-4c26-8a69-f949f367c91d/JenkinsCI/7a9c50b9fd1542e8aec55da6263bb9b3/8a4d21be-ebf4-4513-85b6-f90382fc1eeb'
+        }
+        else{
+            office365ConnectorSend message:"<b>Failed-catch:</b> ${env.JOB_NAME} (${env.BUILD_NUMBER}) (<${env.BUILD_URL}|Open>)", color: "FF0000", webhookUrl:'https://epam.webhook.office.com/webhookb2/440eb836-524d-44a4-b111-90a6c7830a41@b41b72d0-4e9f-4c26-8a69-f949f367c91d/JenkinsCI/7a9c50b9fd1542e8aec55da6263bb9b3/8a4d21be-ebf4-4513-85b6-f90382fc1eeb'
+        }
     }
 }
