@@ -168,7 +168,7 @@ class Job {
         if (images != null) {
             tags = images.reverse()
         }
-        def latestTag = getLatestTag(tags.sort().reverse())
+        def latestTag = getLatestTag(tags.collect{ (it=~/\d+|\D+/).findAll() }.sort().reverse().collect{ it.join() })
         codebase.latest = latestTag
         if (tags != ['noImageExists']) {
             tags.add(0, "No deploy")
