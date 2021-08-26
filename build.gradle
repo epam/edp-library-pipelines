@@ -1,0 +1,39 @@
+apply plugin: 'groovy'
+apply plugin: 'codenarc'
+apply plugin: 'jacoco'
+apply plugin: 'org.sonarqube'
+
+
+jacocoTestReport {
+	reports {
+		xml.enabled true
+		xml.destination file("${buildDir}/reports/jacoco.xml")
+	}
+}
+
+sonarqube {
+	properties {
+		property 'sonar.coverage.jacoco.xmlReportPaths', "${buildDir}/reports/jacoco.xml"
+	}
+}
+
+group = 'com.epam.edp'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.4.7'
+}
+
+codenarc {
+    ignoreFailures = true
+    configFile = new File('config/codenarc/codenarc.groovy')
+}
+
+codenarcMain {
+    source = 'src'
+    compilationClasspath += files('src/')
+}
