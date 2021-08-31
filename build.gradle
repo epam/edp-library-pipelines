@@ -19,6 +19,7 @@ sonarqube {
 
 group = 'com.epam.edp'
 version = '0.0.1-SNAPSHOT'
+sourceSets.main.java.srcDirs += ['src/']
 
 repositories {
     mavenCentral()
