@@ -23,7 +23,7 @@ class Openshift extends Kubernetes {
 
     def getImageStream(imageStreamName, crApiGroup) {
         return script.sh(
-                script: "oc get cbis.${crApiGroup} ${imageStreamName} --ignore-not-found=true --no-headers -o=custom-columns=NAME:.metadata.name'",
+                script: "oc get cbis.${crApiGroup} ${imageStreamName} --ignore-not-found=true --no-headers -o=custom-columns=NAME:.metadata.name",
                 returnStdout: true
         ).trim()
     }
