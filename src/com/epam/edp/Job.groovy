@@ -113,8 +113,12 @@ class Job {
                 if (!getParameterValue("RELEASE_NAME")) {
                     script.error("[JENKINS][ERROR] Parameter RELEASE_NAME is mandatory to be specified, please check configuration of job")
                 }
+                if (!getParameterValue("DEFAULT_BRANCH")) {
+                    script.error("[JENKINS][ERROR] Parameter DEFAULT_BRANCH is mandatory to be specified, please check configuration of job")
+                }
                 this.releaseName = getParameterValue("RELEASE_NAME").toLowerCase()
-                this.releaseFromCommitId = getParameterValue("COMMIT_ID", "HEAD")
+                def defaultBranch = getParameterValue("DEFAULT_BRANCH")
+                this.releaseFromCommitId = getParameterValue("COMMIT_ID", "origin/" + defaultBranch)
             case JobType.DEPLOY.value:
                 this.maxOfParallelDeployApps = getParameterValue("MAX_PARALLEL_APPS", 5)
                 this.maxOfParallelDeployServices = getParameterValue("MAX_PARALLEL_SERVICES", 3)
