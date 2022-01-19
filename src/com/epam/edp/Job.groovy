@@ -1,4 +1,4 @@
-/* Copyright 2019 EPAM Systems.
+/* Copyright 2022 EPAM Systems.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -57,16 +57,13 @@ class Job {
     def host
     def sshPort
     def maxOfParallelDeployApps
-    def maxOfParallelDeployServices
     def crApiVersion = "v2"
     def crApiGroup
-    def dnsWildcard
     def manualApproveStageTimeout
     def triggerJobName
     def triggerJobWait
     def triggerJobPropogate
     def triggerJobParameters = []
-    def defaultHelmDownloadUrl = "https://get.helm.sh/helm-v3.2.4-linux-amd64.tar.gz"
     def codebasePath = ""
 
     Job(type, platform, script) {
@@ -83,7 +80,6 @@ class Job {
     }
 
     def init() {
-        this.dnsWildcard = platform.getJsonPathValue("jenkins", "jenkins", ".spec.edpSpec.dnsWildcard")
         this.crApiVersion = getParameterValue("GIT_SERVER_CR_VERSION")
         this.crApiGroup = "${crApiVersion}.${EDP_EPAM_COM_POSTFIX}"
         this.deployTemplatesDirectory = getParameterValue("DEPLOY_TEMPLATES_DIRECTORY", "deploy-templates")
@@ -121,14 +117,12 @@ class Job {
                 this.releaseFromCommitId = getParameterValue("COMMIT_ID", "origin/" + defaultBranch)
             case JobType.DEPLOY.value:
                 this.maxOfParallelDeployApps = getParameterValue("MAX_PARALLEL_APPS", 5)
-                this.maxOfParallelDeployServices = getParameterValue("MAX_PARALLEL_SERVICES", 3)
         }
     }
 
     def initDeployJob() {
         this.pipelineName = script.JOB_NAME.split("-cd-pipeline")[0]
         this.stageName = script.JOB_NAME.split('/')[1]
-        def stageCodebasesList = []
         def codebaseBranchList = [:]
         def tmpAccessToken = getTokenFromAdminConsole()
         def stageContent = getStageFromAdminConsole(this.pipelineName, stageName, "cd-pipeline", tmpAccessToken)
@@ -143,14 +137,11 @@ class Job {
         this.manualApproveStageTimeout = getParameterValue("MANUAL_APPROVE_TIMEOUT", "10")
 
         stageContent.applications.each() { item ->
-            stageCodebasesList.add(item.name)
-            codebaseBranchList["${item.name}"] = ["branch"  : item.branchName,
-                                                  "inputIs" : item.inputIs,
+            codebaseBranchList["${item.name}"] = ["inputIs" : item.inputIs,
                                                   "outputIs": item.outputIs]
         }
 
         codebasesList.each() { codebase ->
-            codebase.branch   = codebaseBranchList["${codebase.name}"].branch
             codebase.inputIs  = codebaseBranchList["${codebase.name}"].inputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
             codebase.outputIs = codebaseBranchList["${codebase.name}"].outputIs.replaceAll("[^\\p{L}\\p{Nd}]+", "-")
             setCodebaseTags(codebase)

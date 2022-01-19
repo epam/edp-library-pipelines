@@ -1,4 +1,4 @@
-/* Copyright 2020 EPAM Systems.
+/* Copyright 2022 EPAM Systems.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -16,10 +16,6 @@ package com.epam.edp.platform
 
 class Openshift extends Kubernetes {
     Script script
-
-    def getExternalEndpoint(name) {
-        return getJsonPathValue("route", name, ".spec.host")
-    }
 
     def getImageStream(imageStreamName, crApiGroup) {
         return script.sh(
@@ -59,41 +55,10 @@ class Openshift extends Kubernetes {
         return tags.split('\n')
     }
 
-    def createProjectIfNotExist(name, edpName) {
-        script.openshift.withCluster() {
-            if (!script.openshift.selector("project", name).exists()) {
-                script.openshift.newProject(name)
-                def groupList = ["${edpName}-edp-super-admin", "${edpName}-edp-admin"]
-                groupList.each() { group ->
-                    script.sh("oc adm policy add-role-to-group admin ${group} -n ${name}")
-                }
-                script.sh("oc adm policy add-role-to-group view ${edpName}-edp-view -n ${name}")
-            }
-        }
-    }
-
     def getObjectList(objectType) {
         script.openshift.withCluster() {
             script.openshift.withProject() {
                 return script.openshift.selector(objectType)
-            }
-        }
-    }
-
-    def copySharedSecrets(sharedSecretsMask, deployProject) {
-        def secretSelector = getObjectList("secret")
-
-        script.openshift.withCluster() {
-            script.openshift.withProject() {
-                secretSelector.withEach { secret ->
-                    def sharedSecretName = secret.name().split('/')[1]
-                    def secretName = sharedSecretName.replace(sharedSecretsMask, '')
-                    if (sharedSecretName =~ /${sharedSecretsMask}/)
-                        if (!checkObjectExists('secrets', secretName))
-                            script.sh("oc get --export -o yaml secret ${sharedSecretName} | " +
-                                    "sed -e 's/name: ${sharedSecretName}/name: ${secretName}/' | " +
-                                    "oc -n ${deployProject} apply -f -")
-                }
             }
         }
     }

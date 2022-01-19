@@ -1,4 +1,4 @@
-/* Copyright 2020 EPAM Systems.
+/* Copyright 2022 EPAM Systems.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -109,10 +109,6 @@ class Kubernetes implements Platform {
         return parsedInitContainer["status"]
     }
 
-    def getExternalEndpoint(name) {
-        return getJsonPathValue("ingress", name, ".spec.rules[0].host")
-    }
-
     def checkObjectExists(objectType, objectName, project = null) {
         def command = "kubectl get ${objectType} ${objectName} --ignore-not-found=true"
         if (project)
@@ -127,29 +123,11 @@ class Kubernetes implements Platform {
         return true
     }
 
-    def createProjectIfNotExist(name, edpName) {
-        if (!checkObjectExists("ns", name))
-            script.sh("kubectl create ns ${name}")
-    }
-
     def getObjectList(objectType) {
         return script.sh(
                 script: "kubectl get ${objectType} -o jsonpath='{.items[*].metadata.name}'",
                 returnStdout: true
         ).trim().tokenize()
-    }
-
-    def copySharedSecrets(sharedSecretsMask, deployProject) {
-        def secretSelector = getObjectList("secret")
-
-        secretSelector.each() { secret ->
-            def newSecretName = secret.replace(sharedSecretsMask, '')
-            if (secret =~ /${sharedSecretsMask}/)
-                if (!checkObjectExists('secrets', newSecretName))
-                    script.sh("kubectl get --export -o yaml secret ${secret} | " +
-                            "sed -e 's/name: ${secret}/name: ${newSecretName}/' | " +
-                            "kubectl -n ${deployProject} apply -f -")
-        }
     }
 
     def createRoleBinding(user, role, project) {

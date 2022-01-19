@@ -1,4 +1,4 @@
-/* Copyright 2020 EPAM Systems.
+/* Copyright 2022 EPAM Systems.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ def getPlatformImpl(script, customPlatformType = null) {
 interface Platform {
     def getJsonPathValue(object, name, jsonPath, project)
     def getJsonValue(object, name, project)
-    def getExternalEndpoint(name)
     def apply(fileName)
     def copyToPod(source, destination, podName,podNamespace, podContainerName)
     def deleteObject(objectType, objectName, force)
@@ -40,9 +39,7 @@ interface Platform {
     def getImageStreamTags(imageStreamName, crApiGroup)
     def getImageStreamTagsWithTime(imageStreamName, crApiGroup)
     def checkObjectExists(objectType, objectName, project)
-    def createProjectIfNotExist(name, edpName)
     def getObjectList(objectType)
-    def copySharedSecrets(sharedSecretsMask, deployProject)
     def createRoleBinding(user, role, project)
     def createConfigMapFromFile(cmName, project, filePath)
     def deployCodebase(project, templateName, codebase, imageName, timeout, parametersMap, values)
