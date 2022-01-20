@@ -184,7 +184,7 @@ class Job {
             tags = setStableLabelOnTag(tags, stableTag)
         }
         codebase.sortedTags = tags
-        script.println("[JENKINS][DEBUG] Existed tags for ${codebase.name}: ${tags}")
+        script.println("[JENKINS][DEBUG] Existing tags for ${codebase.name}: ${tags}")
     }
 
     def getLatestTag(tags){
@@ -330,7 +330,7 @@ class Job {
     def failStage(stageName, exception) {
         script.println "[JENKINS][ERROR] Trace: ${exception.getStackTrace().collect { it.toString() }.join('\n')}"
         script.updateGitlabCommitStatus name: 'Jenkins', state: "failed"
-        script.error("[JENKINS][ERROR] Stage ${stageName} has been failed\r\n Exception - ${exception}")
+        script.error("[JENKINS][ERROR] Stage ${stageName} has failed\r\n Exception - ${exception}")
     }
 
     private def getBuildCause() {

@@ -153,11 +153,11 @@ class Kubernetes implements Platform {
     }
 
     def createRoleBinding(user, role, project) {
-        println("[JENKINS][DEBUG] Security model for kubernetes hasn't defined yet")
+        println("[JENKINS][DEBUG] Security model for kubernetes hasn't been defined yet")
     }
 
     def addSccToUser(user,scc, project) {
-        println("[JENKINS][DEBUG] Security model for kubernetes hasn't defined yet")
+        println("[JENKINS][DEBUG] Security model for kubernetes hasn't been defined yet")
     }
 
     def createConfigMapFromFile(cmName, project, filePath) {
@@ -197,7 +197,7 @@ class Kubernetes implements Platform {
         if (releaseStatus != "deployed")
             script.sh("helm -n ${project} rollback ${name} --wait --cleanup-on-fail")
         else
-            script.println("[JENKINS][DEBUG] Rollback is not needed current status of ${name} is deployed")
+            script.println("[JENKINS][DEBUG] Rollback is not needed. Current status of ${name} is deployed")
     }
 
     def deployCodebase(project, templateName, codebase, imageName, timeout = null, parametersMap = null, values = null) {

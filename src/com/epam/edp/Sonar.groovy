@@ -33,6 +33,6 @@ class Sonar {
         if (platform.checkObjectExists("edpcomponent", "sonar"))
             this.route = platform.getJsonPathValue("edpcomponent", "sonar", ".spec.url")
         else
-            script.println("[WARNING] Sonar edpcomponent not exist")
+            script.println("[WARNING] Sonar edpcomponent does not exist")
     }
 }

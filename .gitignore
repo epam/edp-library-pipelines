@@ -12,6 +12,10 @@ npm-debug.log
 *.retry
 .gitkeep
 
+### Gradle ###
+.gradle
+/build/
+
 /backend/target/*
 /database/target/*
 openshift/cicd/examples/3-tier-app/frontend/coverage/*

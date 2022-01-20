@@ -96,7 +96,7 @@ def call() {
             }
         } catch (Exception ex) {
             println "[JENKINS][ERROR] Trace: ${ex.getStackTrace().collect { it.toString() }.join('\n')}"
-            println("[JENKINS][ERROR] Build pipeline has been failed. Reason - ${ex}")
+            println("[JENKINS][ERROR] Build pipeline has failed. Reason - ${ex}")
             currentBuild.setResult('FAILED')
         } finally {
             if (context.codebase.config.versioningType == "edp" && currentBuild.currentResult == 'SUCCESS') {

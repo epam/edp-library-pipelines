@@ -42,7 +42,7 @@ class Nexus {
         this.credentialsId = job.getParameterValue("NEXUS_CREDENTIALS", "nexus-ci.user")
         if (platform.checkObjectExists("nexus","nexus"))
         {
-            script.println("[JENKINS][DEBUG] Nexus CR exist")
+            script.println("[JENKINS][DEBUG] Nexus CR exists")
             this.host = job.getParameterValue("NEXUS_HOST", "nexus")
             this.port = job.getParameterValue("NEXUS_HTTP_PORT", "8081")
             basePath = platform.getJsonPathValue("nexus", "nexus", ".spec.basePath")
