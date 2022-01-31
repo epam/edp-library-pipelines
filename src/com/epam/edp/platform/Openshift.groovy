@@ -79,16 +79,6 @@ class Openshift extends Kubernetes {
                 "--local=true -o json | oc -n ${project} apply -f -")
     }
 
-    def verifyDeployedCodebase(name, project, kind) {
-        script.timeout(600) {
-            script.sh("oc -n ${project} rollout status ${kind}/${name}")
-        }
-    }
-
-    def rollbackDeployedCodebase(name, project, kind) {
-        script.sh("oc -n ${project} rollout undo ${kind}/${name}")
-    }
-
     def createFullImageName(registryHost,ciProject,imageName) {
         return "${registryHost}/${ciProject}/${imageName}"
     }

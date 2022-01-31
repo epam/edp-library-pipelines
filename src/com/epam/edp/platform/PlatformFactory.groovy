@@ -41,13 +41,8 @@ interface Platform {
     def checkObjectExists(objectType, objectName, project)
     def getObjectList(objectType)
     def createRoleBinding(user, role, project)
-    def createConfigMapFromFile(cmName, project, filePath)
     def deployCodebase(project, templateName, codebase, imageName, timeout, parametersMap, values)
-    def verifyDeployedCodebase(name, project, kind)
-    def rollbackDeployedCodebase(name, project, kind)
     def deployCodebaseHelm(project, templateName, codebase, imageName, timeout, parametersMap, values)
-    def verifyDeployedCodebaseHelm(name, project, kind)
-    def rollbackDeployedCodebaseHelm(name, project, kind)
     def createFullImageName(registryHost,ciProject,imageName)
     def addSccToUser(user,scc, project)
 }

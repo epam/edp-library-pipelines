@@ -138,10 +138,6 @@ class Kubernetes implements Platform {
         println("[JENKINS][DEBUG] Security model for kubernetes hasn't been defined yet")
     }
 
-    def createConfigMapFromFile(cmName, project, filePath) {
-        script.sh("kubectl create configmap ${cmName} -n ${project} --from-file=${filePath} --dry-run -o yaml | kubectl apply -f -")
-    }
-
     def deployCodebaseHelm(project, chartPath, codebase, imageName = null, timeout = "300s", parametersMap, values = null) {
         def helmDependencyUpdateCommand = "helm dependency update ${chartPath}"
         def command = "helm upgrade --atomic --install ${codebase.name} --wait --timeout=${timeout} --namespace ${project} ${chartPath}"
@@ -155,39 +151,8 @@ class Kubernetes implements Platform {
         script.sh(command)
     }
 
-    def verifyDeployedCodebaseHelm(name, project, kind = null) {
-        def deployedCodebases = script.sh(
-                script: "helm ls --namespace=${project} -a -q",
-                returnStdout: true
-        ).trim().tokenize()
-        if (deployedCodebases.contains("${project}-${name}".toString()))
-            return true
-
-        return false
-    }
-
-    def rollbackDeployedCodebaseHelm(name, project, kind = null) {
-        def releaseStatus = script.sh(
-                script: "helm -n ${project} status ${name} | grep STATUS | awk '{print \$2}'",
-                returnStdout: true
-        ).trim()
-
-        if (releaseStatus != "deployed")
-            script.sh("helm -n ${project} rollback ${name} --wait --cleanup-on-fail")
-        else
-            script.println("[JENKINS][DEBUG] Rollback is not needed. Current status of ${name} is deployed")
-    }
-
     def deployCodebase(project, templateName, codebase, imageName, timeout = null, parametersMap = null, values = null) {
         println("[JENKINS][DEBUG] Use deployCodebaseHelm for Kubernetes")
-    }
-
-    def verifyDeployedCodebase(name, project, kind) {
-        println("[JENKINS][DEBUG] Use verifyDeployedCodebase for Kubernetes")
-    }
-
-    def rollbackDeployedCodebase(name, project, kind) {
-        println("[JENKINS][DEBUG] Use rollbackDeployedCodebase for Kubernetes")
     }
 
     def createFullImageName(registryHost,ciProject,imageName) {
