@@ -1,4 +1,4 @@
-/* Copyright 2018 EPAM Systems.
+/* Copyright 2022 EPAM Systems.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ class GitInfo {
     def gitServerCrVersion
     def gitServerCrApiGroup
     def codebaseCrApiGroup
+    def normalizedBranch
 
     GitInfo(job, platform, script) {
         this.script = script
@@ -71,6 +72,8 @@ class GitInfo {
         this.project = defineVariable(["GERRIT_PROJECT", "GERRIT_PROJECT_NAME"])
         this.branch = defineVariable(["GERRIT_BRANCH", "BRANCH", "ghprbActualCommit", "gitlabMergeRequestLastCommit", "COMMIT_ID"])
         this.displayBranch = defineVariable(["GERRIT_BRANCH", "ghprbSourceBranch", "gitlabSourceBranch", "BRANCH"])
+
+        this.normalizedBranch = "${this.branch}".replaceAll("[^\\(?!.)\\p{L}\\p{Nd}]+", "-").toLowerCase()
 
         switch (job.type) {
             case JobType.CODEREVIEW.value:
