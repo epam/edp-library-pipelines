@@ -359,11 +359,11 @@ class Job {
 
     def getCodebaseRequestUrl(codebaseName = null) {
         if (codebaseName.getClass() == java.lang.String) {
-            return "${adminConsoleUrl}/api/v1/edp/codebase/${codebaseName}"
+            return "${adminConsoleUrl}/api/v2/edp/codebase/${codebaseName}"
         }
         if (codebaseName.getClass() == java.util.ArrayList) {
             def codebases = codebaseName.join(",")
-            return "${adminConsoleUrl}/api/v1/edp/codebase?codebases=${codebases}"
+            return "${adminConsoleUrl}/api/v2/edp/codebase?codebases=${codebases}"
         }
         return "${adminConsoleUrl}/api/v1/edp/codebase"
     }
@@ -371,7 +371,7 @@ class Job {
     def getStageFromAdminConsole(pipelineName, stageName, pipelineType, tmpToken = null) {
         def accessToken = tmpToken ?: getTokenFromAdminConsole()
 
-        def url = "${adminConsoleUrl}" + "/api/v1/edp/${pipelineType}/${pipelineName}/stage/${stageName}"
+        def url = "${adminConsoleUrl}" + "/api/v2/edp/${pipelineType}/${pipelineName}/stage/${stageName}"
         def response = script.httpRequest url: "${url}",
                 httpMode: 'GET',
                 customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
@@ -383,7 +383,7 @@ class Job {
     def getPipelineFromAdminConsole(pipelineName, pipelineType, tmpToken = null) {
         def accessToken = tmpToken ?: getTokenFromAdminConsole()
 
-        def url = "${adminConsoleUrl}" + "/api/v1/edp/${pipelineType}/${pipelineName}"
+        def url = "${adminConsoleUrl}" + "/api/v2/edp/${pipelineType}/${pipelineName}"
         def response = script.httpRequest url: "${url}",
                 httpMode: 'GET',
                 customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
