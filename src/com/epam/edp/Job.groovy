@@ -29,8 +29,6 @@ class Job {
     def type
     Script script
     Platform platform
-    def LATEST_TAG = "latest"
-    def STABLE_TAG = "stable"
     def stages = [:]
     def deployTemplatesDirectory
     def deployTimeout
@@ -43,7 +41,6 @@ class Job {
     def buildUrl
     def jenkinsUrl
     def codebasesList = []
-    def userInputImagesToDeploy
     def releaseName
     def releaseFromCommitId
     def adminConsoleUrl
@@ -51,7 +48,6 @@ class Job {
     def pipelineName
     def qualityGates = [:]
     def applicationsToPromote = []
-    def deployJobParameters = []
     def credentialsId
     def autouser
     def host
@@ -210,61 +206,6 @@ class Job {
         tags.add(2, "stable (${stableTag})")
         script.println("[JENKINS][DEBUG] Stable tag: ${stableTag}")
         return tags
-    }
-
-    def generateCodebaseVersionsInputData() {
-        def autoDeploy = getParameterValue("AUTODEPLOY", false)
-        if (autoDeploy != null && autoDeploy.toBoolean()) {
-            setCodebaseVersionsAutomatically()
-            return
-        }
-        setCodebaseVersionsManually()
-    }
-
-    private def setCodebaseVersionsAutomatically() {
-        def deployCodebase = getParameterValue("CODEBASE_VERSION", "")
-        if (!deployCodebase?.trim()) {
-            script.error("[JENKINS][ERROR] Codebase versions must be passed to job.")
-        }
-        script.println("[JENKINS][INFO] Used codebase to autodeploy: ${deployCodebase}")
-
-        def parsedDeployCodebase = new JsonSlurper().parseText(deployCodebase)
-        codebasesList.each() { codebase ->
-            if (codebase.name != parsedDeployCodebase.codebase) {
-                codebase.version = "No deploy"
-                return
-            }
-            codebase.version = parsedDeployCodebase.tag
-            script.println("[JENKINS][DEBUG] ${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION: ${codebase.version}")
-        }
-    }
-
-    private def setCodebaseVersionsManually() {
-        codebasesList.each() { codebase ->
-            deployJobParameters.add(script.choice(choices: "${codebase.sortedTags.join('\n')}", description: '', name: "${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"))
-        }
-        userInputImagesToDeploy = script.input id: 'userInput', message: 'Provide the following information', parameters: deployJobParameters
-        script.println("[JENKINS][DEBUG] USERS_INPUT_IMAGES_TO_DEPLOY: ${userInputImagesToDeploy}")
-        codebasesList.each() { codebase ->
-            if (userInputImagesToDeploy instanceof java.lang.String) {
-                codebase.version = userInputImagesToDeploy
-                if (codebase.version.startsWith(LATEST_TAG))
-                    codebase.version = LATEST_TAG
-                if (codebase.version.startsWith(STABLE_TAG))
-                    codebase.version = STABLE_TAG
-            } else {
-                userInputImagesToDeploy.each() { item ->
-                    if (item.value.startsWith(LATEST_TAG)) {
-                        userInputImagesToDeploy.put(item.key, LATEST_TAG)
-                    }
-                    if (item.value.startsWith(STABLE_TAG)) {
-                        userInputImagesToDeploy.put(item.key, STABLE_TAG)
-                    }
-                }
-                codebase.version = userInputImagesToDeploy["${codebase.name.toUpperCase().replaceAll("-", "_")}_VERSION"]
-            }
-            codebase.version = codebase.version ? codebase.version : LATEST_TAG
-        }
     }
 
     def getBuildUser() {
