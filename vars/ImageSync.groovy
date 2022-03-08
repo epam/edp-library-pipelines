@@ -52,7 +52,7 @@ def getTokenFromAdminConsole() {
             contentType: 'APPLICATION_FORM',
             requestBody: "grant_type=client_credentials",
             customHeaders: [[name: 'Authorization', value: "Basic ${basicAuth}"]],
-            consoleLogResponseBody: true
+            consoleLogResponseBody: false
 
     return new JsonSlurperClassic()
             .parseText(response.content)
@@ -66,7 +66,7 @@ def getStageFromAdminConsole(pipelineName, stageName, pipelineType) {
     def response = httpRequest url: "${url}",
             httpMode: 'GET',
             customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
-            consoleLogResponseBody: true
+            consoleLogResponseBody: false
 
     return new JsonSlurperClassic().parseText(response.content)
 }

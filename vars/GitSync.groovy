@@ -46,7 +46,7 @@ def getTokenFromAdminConsole() {
             contentType: 'APPLICATION_FORM',
             requestBody: "grant_type=client_credentials",
             customHeaders: [[name: 'Authorization', value: "Basic ${basicAuth}"]],
-            consoleLogResponseBody: true
+            consoleLogResponseBody: false
 
     return new JsonSlurperClassic()
             .parseText(response.content)
