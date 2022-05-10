@@ -1,6 +1,30 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Features
+
+- Implement makefile to generate changelog [EPMDEDP-8218](https://jiraeu.epam.com/browse/EPMDEDP-8218)
+- Add normalizedBranch parameter for naming projects in sonar [EPMDEDP-8283](https://jiraeu.epam.com/browse/EPMDEDP-8283)
+- Remove autodeploy/manual input creation from Job.groovy [EPMDEDP-8313](https://jiraeu.epam.com/browse/EPMDEDP-8313)
+- v2 api switch [EPMDEDP-8383](https://jiraeu.epam.com/browse/EPMDEDP-8383)
+
+### Bug Fixes
+
+- Fix changelog generation in GH Release Action [EPMDEDP-8468](https://jiraeu.epam.com/browse/EPMDEDP-8468)
+- Disable response log for httpRequests [EPMDEDP-8472](https://jiraeu.epam.com/browse/EPMDEDP-8472)
+
+### Code Refactoring
+
+- Wipe Create-release job workspace after execution [EPMDEDP-7683](https://jiraeu.epam.com/browse/EPMDEDP-7683)
+- Remove unused functional [EPMDEDP-8168](https://jiraeu.epam.com/browse/EPMDEDP-8168)
+- Remove deprecated functional [EPMDEDP-8168](https://jiraeu.epam.com/browse/EPMDEDP-8168)
+
+### Routine
+
+- Update release CI pipelines [EPMDEDP-7847](https://jiraeu.epam.com/browse/EPMDEDP-7847)
+- Fix grammatical errors in Jenkins libraries [EPMDEDP-8205](https://jiraeu.epam.com/browse/EPMDEDP-8205)
+- Update release template [EPMDEDP-8220](https://jiraeu.epam.com/browse/EPMDEDP-8220)
+
 
 <a name="v2.11.0"></a>
 ## [v2.11.0] - 2021-12-07
