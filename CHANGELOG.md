@@ -1,6 +1,9 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v2.12.0"></a>
+## [v2.12.0] - 2022-05-10
 ### Features
 
 - Implement makefile to generate changelog [EPMDEDP-8218](https://jiraeu.epam.com/browse/EPMDEDP-8218)
@@ -24,6 +27,12 @@
 - Update release CI pipelines [EPMDEDP-7847](https://jiraeu.epam.com/browse/EPMDEDP-7847)
 - Fix grammatical errors in Jenkins libraries [EPMDEDP-8205](https://jiraeu.epam.com/browse/EPMDEDP-8205)
 - Update release template [EPMDEDP-8220](https://jiraeu.epam.com/browse/EPMDEDP-8220)
+- Update changelog [EPMDEDP-9185](https://jiraeu.epam.com/browse/EPMDEDP-9185)
+
+### BREAKING CHANGE:
+
+
+Switch to use v2 admin console API for build, code review and deploy pipelines
 
 
 <a name="v2.11.0"></a>
@@ -66,7 +75,8 @@
 - [EPMDEDP-4971] Replace slash with dash for branch name
 
 
-[Unreleased]: https://github.com/epam/edp-library-pipelines/compare/v2.11.0...HEAD
+[Unreleased]: https://github.com/epam/edp-library-pipelines/compare/v2.12.0...HEAD
+[v2.12.0]: https://github.com/epam/edp-library-pipelines/compare/v2.11.0...v2.12.0
 [v2.11.0]: https://github.com/epam/edp-library-pipelines/compare/v2.10.0...v2.11.0
 [v2.10.0]: https://github.com/epam/edp-library-pipelines/compare/v2.9.0...v2.10.0
 [v2.9.0]: https://github.com/epam/edp-library-pipelines/compare/v2.8.2...v2.9.0
