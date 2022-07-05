@@ -104,7 +104,7 @@ def call() {
                 sh """
                     kubectl patch ${codebaseBranchesName} ${context.codebase.config.name}-${
                     context.git.branch.replaceAll(/\//, "-")
-                } --type=merge -p '{\"status\": {\"lastSuccessfulBuild\": "${context.codebase.currentBuildNumber}"}}'
+                } --subresource=status --type=merge -p '{\"status\": {\"lastSuccessfulBuild\": "${context.codebase.currentBuildNumber}"}}'
                 """
             }
         }
