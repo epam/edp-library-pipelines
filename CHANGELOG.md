@@ -1,6 +1,29 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Routine
+
+- Update changelog [EPMDEDP-10274](https://jiraeu.epam.com/browse/EPMDEDP-10274)
+- Align build.gradle to new gradle version [EPMDEDP-10274](https://jiraeu.epam.com/browse/EPMDEDP-10274)
+
+
+<a name="v2.13.0"></a>
+## [v2.13.0] - 2022-08-25
+### Bug Fixes
+
+- Use 'subresource' flag for patch codebasebranches [EPMDEDP-10122](https://jiraeu.epam.com/browse/EPMDEDP-10122)
+
+### Routine
+
+- Fix Jira Ticket pattern for changelog generator [EPMDEDP-10159](https://jiraeu.epam.com/browse/EPMDEDP-10159)
+- Align build.gradle to new gradle version [EPMDEDP-10274](https://jiraeu.epam.com/browse/EPMDEDP-10274)
+- Update changelog [EPMDEDP-8832](https://jiraeu.epam.com/browse/EPMDEDP-8832)
+
+### BREAKING CHANGE:
+
+
+Starting from this change, we expect that CodebaseBranches CRD use 'status' field as subresource
+
 
 <a name="v2.12.0"></a>
 ## [v2.12.0] - 2022-05-17
@@ -75,7 +98,8 @@ Switch to use v2 admin console API for build, code review and deploy pipelines
 - [EPMDEDP-4971] Replace slash with dash for branch name
 
 
-[Unreleased]: https://github.com/epam/edp-library-pipelines/compare/v2.12.0...HEAD
+[Unreleased]: https://github.com/epam/edp-library-pipelines/compare/v2.13.0...HEAD
+[v2.13.0]: https://github.com/epam/edp-library-pipelines/compare/v2.12.0...v2.13.0
 [v2.12.0]: https://github.com/epam/edp-library-pipelines/compare/v2.11.0...v2.12.0
 [v2.11.0]: https://github.com/epam/edp-library-pipelines/compare/v2.10.0...v2.11.0
 [v2.10.0]: https://github.com/epam/edp-library-pipelines/compare/v2.9.0...v2.10.0
