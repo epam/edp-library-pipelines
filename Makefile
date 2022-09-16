@@ -1,3 +1,5 @@
+CURRENT_DIR=$(shell pwd)
+
 .DEFAULT_GOAL:=help
 # set default shell
 SHELL=/bin/bash -o pipefail -o errexit
@@ -6,9 +8,29 @@ help:  ## Display this help
 
 # use https://github.com/git-chglog/git-chglog/
 .PHONY: changelog
-changelog: ## generate changelog
+changelog: git-chglog
 ifneq (${NEXT_RELEASE_TAG},)
-	@git-chglog --next-tag v${NEXT_RELEASE_TAG} -o CHANGELOG.md v2.7.0..
+	$(GITCHGLOG) --next-tag v${NEXT_RELEASE_TAG} -o CHANGELOG.md v2.7.0..
 else
-	@git-chglog -o CHANGELOG.md v2.7.0..
+	$(GITCHGLOG) -o CHANGELOG.md v2.7.0..
 endif
+
+GITCHGLOG = ${CURRENT_DIR}/bin/git-chglog
+.PHONY: git-chglog
+git-chglog: ## Download git-chglog locally if necessary.
+	$(call go-get-tool,$(GITCHGLOG),github.com/git-chglog/git-chglog/cmd/git-chglog,v0.15.1)
+
+# go-get-tool will 'go get' any package $2 and install it to $1.
+PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
+define go-get-tool
+@[ -f $(1) ] || { \
+set -e ;\
+TMP_DIR=$$(mktemp -d) ;\
+cd $$TMP_DIR ;\
+go mod init tmp ;\
+echo "Downloading $(2)" ;\
+go get -d $(2)@$(3) ;\
+GOBIN=$(PROJECT_DIR)/bin go install $(2) ;\
+rm -rf $$TMP_DIR ;\
+}
+endef
