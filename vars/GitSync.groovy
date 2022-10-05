@@ -25,7 +25,7 @@ def getJsonPathValue(object, name, jsonPath) {
 def getCodebaseFromAdminConsole(codebaseName = null) {
     def accessToken = getTokenFromAdminConsole()
     def adminConsoleUrl = getJsonPathValue("edpcomponent", "edp-admin-console", ".spec.url")
-    def url = "${adminConsoleUrl}/api/v1/edp/codebase${codebaseName ? "/${codebaseName}" : ""}"
+    def url = "${adminConsoleUrl}/api/v2/edp/codebase${codebaseName ? "/${codebaseName}" : ""}"
     def response = httpRequest url: "${url}",
             httpMode: 'GET',
             customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],

@@ -31,7 +31,7 @@ def getGoTemplateValue(object, goTemplates) {
 def getCodebaseFromAdminConsole(codebaseName = null) {
     def accessToken = getTokenFromAdminConsole()
     def adminConsoleUrl = getJsonPathValue("edpcomponent", "edp-admin-console", ".spec.url")
-    def url = "${adminConsoleUrl}/api/v1/edp/codebase${codebaseName ? "/${codebaseName}" : ""}"
+    def url = "${adminConsoleUrl}/api/v2/edp/codebase${codebaseName ? "/${codebaseName}" : ""}"
     def response = httpRequest url: "${url}",
             httpMode: 'GET',
             customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],
@@ -62,7 +62,7 @@ def getTokenFromAdminConsole() {
 def getStageFromAdminConsole(pipelineName, stageName, pipelineType) {
     def accessToken = getTokenFromAdminConsole()
     def adminConsoleUrl = getJsonPathValue("edpcomponent", "edp-admin-console", ".spec.url")
-    def url = "${adminConsoleUrl}" + "/api/v1/edp/${pipelineType}/${pipelineName}/stage/${stageName}"
+    def url = "${adminConsoleUrl}" + "/api/v2/edp/${pipelineType}/${pipelineName}/stage/${stageName}"
     def response = httpRequest url: "${url}",
             httpMode: 'GET',
             customHeaders: [[name: 'Authorization', value: "Bearer ${accessToken}"]],

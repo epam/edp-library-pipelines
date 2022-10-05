@@ -306,7 +306,7 @@ class Job {
             def codebases = codebaseName.join(",")
             return "${adminConsoleUrl}/api/v2/edp/codebase?codebases=${codebases}"
         }
-        return "${adminConsoleUrl}/api/v1/edp/codebase"
+        return "${adminConsoleUrl}/api/v2/edp/codebase"
     }
 
     def getStageFromAdminConsole(pipelineName, stageName, pipelineType, tmpToken = null) {
