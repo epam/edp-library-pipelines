@@ -1,10 +1,18 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v2.14.0"></a>
+## [v2.14.0] - 2022-12-13
+### Code Refactoring
+
+- Switch to V2 admin-console REST API [EPMDEDP-10771](https://jiraeu.epam.com/browse/EPMDEDP-10771)
+
 ### Routine
 
 - Update changelog [EPMDEDP-10274](https://jiraeu.epam.com/browse/EPMDEDP-10274)
 - Align build.gradle to new gradle version [EPMDEDP-10274](https://jiraeu.epam.com/browse/EPMDEDP-10274)
+- Add git-chglog installation to Makefile [EPMDEDP-10482](https://jiraeu.epam.com/browse/EPMDEDP-10482)
 
 
 <a name="v2.13.0"></a>
@@ -98,7 +106,8 @@ Switch to use v2 admin console API for build, code review and deploy pipelines
 - [EPMDEDP-4971] Replace slash with dash for branch name
 
 
-[Unreleased]: https://github.com/epam/edp-library-pipelines/compare/v2.13.0...HEAD
+[Unreleased]: https://github.com/epam/edp-library-pipelines/compare/v2.14.0...HEAD
+[v2.14.0]: https://github.com/epam/edp-library-pipelines/compare/v2.13.0...v2.14.0
 [v2.13.0]: https://github.com/epam/edp-library-pipelines/compare/v2.12.0...v2.13.0
 [v2.12.0]: https://github.com/epam/edp-library-pipelines/compare/v2.11.0...v2.12.0
 [v2.11.0]: https://github.com/epam/edp-library-pipelines/compare/v2.10.0...v2.11.0
