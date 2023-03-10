@@ -46,7 +46,7 @@ class Nexus {
             this.host = job.getParameterValue("NEXUS_HOST", "nexus")
             this.port = job.getParameterValue("NEXUS_HTTP_PORT", "8081")
             basePath = platform.getJsonPathValue("nexus", "nexus", ".spec.basePath")
-            this.basePath = basePath != "" ? "${basePath}" : ""
+            this.basePath = basePath == "/" ? "" : "${basePath}"
             this.baseUrl = "http://${this.host}:${this.port}${this.basePath}"
         }
         else
