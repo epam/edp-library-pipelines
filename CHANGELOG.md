@@ -1,6 +1,22 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Routine
+
+- Align changelog installation for release process [EPMDEDP-11472](https://jiraeu.epam.com/browse/EPMDEDP-11472)
+
+
+<a name="v2.15.0"></a>
+## [v2.15.0] - 2023-03-25
+### Bug Fixes
+
+- Align Nexus basePath pattern to new approach [EPMDEDP-11558](https://jiraeu.epam.com/browse/EPMDEDP-11558)
+
+### Routine
+
+- Update changelog [EPMDEDP-10610](https://jiraeu.epam.com/browse/EPMDEDP-10610)
+- Align Nexus basePath pattern to new approach [EPMDEDP-11558](https://jiraeu.epam.com/browse/EPMDEDP-11558)
+
 
 <a name="v2.14.0"></a>
 ## [v2.14.0] - 2022-12-13
@@ -106,7 +122,8 @@ Switch to use v2 admin console API for build, code review and deploy pipelines
 - [EPMDEDP-4971] Replace slash with dash for branch name
 
 
-[Unreleased]: https://github.com/epam/edp-library-pipelines/compare/v2.14.0...HEAD
+[Unreleased]: https://github.com/epam/edp-library-pipelines/compare/v2.15.0...HEAD
+[v2.15.0]: https://github.com/epam/edp-library-pipelines/compare/v2.14.0...v2.15.0
 [v2.14.0]: https://github.com/epam/edp-library-pipelines/compare/v2.13.0...v2.14.0
 [v2.13.0]: https://github.com/epam/edp-library-pipelines/compare/v2.12.0...v2.13.0
 [v2.12.0]: https://github.com/epam/edp-library-pipelines/compare/v2.11.0...v2.12.0
