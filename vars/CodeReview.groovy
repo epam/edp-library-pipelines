@@ -45,8 +45,7 @@ def call() {
             context.sonar.init()
 
             context.codebase = new Codebase(context.job, context.git.project, context.platform, this)
-            context.codebase.setConfig(context.git.autouser, context.git.host, context.git.sshPort, context.git.project,
-                    context.git.repositoryRelativePath)
+            context.codebase.setConfig(context.git.autouser, context.git.host, context.git.sshPort, context.git.project, context.git.repositoryRelativePath)
 
             context.factory = new StageFactory(script: this)
             context.factory.loadEdpStages().each() { context.factory.add(it) }

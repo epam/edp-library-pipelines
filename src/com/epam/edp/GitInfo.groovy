@@ -101,10 +101,7 @@ class GitInfo {
         if (!this.branch && job.type != JobType.CREATERELEASE.value)
             script.error("[JENKINS][ERROR] Couldn't determine branch to clone, please make sure that BRANCH variable is defined")
 
-        def strategy = platform.getJsonPathValue(codebaseCrApiGroup, this.project, ".spec.strategy")
-        if (strategy == "import") {
-            this.repositoryRelativePath = platform.getJsonPathValue(codebaseCrApiGroup, this.project, ".spec.gitUrlPath")
-        }
+        this.repositoryRelativePath = platform.getJsonPathValue(codebaseCrApiGroup, this.project, ".spec.gitUrlPath")
     }
 
     def defineVariable(envVariablesList) {
