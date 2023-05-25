@@ -1,9 +1,14 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v2.16.0"></a>
+## [v2.16.0] - 2023-05-22
 ### Routine
 
-- Align changelog installation for release process [EPMDEDP-11472](https://jiraeu.epam.com/browse/EPMDEDP-11472)
+- Update current development version [EPMDEDP-11472](https://jiraeu.epam.com/browse/EPMDEDP-11472)
+- Align git application path to git repo provisioning [EPMDEDP-11871](https://jiraeu.epam.com/browse/EPMDEDP-11871)
+- Add templates for github issues [EPMDEDP-11928](https://jiraeu.epam.com/browse/EPMDEDP-11928)
 
 
 <a name="v2.15.0"></a>
@@ -15,6 +20,7 @@
 ### Routine
 
 - Update changelog [EPMDEDP-10610](https://jiraeu.epam.com/browse/EPMDEDP-10610)
+- Align changelog installation for release process [EPMDEDP-11472](https://jiraeu.epam.com/browse/EPMDEDP-11472)
 - Align Nexus basePath pattern to new approach [EPMDEDP-11558](https://jiraeu.epam.com/browse/EPMDEDP-11558)
 
 
@@ -122,7 +128,8 @@ Switch to use v2 admin console API for build, code review and deploy pipelines
 - [EPMDEDP-4971] Replace slash with dash for branch name
 
 
-[Unreleased]: https://github.com/epam/edp-library-pipelines/compare/v2.15.0...HEAD
+[Unreleased]: https://github.com/epam/edp-library-pipelines/compare/v2.16.0...HEAD
+[v2.16.0]: https://github.com/epam/edp-library-pipelines/compare/v2.15.0...v2.16.0
 [v2.15.0]: https://github.com/epam/edp-library-pipelines/compare/v2.14.0...v2.15.0
 [v2.14.0]: https://github.com/epam/edp-library-pipelines/compare/v2.13.0...v2.14.0
 [v2.13.0]: https://github.com/epam/edp-library-pipelines/compare/v2.12.0...v2.13.0
